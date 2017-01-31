@@ -1,0 +1,1 @@
+file(GLOB SIEVE_DGS_SOURCES dgs_bern.c dgs_gauss_dp.c dgs_gauss_mp.c)
