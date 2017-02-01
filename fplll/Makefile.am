@@ -77,15 +77,15 @@ libfplll_la_SOURCES=fplll.cpp fplll.h \
 	bkz_param.cpp bkz_param.h \
 	gso.cpp gso.h \
 	pruner.cpp pruner.h \
-	sieve/sieve_gauss.cpp \
-	sieve/sieve_gauss.h  \
+	sieve/old_sieving_files/sieve_gauss.cpp \
+	sieve/old_sieving_files/sieve_gauss.h  \
 	sieve/sieve_common.h\
-	sieve/sieve_gauss_str.h \
-	sieve/sieve_gauss_2sieve.cpp \
-	sieve/sieve_gauss_3sieve.cpp \
-	sieve/sieve_gauss_4sieve.cpp \
+	sieve/old_sieving_files/sieve_gauss_str.h \
+	sieve/old_sieving_files/sieve_gauss_2sieve.cpp \
+	sieve/old_sieving_files/sieve_gauss_3sieve.cpp \
+	sieve/old_sieving_files/old_sieving_files/sieve_gauss_4sieve.cpp \
 	sieve/sampler_basic.h \
-	sieve/sampler_basic.cpp
+	sieve/old_sieving_files/sampler_basic.cpp
 
 EXTRA_libfplll_la_SOURCES= svpcvp.cpp
 libfplll_la_LIBADD=-lgmp -lmpfr $(LIBQD_LIBADD)
