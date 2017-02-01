@@ -4,7 +4,9 @@
   based on Panagiotis Voulgaris's implementation of the Gauss sieve.
 */
 #include "sieve_main.h"
-//#include "fplll.h"
+#include "fplll.h"
+
+using namespace fplll;
 
 /**
  * help function
@@ -33,10 +35,11 @@ static void main_usage(char *myself)
 /**
  * run sieve
  */
-#if 0
+
 template <class ZT> int main_run_sieve(ZZ_mat<ZT> B, Z_NR<ZT> goal_norm, int alg, int ver, int seed)
 {
-  GaussSieve<ZT, FP_NR<double>> gsieve(B, alg, ver, seed);
+  /*
+   GaussSieve<ZT, FP_NR<double>> gsieve(B, alg, ver, seed);
   gsieve.set_goal_norm2(goal_norm);
   if (gsieve.alg == 3)
     gsieve.run_3sieve();
@@ -44,10 +47,10 @@ template <class ZT> int main_run_sieve(ZZ_mat<ZT> B, Z_NR<ZT> goal_norm, int alg
     gsieve.run_4sieve();
   else
     gsieve.run_2sieve();
-
+   */
   return 0;
 }
-#endif
+
 
 /**
  * main function
