@@ -4,7 +4,7 @@
   based on Panagiotis Voulgaris's implementation of the Gauss sieve.
 */
 #include "sieve_main.h"
-#include "fplll.h"
+//#include "fplll.h"
 
 /**
  * help function
@@ -33,6 +33,7 @@ static void main_usage(char *myself)
 /**
  * run sieve
  */
+#if 0
 template <class ZT> int main_run_sieve(ZZ_mat<ZT> B, Z_NR<ZT> goal_norm, int alg, int ver, int seed)
 {
   GaussSieve<ZT, FP_NR<double>> gsieve(B, alg, ver, seed);
@@ -46,6 +47,7 @@ template <class ZT> int main_run_sieve(ZZ_mat<ZT> B, Z_NR<ZT> goal_norm, int alg
 
   return 0;
 }
+#endif
 
 /**
  * main function
@@ -56,7 +58,8 @@ int main(int argc, char **argv)
   char *goal_norm_s     = NULL;
   bool flag_verbose = false, flag_file = false;
   int option, alg, dim = 10, seed = 0, bs = 0;
-
+    cout<<"Hello" << endl;
+#if 0
 #if 0
   dot_time = 0;
   dot_num = 0;
@@ -208,5 +211,6 @@ int main(int argc, char **argv)
     cout << "# [info] dot_time/dot_number " << (double) dot_time/dot_num << endl;
 #endif
   }
+#endif
   return 1;
 }

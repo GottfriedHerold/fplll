@@ -33,7 +33,7 @@ nobase_include_fplll_HEADERS=defs.h fplll.h \
 	enum/enumerate.h enum/enumerate_base.h enum/enumerate_ext.h \
 	pruner.h
 
-bin_PROGRAMS=fplll latticegen latsieve
+bin_PROGRAMS=fplll latticegen latsieve newlatsieve
 check_PROGRAMS=llldiff
 EXTRA_PROGRAMS=fplll_dbg latticegen_dbg
 lib_LTLIBRARIES=libfplll.la
@@ -60,8 +60,12 @@ llldiff_SOURCES=llldiff.cpp
 llldiff_LDADD=libfplll.la
 
 # latsieve bin
-latsieve_SOURCES=sieve/sieve_main.cpp sieve/sieve_main.h
+latsieve_SOURCES=sieve/old_sieving_files/sieve_main.cpp sieve/old_sieving_files/sieve_main.h
 latsieve_LDADD=libfplll.la $(LIBQD_LIBADD)
+
+# newlatsieve bin
+newlatsieve_SOURCES=sieve/sieve_main.cpp sieve/sieve_main.h
+newlatsieve_LDADD=libfplll.la $(LIBQD_LIBADD)
 
 # libfplll
 libfplll_la_SOURCES=fplll.cpp fplll.h \
@@ -79,13 +83,13 @@ libfplll_la_SOURCES=fplll.cpp fplll.h \
 	pruner.cpp pruner.h \
 	sieve/old_sieving_files/sieve_gauss.cpp \
 	sieve/old_sieving_files/sieve_gauss.h  \
-	sieve/sieve_common.h\
+	sieve/old_sieving_files/sieve_common.h\
 	sieve/old_sieving_files/sieve_gauss_str.h \
 	sieve/old_sieving_files/sieve_gauss_2sieve.cpp \
 	sieve/old_sieving_files/sieve_gauss_3sieve.cpp \
-	sieve/old_sieving_files/old_sieving_files/sieve_gauss_4sieve.cpp \
-	sieve/sampler_basic.h \
-	sieve/old_sieving_files/sampler_basic.cpp
+	sieve/old_sieving_files/sieve_gauss_4sieve.cpp \
+	sieve/old_sieving_files/sampler_basic.h \
+	sieve/old_sieving_files/sampler_basic.cpp 
 
 EXTRA_libfplll_la_SOURCES= svpcvp.cpp
 libfplll_la_LIBADD=-lgmp -lmpfr $(LIBQD_LIBADD)
