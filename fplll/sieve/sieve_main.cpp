@@ -67,6 +67,7 @@ int main(int argc, char **argv)
     //LatticePoint<int> *X = new LatticePoint<int> (10);
     //LatticePoint<int> *p;
     LatticePoint<long int> *newp = new_latticepoint<long int>(10);
+    LatticePoint2<long int> *newp2;
     //printLatticePoint(p);
 #if 0
 #if 0
