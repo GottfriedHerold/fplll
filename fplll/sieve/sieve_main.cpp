@@ -62,10 +62,11 @@ int main(int argc, char **argv)
   char *goal_norm_s     = NULL;
   bool flag_verbose = false, flag_file = false;
   int option, alg, dim = 10, seed = 0, bs = 0;
-    cout<<"Hello" << endl;
-    
-    LatticePoint<int> *p;
-    //LatticePoint<int> *newp = new_latticepoint<int>(10);
+    cout<< "Hello" << endl;
+
+    //LatticePoint<int> *X = new LatticePoint<int> (10);
+    //LatticePoint<int> *p;
+    LatticePoint<long int> *newp = new_latticepoint<long int>(10);
     //printLatticePoint(p);
 #if 0
 #if 0
