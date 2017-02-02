@@ -89,7 +89,8 @@ libfplll_la_SOURCES=fplll.cpp fplll.h \
 	sieve/old_sieving_files/sieve_gauss_3sieve.cpp \
 	sieve/old_sieving_files/sieve_gauss_4sieve.cpp \
 	sieve/old_sieving_files/sampler_basic.h \
-	sieve/old_sieving_files/sampler_basic.cpp 
+	sieve/old_sieving_files/sampler_basic.cpp \
+    sieve/LatticePoint.h
 
 EXTRA_libfplll_la_SOURCES= svpcvp.cpp
 libfplll_la_LIBADD=-lgmp -lmpfr $(LIBQD_LIBADD)

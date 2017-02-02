@@ -5,6 +5,7 @@
 */
 #include "sieve_main.h"
 #include "fplll.h"
+#include "LatticePoint.h"
 
 using namespace fplll;
 
@@ -62,6 +63,10 @@ int main(int argc, char **argv)
   bool flag_verbose = false, flag_file = false;
   int option, alg, dim = 10, seed = 0, bs = 0;
     cout<<"Hello" << endl;
+    
+    LatticePoint<int> *p;
+    //LatticePoint<int> *newp = new_latticepoint<int>(10);
+    //printLatticePoint(p);
 #if 0
 #if 0
   dot_time = 0;
