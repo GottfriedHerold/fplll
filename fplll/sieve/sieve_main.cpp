@@ -6,37 +6,39 @@
 #include "sieve_main.h"
 #include "fplll.h"
 #include "LatticePoint.h"
+#include "PointList.h"
 
 using namespace fplll;
 
 /**
  * help function
  */
-static void main_usage(char *myself)
-{
-  cout << "Usage: " << myself << " [options]\n"
-       << "List of options:\n"
-       << "  -a [2|3|4]\n"
-       << "     2- or 3- or 4-sieve;\n"
-       << "  -f filename\n"
-       << "     Input filename\n"
-       << "  -r nnn\n"
-       << "     Generate a random instance of dimension nnn\n"
-       << "  -t nnn\n"
-       << "     Targeted norm^2=nnn\n"
-       << "  -s nnn\n"
-       << "     Using seed=nnn\n"
-       << "  -b nnn\n"
-       << "     BKZ preprocessing of blocksize=nnn\n"
-       << "  -v\n"
-       << "     Verbose mode\n";
-  exit(0);
-}
+//static void main_usage(char *myself)
+//{
+//  cout << "Usage: " << myself << " [options]\n"
+//       << "List of options:\n"
+//       << "  -a [2|3|4]\n"
+//       << "     2- or 3- or 4-sieve;\n"
+//       << "  -f filename\n"
+//       << "     Input filename\n"
+//       << "  -r nnn\n"
+//       << "     Generate a random instance of dimension nnn\n"
+//       << "  -t nnn\n"
+//       << "     Targeted norm^2=nnn\n"
+//       << "  -s nnn\n"
+//       << "     Using seed=nnn\n"
+//       << "  -b nnn\n"
+//       << "     BKZ preprocessing of blocksize=nnn\n"
+//       << "  -v\n"
+//       << "     Verbose mode\n";
+//  exit(0);
+//}
 
 /**
  * run sieve
  */
 
+#if 0
 template <class ZT> int main_run_sieve(ZZ_mat<ZT> B, Z_NR<ZT> goal_norm, int alg, int ver, int seed)
 {
   /*
@@ -51,6 +53,7 @@ template <class ZT> int main_run_sieve(ZZ_mat<ZT> B, Z_NR<ZT> goal_norm, int alg
    */
   return 0;
 }
+#endif
 
 
 /**
@@ -58,16 +61,17 @@ template <class ZT> int main_run_sieve(ZZ_mat<ZT> B, Z_NR<ZT> goal_norm, int alg
  */
 int main(int argc, char **argv)
 {
-  char *input_file_name = NULL;
-  char *goal_norm_s     = NULL;
-  bool flag_verbose = false, flag_file = false;
-  int option, alg, dim = 10, seed = 0, bs = 0;
+  //char *input_file_name = NULL;
+  //char *goal_norm_s     = NULL;
+  //bool flag_verbose = false, flag_file = false;
+  //int option, alg, dim = 10, seed = 0, bs = 0;
     cout<< "Hello" << endl;
 
     //LatticePoint<int> *X = new LatticePoint<int> (10);
     //LatticePoint<int> *p;
     LatticePoint<long int> *newp = new_latticepoint<long int>(10);
     LatticePoint2<long int> *newp2;
+    PointListSingleThreaded<long int> X;
     //printLatticePoint(p);
 #if 0
 #if 0
