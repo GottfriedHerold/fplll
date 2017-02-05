@@ -127,6 +127,8 @@ public:
 
   NumVect() {}
   NumVect(const NumVect &v) : data(v.data) {}
+  //NumVect(NumVect &&v) : data(nullptr) {data = v.data; v.data = nullptr;} //move constructor --EK
+  NumVect(NumVect &&v) : data(v.data) {}
   NumVect(int size) : data(size) {}  // Initial content is undefined
   NumVect(int size, const T &t) : data(size, t) {}
 
@@ -135,6 +137,15 @@ public:
     if (this != &v)
       data = v.data;
   }
+
+  //assignment operator for move-constructor 
+  // ! conflicts with the assignment operator above
+  //NumVect& operator=(NumVect that)
+  //{
+  //	std::swap(data, that.data);
+  //      return *this;
+  //}	
+
   void swap(NumVect &v) { data.swap(v.data); }
 
   const iterator begin() { return data.begin(); }
