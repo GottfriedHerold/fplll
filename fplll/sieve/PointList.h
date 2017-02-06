@@ -75,8 +75,8 @@ public:
   Iterator begin(){return start_sentinel_node->next_node;}; //returns nullptr on empty list. Note that users never see the start sentinel.
   Iterator end() {return end_sentinel_node;};
   void unlink(Iterator const &pos, GarbageBin<DT> &gb);
-  void insert(Iterator const &pos, DT const &val){};
-  void enlist(Iterator const &pos, DT const * const &valref) ;
+  void insert(Iterator const &pos, DT const &val){DT const * const tmp = new DT(val); enlist(pos,tmp);}; //inserts a copy of DT just before pos.
+  void enlist(Iterator const &pos, DT const * const &valref) ; //moves *DT just before pos, transfering ownership to the list.
 
 private:
   //marked for deletion.
@@ -111,6 +111,7 @@ class MTListIterator{
     bool operator==(MTListIterator<DT> const & other) const {return p==other.p;};
     bool operator!=(MTListIterator<DT> const & other) const {return p!=other.p;};
     bool is_end() const {return p->check_for_end_node();};
+    bool is_good() const {return !(p->is_marked_for_deletion() );};
     private:
     Node * p; //does not own.
 };
