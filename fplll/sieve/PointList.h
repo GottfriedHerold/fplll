@@ -25,6 +25,10 @@ using PointListSingleThreaded = std::forward_list<LatticePoint <ZT> >; //list or
 
 //Note: PointListMultiThreaded owns all its lattice vectors that are reachable by forward iteration.
 
+template <class ZT, class DT> class ListMultiThreaded;
+template <class ZT, class DT> class ListMTNode;
+template <class ZT, class DT> class MTListIterator;
+
 template <class ZT> class PointListMultiThreaded;
 template <class ZT> class PointListMTNode;
 template <class ZT> class PointListIterator;
@@ -50,15 +54,19 @@ public:
   PointListMultiThreaded(PointListMultiThreaded && old)=delete; //No moving (mutex)
   PointListMultiThreaded & operator=(PointListMultiThreaded const & old) = delete; //No copy assignment. (due to mutex)
   PointListMultiThreaded & operator=(PointListMultiThreaded && old)=delete; //dito
+
  //TODO: Constructor from SingleThreaded variant.
   ~PointListMultiThreaded()
   {
-     for(PointListIterator<ZT> it=PointListIterator<ZT>(start_sentinel_node); it.p!=nullptr; delete ( (it++).p) );
+      for(PointListIterator<ZT> it=PointListIterator<ZT>(start_sentinel_node); it.p!=nullptr; delete ( (it++).p) );
   } //destructor yet missing, leaking memory.
 
   PointListIterator<ZT> begin(){return start_sentinel_node->next_node;}; //returns nullptr on empty list
   PointListIterator<ZT> end() {return end_sentinel_node;};
   void unlink(PointListIterator<ZT> const &pos, GarbageBin<ZT> &gb);
+  void insert(PointListIterator<ZT> const &pos, LatticePoint<ZT> const &val){};
+  void enlist(PointListIterator<ZT> const &pos, LatticePoint<ZT> const * const &valref) ;
+
 private:
   //marked for deletion.
   std::mutex mutex_currently_writing;
