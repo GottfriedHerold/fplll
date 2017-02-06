@@ -75,6 +75,8 @@ class LatticePoint2 : protected NumVect<ZT>
 public:
     /* square L2 norm of the vector */
         Z_NR<ZT> norm2;
+    
+    LatticePoint2(){}
 
 };
 #endif

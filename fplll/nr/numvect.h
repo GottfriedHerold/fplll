@@ -127,24 +127,36 @@ public:
 
   NumVect() {}
   NumVect(const NumVect &v) : data(v.data) {}
-  //NumVect(NumVect &&v) : data(nullptr) {data = v.data; v.data = nullptr;} //move constructor --EK
-  NumVect(NumVect &&v) : data(v.data) {}
+  //NumVect(NumVect &&v) : data(nullptr) {data = v.data; v.data = nullptr;} //move constructor
+  NumVect(NumVect &&v) : data(v.data) {} //move constructor --EK
   NumVect(int size) : data(size) {}  // Initial content is undefined
   NumVect(int size, const T &t) : data(size, t) {}
 
-  void operator=(const NumVect &v)
-  {
-    if (this != &v)
-      data = v.data;
-  }
-
-  //assignment operator for move-constructor 
-  // ! conflicts with the assignment operator above
-  //NumVect& operator=(NumVect that)
+  /* old assignment operator */
+  //void operator=(const NumVect &v)
   //{
-  //	std::swap(data, that.data);
-  //      return *this;
-  //}	
+  //  if (this != &v)
+  //    data = v.data;
+  //}
+    
+  /* assignment operator for copy-constructor 
+   ! cannot use NumVect& operator=(NumVect& other)
+   */
+  NumVect& operator=(const NumVect& other)
+    {
+        NumVect tmp(other);
+        swap(tmp);
+        return *this;
+    }
+
+  /* assignment operator for move-constructor
+   ! cannot use swap implemented in this class
+  */
+  NumVect& operator=(NumVect&& that)
+  {
+        std::swap(data, that.data);
+        return *this;
+  }	
 
   void swap(NumVect &v) { data.swap(v.data); }
 
