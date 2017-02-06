@@ -128,7 +128,6 @@ public:
   NumVect() {}
   NumVect(const NumVect &v) : data(v.data) {}
   NumVect(NumVect &&v) : data() {swap(v);} //move constructor
-  //NumVect(NumVect &&v) : data(v.data) {} //move constructor --EK
   NumVect(int size) : data(size) {}  // Initial content is undefined
   NumVect(int size, const T &t) : data(size, t) {}
 
@@ -150,13 +149,14 @@ public:
 //    }
 
   /* assignment operator for move-constructor
-   ! cannot use swap implemented in this class
   */
   NumVect& operator=(NumVect that)
   {
         swap(that);
         return *this;
   }
+    
+  vector<T> get() {return data;} //for the class LatticePoint;
 
 
   void swap(NumVect &v) { data.swap(v.data); }

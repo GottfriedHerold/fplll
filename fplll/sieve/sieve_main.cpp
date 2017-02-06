@@ -67,10 +67,8 @@ int main(int argc, char **argv)
   //int option, alg, dim = 10, seed = 0, bs = 0;
     cout<< "Hello" << endl;
 
-    //LatticePoint<int> *X = new LatticePoint<int> (10);
-    //LatticePoint<int> *p;
-    LatticePoint<long int> *newp = new_latticepoint<long int>(10);
-    LatticePoint2<long int> *newp2;
+    //LatticePoint<long int> *newp = new_latticepoint<long int>(10);
+    //LatticePoint2<long int> *newp2;
     PointListSingleThreaded<long int> X;
     PointListMultiThreaded<long int> Y;
     //printLatticePoint(p);

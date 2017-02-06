@@ -22,12 +22,10 @@
     norm: l^2-norm of v
 
  */
-
-
+//
+//
 template<class ZT>
 class LatticePoint {
-
-public:
 
     /* vector */
     NumVect<Z_NR<ZT> > v;
@@ -47,19 +45,51 @@ public:
     }
 
 };
+//
+//template <class ZT> inline LatticePoint<ZT>* new_latticepoint(int n)
+//{
+//    LatticePoint<ZT> *p = new LatticePoint<ZT> (10);
+//    p->norm = 0;
+//    p->v.resize(n);
+//    for (int i = 0; i < n; ++i)
+//    {
+//        p->v[i] = 0;
+//    }
+//    return p;
+//}
 
-template <class ZT> inline LatticePoint<ZT>* new_latticepoint(int n)
-{
-    LatticePoint<ZT> *p = new LatticePoint<ZT> (10);
-    p->norm = 0;
-    p->v.resize(n);
-    for (int i = 0; i < n; ++i)
-    {
-        p->v[i] = 0;
-    }
-    return p;
-}
 
+
+//template<class ZT>
+//class LatticePoint : protected NumVect<ZT>
+//{
+//    /* square L2 norm of the vector */
+//        Z_NR<ZT> norm2;
+//    
+//    LatticePoint(){}
+//    LatticePoint(const LatticePoint &Point) : data(Point.data), norm2(Point.norm2) {}
+//    LatticePoint(LatticePoint &&Point) : data(), norm2(0) {swap(Point.data), swap(Point.norm2);}
+//    LatticePoint(int n)
+//        {
+//            norm2 = 0;
+//            data.resize(n);
+//            fill(0);
+//        }
+//        
+//    
+//    LatticePoint& operator=(LatticePoint that)
+//        {
+//            swap(that);
+//            return *this;
+//        }
+//        
+//    void swap(LatticePoint &Point)
+//    {
+//        data.swap(Point.data);
+//        std::swap(norm2, Point.norm2);
+//    }
+//
+//};
 
 template <class ZT>
 void printLatticePoint (LatticePoint<ZT> *p)
@@ -67,16 +97,4 @@ void printLatticePoint (LatticePoint<ZT> *p)
     cout << p->v << endl;
 }
 
-
-
-template<class ZT>
-class LatticePoint2 : protected NumVect<ZT>
-{
-public:
-    /* square L2 norm of the vector */
-        Z_NR<ZT> norm2;
-    
-    LatticePoint2(){}
-
-};
 #endif
