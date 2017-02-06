@@ -72,6 +72,7 @@ int main(int argc, char **argv)
     LatticePoint<long int> *newp = new_latticepoint<long int>(10);
     LatticePoint2<long int> *newp2;
     PointListSingleThreaded<long int> X;
+    PointListMultiThreaded<long int> Y;
     //printLatticePoint(p);
 #if 0
 #if 0
