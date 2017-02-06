@@ -25,102 +25,118 @@ using PointListSingleThreaded = std::forward_list<LatticePoint <ZT> >; //list or
 
 //Note: PointListMultiThreaded owns all its lattice vectors that are reachable by forward iteration.
 
-template <class ZT, class DT> class ListMultiThreaded;
-template <class ZT, class DT> class ListMTNode;
-template <class ZT, class DT> class MTListIterator;
+template <class DT> class ListMultiThreaded;
+template <class DT> class ListMTNode;
+template <class DT> class MTListIterator;
 
-template <class ZT> class PointListMultiThreaded;
-template <class ZT> class PointListMTNode;
-template <class ZT> class PointListIterator;
+//template <class ZT> class PointListMultiThreaded;
+//template <class ZT> class PointListMTNode;
 template <class ZT>
-using GarbageBin = std::queue< PointListMTNode<ZT> * >;
-//template <class ZT> class PointListConstIterator;
+using PointListMTNode = ListMTNode<LatticePoint<ZT> >;
+template <class ZT>
+using PointListIterator=MTListIterator< LatticePoint<ZT> >;
+//template <class ZT>
+//using PointListMultiThreaed=
 
-template <class ZT>
-class PointListMultiThreaded{
+//TODO:ListBin
+template <class DT>
+using GarbageBin = std::queue< ListMTNode<DT> * >;
+
+template <class DT>
+class ListMultiThreaded{
 //friend PointListMTNode<ZT>;
 public:
-  explicit PointListMultiThreaded() :
+    using Node=ListMTNode<DT>;
+    using DataType    = DT;
+    using DataPointer = DT*;
+    using Iterator=MTListIterator<DT>;
+    //using List = ListMultiThreaded<DT>;
+    explicit ListMultiThreaded() :
         mutex_currently_writing(),
-        start_sentinel_node (new PointListMTNode<ZT>),
-        end_sentinel_node   (new PointListMTNode<ZT>)
+        start_sentinel_node (new Node),
+        end_sentinel_node   (new Node)
         {
         start_sentinel_node->next_node=end_sentinel_node;
         end_sentinel_node->prev_node=start_sentinel_node;
-        start_sentinel_node->nodestatus=static_cast<int>(PointListMTNode<ZT>::StatusBit::is_first_node);
-        end_sentinel_node->nodestatus  =static_cast<int>(PointListMTNode<ZT>::StatusBit::is_last_node);
+        start_sentinel_node->nodestatus=static_cast<int>(Node::StatusBit::is_first_node);
+        end_sentinel_node->nodestatus  =static_cast<int>(Node::StatusBit::is_last_node);
         };
-  PointListMultiThreaded(PointListMultiThreaded const &old)=delete; //No copying via constructor! (due to mutex)
-  PointListMultiThreaded(PointListMultiThreaded && old)=delete; //No moving (mutex)
-  PointListMultiThreaded & operator=(PointListMultiThreaded const & old) = delete; //No copy assignment. (due to mutex)
-  PointListMultiThreaded & operator=(PointListMultiThreaded && old)=delete; //dito
+    ListMultiThreaded(ListMultiThreaded const &old)=delete; //No copying via constructor! (due to mutex)
+    ListMultiThreaded(ListMultiThreaded && old)=delete; //No moving (mutex)
+    ListMultiThreaded & operator=(ListMultiThreaded const & old) = delete; //No copy assignment. (due to mutex)
+    ListMultiThreaded & operator=(ListMultiThreaded && old)=delete; //dito
 
  //TODO: Constructor from SingleThreaded variant.
-  ~PointListMultiThreaded()
+  ~ListMultiThreaded()
   {
-      for(PointListIterator<ZT> it=PointListIterator<ZT>(start_sentinel_node); it.p!=nullptr; delete ( (it++).p) );
+      for(Iterator it(start_sentinel_node); it.p!=nullptr; delete ( (it++).p) ); //must not initialize with it=begin(), since this skips start sentinel.
   } //destructor yet missing, leaking memory.
 
-  PointListIterator<ZT> begin(){return start_sentinel_node->next_node;}; //returns nullptr on empty list
-  PointListIterator<ZT> end() {return end_sentinel_node;};
-  void unlink(PointListIterator<ZT> const &pos, GarbageBin<ZT> &gb);
-  void insert(PointListIterator<ZT> const &pos, LatticePoint<ZT> const &val){};
-  void enlist(PointListIterator<ZT> const &pos, LatticePoint<ZT> const * const &valref) ;
+  Iterator begin(){return start_sentinel_node->next_node;}; //returns nullptr on empty list. Note that users never see the start sentinel.
+  Iterator end() {return end_sentinel_node;};
+  void unlink(Iterator const &pos, GarbageBin<DT> &gb);
+  void insert(Iterator const &pos, DT const &val){};
+  void enlist(Iterator const &pos, DT const * const &valref) ;
 
 private:
   //marked for deletion.
   std::mutex mutex_currently_writing;
-  PointListMTNode<ZT>* const start_sentinel_node; //node before the start of the list
-  PointListMTNode<ZT>* const end_sentinel_node; //node after the end of the list
+  Node* const start_sentinel_node; //node before the start of the list
+  Node* const end_sentinel_node; //node after the end of the list
 };
-
-
-
-template<class ZT>
-class PointListIterator{
+//
+//
+//
+template<class DT>
+class MTListIterator{
     public:
-    friend PointListMultiThreaded<ZT>;
-    friend void swap(PointListIterator &A, PointListIterator &B){std::swap(A.p,B.p);};
+    friend ListMultiThreaded<DT>;
+    friend void swap(MTListIterator &A, MTListIterator &B){std::swap(A.p,B.p);};
     typedef std::forward_iterator_tag iterator_category;
-    PointListIterator(): p(nullptr){};
-    PointListIterator(PointListMTNode<ZT>* const & _p): p(_p){};
-    PointListIterator(PointListIterator<ZT> const &old): p(old.p){};
-    PointListIterator(PointListIterator<ZT> && old)=default;
-    ~PointListIterator(){};
-    PointListIterator<ZT>& operator=(PointListIterator<ZT> other) {swap(*this,other);return *this;};
-    PointListIterator<ZT>& operator++() {p=p->next_node;return *this;}; //prefix version
-    PointListIterator<ZT> operator++(int) {auto tmp=p; ++(*this);return tmp;}; //postfix version
+    using Node=ListMTNode<DT>;
+    using DataType    = DT;
+    using DataPointer = DT*;
+    MTListIterator(): p(nullptr){};
+    MTListIterator(Node * const & _p): p(_p){};
+    MTListIterator(MTListIterator<DT> const &old): p(old.p){};
+    MTListIterator(MTListIterator<DT> && old)=default;
+    ~MTListIterator(){};
+    MTListIterator<DT>& operator=(MTListIterator<DT> other) {swap(*this,other);return *this;};
+    MTListIterator<DT>& operator++() {p=p->next_node;return *this;}; //prefix version
+    MTListIterator<DT> operator++(int) {auto tmp=p; ++(*this);return tmp;}; //postfix version
     //Note: there is no operator--. This is intentional: Assuming the list is only traversed in one direction makes things easier wrt. concurrency.
-    LatticePoint<ZT>* operator->() const {return p->latpoint;}; //Note weird semantics of -> overload cause latpoint to get dereferenced as well.
-    LatticePoint<ZT>& operator*() const {return *(p->latpoint);};
-    operator LatticePoint<ZT>*() const {return p->latpoint;}; //converts to pointer to lattice point.
-    bool operator==(PointListIterator<ZT> const & other) const {return p==other.p;};
-    bool operator!=(PointListIterator<ZT> const & other) const {return p!=other.p;};
+    DataPointer operator->() const {return p->latpoint;}; //Note weird semantics of -> overload cause latpoint to get dereferenced as well.
+    DataType & operator*() const {return *(p->latpoint);};
+    operator DataPointer() const {return p->latpoint;}; //converts to pointer to lattice point.
+    bool operator==(MTListIterator<DT> const & other) const {return p==other.p;};
+    bool operator!=(MTListIterator<DT> const & other) const {return p!=other.p;};
     bool is_end() const {return p->check_for_end_node();};
     private:
-    PointListMTNode<ZT> * p; //does not own.
+    Node * p; //does not own.
 };
 
 //owns the lattice point.
-template <class ZT>
-class PointListMTNode{
-    friend PointListMultiThreaded<ZT>;
-    friend PointListIterator<ZT>;
+template <class DT>
+class ListMTNode{
+//    friend PointListMultiThreaded<ZT>;
+    friend MTListIterator<DT>;
+    using DataType    = DT;
+    using DataPointer = DT *;
     public:
-    PointListMTNode() : next_node(nullptr),prev_node(nullptr), latpoint(nullptr),nodestatus(0)  {} ;
-    PointListMTNode(PointListMTNode const &old) = delete;
-    PointListMTNode(PointListMTNode &&old) = delete;
-    PointListMTNode & operator=(PointListMTNode const &old) =delete;
-    PointListMTNode & operator=(PointListMTNode &&old) = delete;
-    ~PointListMTNode(){delete latpoint;}; //destructor
+    ListMTNode() : next_node(nullptr),prev_node(nullptr), latpoint(nullptr),nodestatus(0)  {} ;
+    ListMTNode(ListMTNode const &old) = delete;
+    ListMTNode(ListMTNode &&old) = delete;
+    ListMTNode & operator=(ListMTNode const &old) =delete;
+    ListMTNode & operator=(ListMTNode &&old) = delete;
+    ~ListMTNode(){delete latpoint;}; //destructor
     bool check_for_end_node() const {return nodestatus == static_cast<int>(StatusBit::is_last_node);};
     bool is_marked_for_deletion() const {return nodestatus == static_cast<int>(StatusBit::is_to_be_deleted);};
     bool is_sentinel_node() const {return (nodestatus == static_cast<int>(StatusBit::is_first_node))||(nodestatus == static_cast<int>(StatusBit::is_last_node) );};
     bool is_plain_node() const {return nodestatus == 0;};
     private:
-    PointListMTNode *next_node;
-    PointListMTNode *prev_node;
-    LatticePoint<ZT> *latpoint; //actual data. We may use a pointer rather than an actual latpoint here to allow atomic replacements. This is hidden from the user.
+    ListMTNode *next_node;
+    ListMTNode *prev_node;
+    DataPointer latpoint; //actual data. We may use a pointer rather than an actual latpoint here to allow atomic replacements. This is hidden from the user.
     int nodestatus; //actually a bitfield (not using std:bitset since it only converts safely to ulong or ulonglong)
     public:
     enum class StatusBit
@@ -131,5 +147,12 @@ class PointListMTNode{
       };
 
 };
+
+//template <class ZT>
+//using PointListMultiThreaded= ListMultiThreaded<LatticePoint<ZT>>;
+//template <class ZT> class PointListIterator;
+
+
+
 
 #endif
