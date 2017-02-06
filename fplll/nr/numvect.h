@@ -155,8 +155,8 @@ public:
         swap(that);
         return *this;
   }
-    
-  vector<T> get() {return data;} //for the class LatticePoint;
+
+  inline vector<T>& get() {return data;} //for the class LatticePoint;
 
 
   void swap(NumVect &v) { data.swap(v.data); }
@@ -226,7 +226,7 @@ public:
   friend ostream &operator<<<T>(ostream &os, const NumVect<T> &v);
   friend istream &operator>><T>(istream &is, NumVect<T> &v);
 
-private:
+protected:
   vector<T> data;
 };
 

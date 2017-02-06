@@ -24,27 +24,27 @@
  */
 //
 //
-template<class ZT>
-class LatticePoint {
-
-    /* vector */
-    NumVect<Z_NR<ZT> > v;
-
-    /* square L2 norm of the vector */
-    Z_NR<ZT> norm;
-
-    LatticePoint<ZT> (int n)
-    {
-       norm = 0;
-       v.resize(n);
-        for (int i=0; i<n; i++)
-        {
-           v[i] = 0;
-        }
-
-    }
-
-};
+//template<class ZT>
+//class LatticePoint {
+//
+//    /* vector */
+//    NumVect<Z_NR<ZT> > v;
+//
+//    /* square L2 norm of the vector */
+//    Z_NR<ZT> norm;
+//
+//    LatticePoint<ZT> (int n)
+//    {
+//       norm = 0;
+//       v.resize(n);
+//        for (int i=0; i<n; i++)
+//        {
+//           v[i] = 0;
+//        }
+//
+//    }
+//
+//};
 //
 //template <class ZT> inline LatticePoint<ZT>* new_latticepoint(int n)
 //{
@@ -60,36 +60,37 @@ class LatticePoint {
 
 
 
-//template<class ZT>
-//class LatticePoint : protected NumVect<ZT>
-//{
-//    /* square L2 norm of the vector */
-//        Z_NR<ZT> norm2;
-//    
-//    LatticePoint(){}
-//    LatticePoint(const LatticePoint &Point) : data(Point.data), norm2(Point.norm2) {}
-//    LatticePoint(LatticePoint &&Point) : data(), norm2(0) {swap(Point.data), swap(Point.norm2);}
-//    LatticePoint(int n)
-//        {
-//            norm2 = 0;
-//            data.resize(n);
-//            fill(0);
-//        }
-//        
-//    
-//    LatticePoint& operator=(LatticePoint that)
-//        {
-//            swap(that);
-//            return *this;
-//        }
-//        
-//    void swap(LatticePoint &Point)
-//    {
-//        data.swap(Point.data);
-//        std::swap(norm2, Point.norm2);
-//    }
-//
-//};
+template<class ZT>
+class LatticePoint : protected NumVect<ZT>
+{
+    /* square L2 norm of the vector */
+        Z_NR<ZT> norm2;
+    using NV = NumVect<ZT>;
+    LatticePoint(){}
+    LatticePoint(const LatticePoint &Point) = default; // : NumVect<ZT>::data(Point.data), norm2(Point.norm2) {}
+    LatticePoint(LatticePoint &&Point) = default ; // : NumVect<ZT> (), norm2(0) {swap(Point.NV::data), swap(Point.norm2);}
+    LatticePoint(int n) : NumVect<ZT>(n),norm2(0) //creates all-zero vector of length n
+        {
+           NV::data.resize(n);
+           NV::fill(0);
+        }
+    LatticePoint(NV const &Point) : NV(Point), norm2(0){
+    //compute norm2
+    };
+
+    LatticePoint& operator=(LatticePoint that)
+        {
+            swap(that);
+            return *this;
+        }
+
+    void swap(LatticePoint &Point)
+    {
+        NV::data.swap(Point.NV::data);
+        std::swap(norm2, Point.norm2);
+    }
+
+};
 
 template <class ZT>
 void printLatticePoint (LatticePoint<ZT> *p)
