@@ -6,7 +6,7 @@
 #include "sieve_main.h"
 #include "fplll.h"
 #include "LatticePoint.h"
-//#include "PointList.h"
+#include "PointList.h"
 
 using namespace fplll;
 
@@ -71,7 +71,7 @@ int main(int argc, char **argv)
 //    PointListMultiThreaded<long int> Y;
     //printLatticePoint(p);
     //ListMTNode<int> Z;
-    
+
     //LatticePoint<long int> p = LatticePoint<long int> (10, 2);
     LatticePoint<long> p;
 

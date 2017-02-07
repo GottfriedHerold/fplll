@@ -49,9 +49,12 @@ public:
     using Node=ListMTNode<DT>;
     using DataType    = DT;
     using DataPointer = DT*;
+    using AtomicDataPointer = std::atomic<DT *>;
+    using NodePointer = ListMTNode<DT> *;
+    using AtomicNodePointer = std::atomic<ListMTNode<DT> *>;
     using Iterator=MTListIterator<DT>;
     //using List = ListMultiThreaded<DT>;
-    explicit ListMultiThreaded() :
+    explicit ListMultiThreaded() : //called when only one thread is running
         mutex_currently_writing(),
         start_sentinel_node (new Node),
         end_sentinel_node   (new Node)
@@ -67,12 +70,12 @@ public:
     ListMultiThreaded & operator=(ListMultiThreaded && old)=delete; //dito
 
  //TODO: Constructor from SingleThreaded variant.
-  ~ListMultiThreaded()
+  ~ListMultiThreaded() //called when only one (master) thread is running
   {
       for(Iterator it(start_sentinel_node); it.p!=nullptr; delete ( (it++).p) ); //must not initialize with it=begin(), since this skips start sentinel.
   } //destructor yet missing, leaking memory.
 
-  Iterator begin(){return start_sentinel_node->next_node;}; //returns nullptr on empty list. Note that users never see the start sentinel.
+  Iterator begin(){return start_sentinel_node->next_node.load(std::memory_order_acquire);}; //returns nullptr on empty list. Note that users never see the start sentinel.
   Iterator end() {return end_sentinel_node;};
   void unlink(Iterator const &pos, GarbageBin<DT> &gb);
   void insert(Iterator const &pos, DT const &val){DT * const tmp = new DT(val); enlist(pos,tmp);}; //inserts a copy of DT just before pos.
@@ -81,12 +84,15 @@ public:
 private:
   //marked for deletion.
   std::mutex mutex_currently_writing;
-  Node* const start_sentinel_node; //node before the start of the list
-  Node* const end_sentinel_node; //node after the end of the list
+  NodePointer const start_sentinel_node; //node before the start of the list. This is never modified, so no atomic here.
+  NodePointer const end_sentinel_node; //node after the end of the list, could probably do with a single sentinel.
 };
 //
 //
 //
+
+//restriction: Iterator itself is thread-local.
+
 template<class DT>
 class MTListIterator{
     public:
@@ -102,7 +108,7 @@ class MTListIterator{
     MTListIterator(MTListIterator<DT> && old)=default;
     ~MTListIterator(){};
     MTListIterator<DT>& operator=(MTListIterator<DT> other) {swap(*this,other);return *this;};
-    MTListIterator<DT>& operator++() {p=p->next_node;return *this;}; //prefix version
+    MTListIterator<DT>& operator++() {p=p->next_node.load(memory_order_acquire);return *this;}; //prefix version
     MTListIterator<DT> operator++(int) {auto tmp=p; ++(*this);return tmp;}; //postfix version
     //Note: there is no operator--. This is intentional: Assuming the list is only traversed in one direction makes things easier wrt. concurrency.
     DataPointer operator->() const {return p->latpoint;}; //Note weird semantics of -> overload cause latpoint to get dereferenced as well.
@@ -113,7 +119,7 @@ class MTListIterator{
     bool is_end() const {return p->check_for_end_node();};
     bool is_good() const {return !(p->is_marked_for_deletion() );};
     private:
-    Node * p; //does not own.
+    Node * p; //does not own. Need not be atomic.
 };
 
 //owns the lattice point.
@@ -123,6 +129,9 @@ class ListMTNode{
     friend MTListIterator<DT>;
     using DataType    = DT;
     using DataPointer = DT *;
+    using AtomicDataPointer = std::atomic<DT *>;
+    using NodePointer = ListMTNode<DT> *;
+    using AtomicNodePointer = std::atomic<ListMTNode<DT> *>;
     public:
     ListMTNode() : next_node(nullptr),prev_node(nullptr), latpoint(nullptr),nodestatus(0)  {} ;
     ListMTNode(ListMTNode const &old) = delete;
@@ -135,9 +144,9 @@ class ListMTNode{
     bool is_sentinel_node() const {return (nodestatus == static_cast<int>(StatusBit::is_first_node))||(nodestatus == static_cast<int>(StatusBit::is_last_node) );};
     bool is_plain_node() const {return nodestatus == 0;};
     private:
-    ListMTNode *next_node;
-    ListMTNode *prev_node;
-    DataPointer latpoint; //actual data. We may use a pointer rather than an actual latpoint here to allow atomic replacements. This is hidden from the user.
+    AtomicNodePointer next_node;
+    NodePointer prev_node;
+    DataPointer latpoint; //actual data. We may use a pointer here for potential atomicity. This is hidden from the user.
     int nodestatus; //actually a bitfield (not using std:bitset since it only converts safely to ulong or ulonglong)
     public:
     enum class StatusBit
@@ -160,8 +169,9 @@ void ListMultiThreaded<DT>::unlink(Iterator const & pos, GarbageBin<DT> &gb)
         if(pos.p->is_plain_node()) //otherwise, already deleted.
             {
                 pos.p->nodestatus=static_cast<int>(Node::StatusBit::is_to_be_deleted);
+                NodePointer nextpos=pos.p->next_node; //.load(memory_order_relaxed); //All writes are within locks anyway.
                 pos.p->next_node->prev_node=pos.p->prev_node;
-                pos.p->prev_node->next_node=pos.p->next_node;
+                pos.p->prev_node->next_node.write(nextpos,memory_order_relaxed); //relaxed should be fine!!!
                 mutex_currently_writing.unlock();
                 //Put in garbage bin. //TODO: More clever garbage bin, requires changing structs and global counters.
                 gb.push(pos.p);
@@ -174,33 +184,25 @@ void ListMultiThreaded<DT>::unlink(Iterator const & pos, GarbageBin<DT> &gb)
     return;
 }
 
+
+
 template <class DT>
 void ListMultiThreaded<DT>::enlist(MTListIterator<DT> const &pos, DT * const &valref)
 {
 Node* newnode = new Node;
 newnode->latpoint = valref;
-Iterator next_good(pos);
-for (;;++next_good)
-{
-if (!next_good.is_good())
-    {
-    continue;
-    }
+Node* nextgood =pos.p; //we work directly with the underlying pointer, not using the iterator, since we do not need atomic loads to traverse here.
 mutex_currently_writing.lock();
-if (next_good.is_good())
-    {
-    break;
-    }
+while(nextgood->is_marked_for_deletion()){nextgood=nextgood->next_node;} //.load(memory_order_relaxed);}
+Node* preced=nextgood->prev_node;
+newnode->next_node=nextgood;
+newnode->prev_node=preced;
+nextgood->prev_node=newnode;
+//until here, no other thread can observe our writes.
+preced->next_node.store(newnode,memory_order_release);
+//this one can be observed (even prior to releasing the lock), and we have to make sure that other non-mutex-protected threads that see this write also see the (non-atomic) writes to newnode.
 mutex_currently_writing.unlock();
 }
-newnode->next_node=next_good.p;
-newnode->prev_node=next_good.p->prev_node;
-newnode->next_node->prev_node=newnode;
-newnode->prev_node->next_node=newnode;
-//does not work -- need atomics to prevent compiler from reorderings.
-mutex_currently_writing.unlock();
-}
-
 //template <class ZT>
 //using PointListMultiThreaded= ListMultiThreaded<LatticePoint<ZT>>;
 //template <class ZT> class PointListIterator;
