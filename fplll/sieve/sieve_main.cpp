@@ -55,7 +55,6 @@ template <class ZT> int main_run_sieve(ZZ_mat<ZT> B, Z_NR<ZT> goal_norm, int alg
 }
 #endif
 
-
 /**
  * main function
  */
@@ -72,7 +71,12 @@ int main(int argc, char **argv)
     PointListSingleThreaded<long int> X;
 //    PointListMultiThreaded<long int> Y;
     //printLatticePoint(p);
-    ListMTNode<int> Z;
+    ListMultiThreaded<int> Z;
+    MTListIterator<int> pos;
+    int * const x = new int;
+    *x=5;
+    Z.enlist(pos,x);
+
 #if 0
 #if 0
   dot_time = 0;

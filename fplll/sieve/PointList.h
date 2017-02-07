@@ -35,8 +35,8 @@ template <class ZT>
 using PointListMTNode = ListMTNode<LatticePoint<ZT> >;
 template <class ZT>
 using PointListIterator=MTListIterator< LatticePoint<ZT> >;
-//template <class ZT>
-//using PointListMultiThreaed=
+template <class ZT>
+using PointListMultiThreaded=ListMultiThreaded< LatticePoint <ZT> >;
 
 //TODO:ListBin
 template <class DT>
@@ -75,8 +75,8 @@ public:
   Iterator begin(){return start_sentinel_node->next_node;}; //returns nullptr on empty list. Note that users never see the start sentinel.
   Iterator end() {return end_sentinel_node;};
   void unlink(Iterator const &pos, GarbageBin<DT> &gb);
-  void insert(Iterator const &pos, DT const &val){DT const * const tmp = new DT(val); enlist(pos,tmp);}; //inserts a copy of DT just before pos.
-  void enlist(Iterator const &pos, DT const * const &valref) ; //moves *DT just before pos, transfering ownership to the list.
+  void insert(Iterator const &pos, DT const &val){DT * const tmp = new DT(val); enlist(pos,tmp);}; //inserts a copy of DT just before pos.
+  void enlist(MTListIterator<DT> const &pos, DT * const &valref); //moves *DT just before pos, transfering ownership to the list.
 
 private:
   //marked for deletion.
@@ -119,7 +119,7 @@ class MTListIterator{
 //owns the lattice point.
 template <class DT>
 class ListMTNode{
-//    friend PointListMultiThreaded<ZT>;
+    friend ListMultiThreaded<DT>;
     friend MTListIterator<DT>;
     using DataType    = DT;
     using DataPointer = DT *;
@@ -148,6 +148,58 @@ class ListMTNode{
       };
 
 };
+
+
+template <class DT>
+void ListMultiThreaded<DT>::unlink(Iterator const & pos, GarbageBin<DT> &gb)
+{
+    {
+        assert(!(pos.p->is_sentinel_node()));
+        //std::lock_guard<std::mutex> writelock(mutex_currently_writing);
+        mutex_currently_writing.lock();
+        if(pos.p->is_plain_node()) //otherwise, already deleted.
+            {
+                pos.p->nodestatus=static_cast<int>(Node::StatusBit::is_to_be_deleted);
+                pos.p->next_node->prev_node=pos.p->prev_node;
+                pos.p->prev_node->next_node=pos.p->next_node;
+                mutex_currently_writing.unlock();
+                //Put in garbage bin. //TODO: More clever garbage bin, requires changing structs and global counters.
+                gb.push(pos.p);
+            }
+            else
+            {
+            mutex_currently_writing.unlock();
+            }
+    }
+    return;
+}
+
+template <class DT>
+void ListMultiThreaded<DT>::enlist(MTListIterator<DT> const &pos, DT * const &valref)
+{
+Node* newnode = new Node;
+newnode->latpoint = valref;
+Iterator next_good(pos);
+for (;;++next_good)
+{
+if (!next_good.is_good())
+    {
+    continue;
+    }
+mutex_currently_writing.lock();
+if (next_good.is_good())
+    {
+    break;
+    }
+mutex_currently_writing.unlock();
+}
+newnode->next_node=next_good.p;
+newnode->prev_node=next_good.p->prev_node;
+newnode->next_node->prev_node=newnode;
+newnode->prev_node->next_node=newnode;
+//does not work -- need atomics to prevent compiler from reorderings.
+mutex_currently_writing.unlock();
+}
 
 //template <class ZT>
 //using PointListMultiThreaded= ListMultiThreaded<LatticePoint<ZT>>;
