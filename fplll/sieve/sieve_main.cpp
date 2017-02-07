@@ -6,7 +6,7 @@
 #include "sieve_main.h"
 #include "fplll.h"
 #include "LatticePoint.h"
-#include "PointList.h"
+//#include "PointList.h"
 
 using namespace fplll;
 
@@ -67,12 +67,14 @@ int main(int argc, char **argv)
   //int option, alg, dim = 10, seed = 0, bs = 0;
     cout<< "Hello" << endl;
 
-    //LatticePoint<long int> *newp = new_latticepoint<long int>(10);
-    //LatticePoint2<long int> *newp2;
-    PointListSingleThreaded<long int> X;
+
+    //PointListSingleThreaded<long int> X;
 //    PointListMultiThreaded<long int> Y;
     //printLatticePoint(p);
-    ListMTNode<int> Z;
+    //ListMTNode<int> Z;
+    
+    //LatticePoint<long int> p = LatticePoint<long int> (10, 2);
+    LatticePoint<long> p;
 #if 0
 #if 0
   dot_time = 0;

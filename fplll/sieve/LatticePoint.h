@@ -21,51 +21,17 @@
     v: instance of NumVect
     norm: l^2-norm of v
 
- */
-//
-//
-//template<class ZT>
-//class LatticePoint {
-//
-//    /* vector */
-//    NumVect<Z_NR<ZT> > v;
-//
-//    /* square L2 norm of the vector */
-//    Z_NR<ZT> norm;
-//
-//    LatticePoint<ZT> (int n)
-//    {
-//       norm = 0;
-//       v.resize(n);
-//        for (int i=0; i<n; i++)
-//        {
-//           v[i] = 0;
-//        }
-//
-//    }
-//
-//};
-//
-//template <class ZT> inline LatticePoint<ZT>* new_latticepoint(int n)
-//{
-//    LatticePoint<ZT> *p = new LatticePoint<ZT> (10);
-//    p->norm = 0;
-//    p->v.resize(n);
-//    for (int i = 0; i < n; ++i)
-//    {
-//        p->v[i] = 0;
-//    }
-//    return p;
-//}
-
-
+**/
 
 template<class ZT>
 class LatticePoint : protected NumVect<ZT>
 {
     /* square L2 norm of the vector */
         Z_NR<ZT> norm2;
+    
     using NV = NumVect<ZT>;
+    
+public:
     LatticePoint(){}
     LatticePoint(const LatticePoint &Point) = default; // : NumVect<ZT>::data(Point.data), norm2(Point.norm2) {}
     LatticePoint(LatticePoint &&Point) = default ; // : NumVect<ZT> (), norm2(0) {swap(Point.NV::data), swap(Point.norm2);}
@@ -74,9 +40,13 @@ class LatticePoint : protected NumVect<ZT>
            NV::data.resize(n);
            NV::fill(0);
         }
-    LatticePoint(NV const &Point) : NV(Point), norm2(0){
-    //compute norm2
-    };
+    
+    // for debugging
+    LatticePoint(int n, long fillwith) : NumVect<ZT>(n),norm2(0)
+    {
+        NV::data.resize(n);
+        NV::fill(fillwith);
+    }
 
     LatticePoint& operator=(LatticePoint that)
         {
@@ -95,7 +65,17 @@ class LatticePoint : protected NumVect<ZT>
 template <class ZT>
 void printLatticePoint (LatticePoint<ZT> *p)
 {
-    cout << p->v << endl;
+    //using NV = NumVect<ZT>;
+    cout << p->data << endl;
+}
+
+
+//Simple dot_product
+template <class ZT>
+void dot_product (ZT &result, const LatticePoint<ZT> &p1, const LatticePoint<ZT> &p2)
+{
+    using NV = NumVect<ZT>;
+    dot_product(result, p1.NV::data, p2.NV::data);
 }
 
 #endif
