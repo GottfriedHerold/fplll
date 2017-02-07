@@ -73,7 +73,8 @@ int main(int argc, char **argv)
     //ListMTNode<int> Z;
 
     //LatticePoint<long int> p = LatticePoint<long int> (10, 2);
-    LatticePoint<long> p;
+    //LatticePoint<long> p (10);
+    //printLatticePoint(p);
 
     ListMultiThreaded<int> Z;
     MTListIterator<int> pos;
