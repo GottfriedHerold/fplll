@@ -113,6 +113,7 @@ AC_C_VOLATILE
 # Checks for library functions.
 AC_FUNC_STRTOD
 AC_CHECK_FUNCS([floor pow rint sqrt strtol])
+AX_PTHREAD
 
 # enumeration dimension
 max_enumeration_dimension=256

@@ -7,6 +7,7 @@
 #include "fplll.h"
 #include "LatticePoint.h"
 #include "PointList.h"
+#include <thread>
 
 using namespace fplll;
 
@@ -58,6 +59,48 @@ template <class ZT> int main_run_sieve(ZZ_mat<ZT> B, Z_NR<ZT> goal_norm, int alg
 /**
  * main function
  */
+
+template<class DT>
+void ListTester(ListMultiThreaded<DT> * const Z, GarbageBin<DT> * const gb, int id,bool verbose)
+{
+for (int i=0; i <2000; ++i)
+{
+    int count =0;
+    int insertions=0;
+    int deletions =0;
+    for(MTListIterator<DT> it = Z->begin(); !it.is_end(); ++it)
+    {
+        ++count;
+        DT tmp = *it;
+        if(( tmp * tmp + i + 33*id) % 39 == 11)
+        {
+        Z->unlink(it,*gb);
+        //cout << "Deleted";
+        ++deletions;
+        }
+        if(( tmp * tmp + i + 18*id) %57 ==13  )
+        {
+        Z->insert(it, 1000000*id + 100* i + ((tmp * tmp )%93) );
+        //cout << "Inserted";
+        ++insertions;
+        }
+    }
+    if (verbose)
+    {
+    cout << "Thread " << id <<", iteration " << i << "count: " <<count <<" deletes: "<<deletions << "inserts: "<< insertions<<endl;
+    }
+    MTListIterator<DT> it = Z->end();
+    Z->insert(it, 1000000*id + 100*i + 1);
+}
+return;
+}
+
+template<class DT>
+void ListTester2(ListMultiThreaded<DT>* const X)
+{
+return;
+}
+
 int main(int argc, char **argv)
 {
   //char *input_file_name = NULL;
@@ -76,12 +119,32 @@ int main(int argc, char **argv)
     //LatticePoint<long> p (10);
     //printLatticePoint(p);
 
+    int num_threads=30;
     ListMultiThreaded<int> Z;
-    MTListIterator<int> pos = Z.end();
-    int * const x = new int;
-    *x=5;
-    Z.enlist(pos,x);
+    GarbageBin<int>* GarbageBins = new GarbageBin<int> [num_threads];
+    std::vector <std::thread> threads;
+    //ListTester<int>(&Z,GarbageBins[2],2);
+    cout<< "Starting threads." << endl;
+    for(int i=0; i <num_threads; ++i)
+    {
+    threads.push_back(std::thread(ListTester<int>, &Z, GarbageBins+i,i,false));
+    }
 
+    cout << "Waiting for them to finish" <<endl;
+    for(auto &th: threads) th.join();
+    cout << "Finished" << endl;
+    //Note: Garbage is only collected, not cleared. Destroying GarbageBins does not help.
+
+    //cleaning up: Note that the Bins contain pointers that own a ressource.
+    for(int i=0; i<num_threads;++i)
+    {
+    while(!GarbageBins[i].empty())
+    {
+     delete GarbageBins[i].front();
+     GarbageBins[i].pop();
+    }
+    }
+    delete[] GarbageBins;
 #if 0
 #if 0
   dot_time = 0;

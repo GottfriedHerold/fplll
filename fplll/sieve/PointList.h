@@ -30,8 +30,6 @@ template <class DT> class ListMultiThreaded;
 template <class DT> class ListMTNode;
 template <class DT> class MTListIterator;
 
-//template <class ZT> class PointListMultiThreaded;
-//template <class ZT> class PointListMTNode;
 template <class ZT>
 using PointListMTNode = ListMTNode<LatticePoint<ZT> >;
 template <class ZT>
@@ -88,8 +86,8 @@ public:
       #endif
   }
 
-  Iterator begin(){return start_sentinel_node->next_node.load(std::memory_order_acquire);}; //returns nullptr on empty list. Note that users never see the start sentinel.
-  Iterator end() {return end_sentinel_node;};
+  Iterator begin() const {return start_sentinel_node->next_node.load(std::memory_order_acquire);}; //returns nullptr on empty list. Note that users never see the start sentinel.
+  Iterator end() const {return end_sentinel_node;};
   void unlink(Iterator const &pos, GarbageBin<DT> &gb);
   void insert(Iterator const &pos, DT const &val){DT * const tmp = new DT(val); enlist(pos,tmp);}; //inserts a copy of DT just before pos.
   void enlist(MTListIterator<DT> const &pos, DT * const &valref); //moves *DT just before pos, transfering ownership to the list.
@@ -185,8 +183,8 @@ void ListMultiThreaded<DT>::unlink(Iterator const & pos, GarbageBin<DT> &gb)
             {
                 pos.p->nodestatus=static_cast<int>(Node::StatusBit::is_to_be_deleted);
                 NodePointer nextpos=pos.p->next_node; //.load(memory_order_relaxed); //All writes are within locks anyway.
-                pos.p->next_node->prev_node=pos.p->prev_node;
-                pos.p->prev_node->next_node.write(nextpos,memory_order_relaxed); //relaxed should be fine!!!
+                nextpos->prev_node=pos.p->prev_node;
+                pos.p->prev_node->next_node.store(nextpos,memory_order_relaxed); //relaxed should be fine!!!
                 mutex_currently_writing.unlock();
                 //Put in garbage bin. //TODO: More clever garbage bin, requires changing structs and global counters.
                 gb.push(pos.p);
