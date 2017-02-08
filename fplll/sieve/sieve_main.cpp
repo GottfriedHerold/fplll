@@ -77,7 +77,7 @@ int main(int argc, char **argv)
     //printLatticePoint(p);
 
     ListMultiThreaded<int> Z;
-    MTListIterator<int> pos;
+    MTListIterator<int> pos = Z.end();
     int * const x = new int;
     *x=5;
     Z.enlist(pos,x);
