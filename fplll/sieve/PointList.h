@@ -11,6 +11,7 @@
 #include <atomic>
 #include <forward_list>
 #include <queue>
+#include "assert.h"
 
 //Class for (weakly?) sorted list of lattice points.
 //includes thread-safe variant(s). May need experiments which implementation is best. (mutex on whole structure on every write, lock-free,...)
@@ -72,8 +73,20 @@ public:
  //TODO: Constructor from SingleThreaded variant.
   ~ListMultiThreaded() //called when only one (master) thread is running
   {
+      Iterator next=begin();
+      Iterator cur (start_sentinel_node);
+      while(!next.is_end())
+      {
+        delete cur.p;
+        cur=next;
+        ++next;
+      }
+      delete cur.p;
+      delete next.p;
+      #if 0 //calls ++it on end_sentinel_node, avoid
       for(Iterator it(start_sentinel_node); it.p!=nullptr; delete ( (it++).p) ); //must not initialize with it=begin(), since this skips start sentinel.
-  } //destructor yet missing, leaking memory.
+      #endif
+  }
 
   Iterator begin(){return start_sentinel_node->next_node.load(std::memory_order_acquire);}; //returns nullptr on empty list. Note that users never see the start sentinel.
   Iterator end() {return end_sentinel_node;};
@@ -102,13 +115,14 @@ class MTListIterator{
     using Node=ListMTNode<DT>;
     using DataType    = DT;
     using DataPointer = DT*;
-    MTListIterator(): p(nullptr){};
-    MTListIterator(Node * const & _p): p(_p){};
+    //MTListIterator(): p(nullptr){};
+    MTListIterator() = delete; //should always init with valid object.
+    MTListIterator(Node * const & _p): p(_p){assert(_p!=nullptr);};
     MTListIterator(MTListIterator<DT> const &old): p(old.p){};
     MTListIterator(MTListIterator<DT> && old)=default;
     ~MTListIterator(){};
     MTListIterator<DT>& operator=(MTListIterator<DT> other) {swap(*this,other);return *this;};
-    MTListIterator<DT>& operator++() {p=p->next_node.load(memory_order_acquire);return *this;}; //prefix version
+    MTListIterator<DT>& operator++() {p=p->next_node.load(memory_order_acquire);assert(p!=nullptr);return *this;}; //prefix version
     MTListIterator<DT> operator++(int) {auto tmp=p; ++(*this);return tmp;}; //postfix version
     //Note: there is no operator--. This is intentional: Assuming the list is only traversed in one direction makes things easier wrt. concurrency.
     DataPointer operator->() const {return p->latpoint;}; //Note weird semantics of -> overload cause latpoint to get dereferenced as well.
@@ -162,6 +176,7 @@ class ListMTNode{
 template <class DT>
 void ListMultiThreaded<DT>::unlink(Iterator const & pos, GarbageBin<DT> &gb)
 {
+    assert(pos.p!=nullptr);
     {
         assert(!(pos.p->is_sentinel_node()));
         //std::lock_guard<std::mutex> writelock(mutex_currently_writing);
@@ -192,6 +207,7 @@ void ListMultiThreaded<DT>::enlist(MTListIterator<DT> const &pos, DT * const &va
 Node* newnode = new Node;
 newnode->latpoint = valref;
 Node* nextgood =pos.p; //we work directly with the underlying pointer, not using the iterator, since we do not need atomic loads to traverse here.
+assert(nextgood!=nullptr);
 mutex_currently_writing.lock();
 while(nextgood->is_marked_for_deletion()){nextgood=nextgood->next_node;} //.load(memory_order_relaxed);}
 Node* preced=nextgood->prev_node;
