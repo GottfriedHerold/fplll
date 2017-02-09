@@ -39,7 +39,28 @@ using PointListMultiThreaded=ListMultiThreaded< LatticePoint <ZT> >;
 
 //TODO:ListBin
 template <class DT>
-using GarbageBin = std::queue< ListMTNode<DT> * >;
+//using GarbageBin = std::queue< ListMTNode<DT> * >;
+class GarbageBin : public std::queue< ListMTNode<DT> * >
+{
+    public:
+    GarbageBin() = default;
+    GarbageBin(GarbageBin const &old) = delete;
+    GarbageBin(GarbageBin &&old) = default;
+    GarbageBin& operator=(GarbageBin const &old) = delete;
+    GarbageBin& operator=(GarbageBin &&old) = default;
+    ~GarbageBin()
+    {
+     empty_trash();
+    }
+    void empty_trash()
+    {
+    while(!this->empty())
+    {
+     delete this->front();
+     this->pop();
+    }
+    };
+};
 
 template <class DT>
 class ListMultiThreaded{

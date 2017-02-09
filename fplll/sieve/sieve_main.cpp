@@ -60,10 +60,11 @@ template <class ZT> int main_run_sieve(ZZ_mat<ZT> B, Z_NR<ZT> goal_norm, int alg
  * main function
  */
 
+
 template<class DT>
-void ListTester(ListMultiThreaded<DT> * const Z, GarbageBin<DT> * const gb, int id,bool verbose)
+void ListTester(ListMultiThreaded<DT> * const Z, GarbageBin<DT> * const gb, int id,int verbose)
 {
-for (int i=0; i <2000; ++i)
+for (int i=0; i <20000; ++i)
 {
     int count =0;
     int insertions=0;
@@ -75,29 +76,23 @@ for (int i=0; i <2000; ++i)
         if(( tmp * tmp + i + 33*id) % 39 == 11)
         {
         Z->unlink(it,*gb);
-        //cout << "Deleted";
+        if (verbose>=2) cout << "Deleted";
         ++deletions;
         }
         if(( tmp * tmp + i + 18*id) %57 ==13  )
         {
         Z->insert(it, 1000000*id + 100* i + ((tmp * tmp )%93) );
-        //cout << "Inserted";
+        if (verbose>=2) cout << "Inserted";
         ++insertions;
         }
     }
-    if (verbose)
+    if (verbose>=1)
     {
     cout << "Thread " << id <<", iteration " << i << "count: " <<count <<" deletes: "<<deletions << "inserts: "<< insertions<<endl;
     }
     MTListIterator<DT> it = Z->end();
     Z->insert(it, 1000000*id + 100*i + 1);
 }
-return;
-}
-
-template<class DT>
-void ListTester2(ListMultiThreaded<DT>* const X)
-{
 return;
 }
 
@@ -119,7 +114,7 @@ int main(int argc, char **argv)
     //LatticePoint<long> p (10);
     //printLatticePoint(p);
 
-    int num_threads=30;
+    int num_threads=4;
     ListMultiThreaded<int> Z;
     GarbageBin<int>* GarbageBins = new GarbageBin<int> [num_threads];
     std::vector <std::thread> threads;
@@ -127,23 +122,13 @@ int main(int argc, char **argv)
     cout<< "Starting threads." << endl;
     for(int i=0; i <num_threads; ++i)
     {
-    threads.push_back(std::thread(ListTester<int>, &Z, GarbageBins+i,i,false));
+    threads.push_back(std::thread(ListTester<int>, &Z, GarbageBins+i,i,0));
     }
 
     cout << "Waiting for them to finish" <<endl;
     for(auto &th: threads) th.join();
     cout << "Finished" << endl;
-    //Note: Garbage is only collected, not cleared. Destroying GarbageBins does not help.
 
-    //cleaning up: Note that the Bins contain pointers that own a ressource.
-    for(int i=0; i<num_threads;++i)
-    {
-    while(!GarbageBins[i].empty())
-    {
-     delete GarbageBins[i].front();
-     GarbageBins[i].pop();
-    }
-    }
     delete[] GarbageBins;
 #if 0
 #if 0
