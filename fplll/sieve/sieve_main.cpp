@@ -8,6 +8,7 @@
 #include "LatticePoint.h"
 #include "PointList.h"
 #include <thread>
+#include <chrono>
 
 using namespace fplll;
 
@@ -64,7 +65,7 @@ template <class ZT> int main_run_sieve(ZZ_mat<ZT> B, Z_NR<ZT> goal_norm, int alg
 template<class DT>
 void ListTester(ListMultiThreaded<DT> * const Z, GarbageBin<DT> * const gb, int id,int verbose)
 {
-for (int i=0; i <20000; ++i)
+for (int i=0; i <25000; ++i)
 {
     int count =0;
     int insertions=0;
@@ -96,6 +97,7 @@ for (int i=0; i <20000; ++i)
 return;
 }
 
+
 int main(int argc, char **argv)
 {
   //char *input_file_name = NULL;
@@ -111,24 +113,36 @@ int main(int argc, char **argv)
     //ListMTNode<int> Z;
 
     //LatticePoint<long int> p = LatticePoint<long int> (10, 2);
-    //LatticePoint<long> p (10);
-    //printLatticePoint(p);
+    LatticePoint<Z_NR <long> > p1 (10,3);
+    LatticePoint<Z_NR <long> > p2 (10,1);
+    Z_NR<long> res;
+    sc_product(res,p1,p2);
+    //Z_NR<long> X (0);
+    //p1.printLatticePoint();
+    //add(res,p1,p2);
+    cout << res << endl;
 
     int num_threads=4;
     ListMultiThreaded<int> Z;
     GarbageBin<int>* GarbageBins = new GarbageBin<int> [num_threads];
     std::vector <std::thread> threads;
     //ListTester<int>(&Z,GarbageBins[2],2);
+    auto start = std::chrono::high_resolution_clock::now();
     cout<< "Starting threads." << endl;
     for(int i=0; i <num_threads; ++i)
     {
-    threads.push_back(std::thread(ListTester<int>, &Z, GarbageBins+i,i,0));
+    std::thread tmp(ListTester<int>, &Z, GarbageBins+i,i,0);
+    tmp.join();
+        //threads.push_back(std::thread(ListTester<int>, &Z, GarbageBins+i,i,0));
+    //for(auto &th: threads) th.join();
     }
 
     cout << "Waiting for them to finish" <<endl;
-    for(auto &th: threads) th.join();
+    //for(auto &th: threads) th.join();
     cout << "Finished" << endl;
-
+    auto finish = std::chrono::high_resolution_clock::now();
+    auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(finish-start);
+    cout << " Time taken: " << microseconds.count() << endl;
     delete[] GarbageBins;
 #if 0
 #if 0

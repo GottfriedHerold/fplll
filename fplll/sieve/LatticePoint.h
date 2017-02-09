@@ -24,12 +24,12 @@
 **/
 
 template<class ZT>
-class LatticePoint : protected NumVect<ZT>
+class LatticePoint : public NumVect<ZT>
 {
     /* square L2 norm of the vector */
-        Z_NR<ZT> norm2;
+        ZT norm2;
 
-    using NV = NumVect<ZT>;
+   using NV = NumVect<ZT>;
 
 public:
     LatticePoint(){}
@@ -43,7 +43,7 @@ public:
         }
 
     // for debugging
-    LatticePoint(int n, long fillwith) : NumVect<ZT>(n),norm2(0)
+    LatticePoint(int n, long fillwith) : NumVect<ZT>(n),norm2()
     {
         this->data.resize(n);
         this->fill(fillwith);
@@ -64,24 +64,26 @@ public:
     }
 
     inline NV& getVector() {return this->data.get();}
-    inline Z_NR<ZT> getNorm() {return norm2;}
+    inline ZT getNorm() {return norm2;}
+
+    void printLatticePoint()
+{
+    //using NV = NumVect<ZT>;
+    cout << *this << " of norm: " << this->norm2 << endl;
+    //cout << this->getNorm() << endl;
+}
+
 
 };
 
-template <class ZT>
-void printLatticePoint (LatticePoint<ZT> &p)
-{
-    //using NV = NumVect<ZT>;
-    cout << p.getNorm() << endl;
-}
 
 
 //Simple dot_product
 template <class ZT>
-void dot_product (ZT &result, const LatticePoint<ZT> &p1, const LatticePoint<ZT> &p2)
+void sc_product (ZT &result, const LatticePoint<ZT> &p1, const LatticePoint<ZT> &p2)
 {
     //using NV = NumVect<ZT>;
-    dot_product(result, p1.data, p2.data);
+   dot_product(result, p1, p2);
 }
 
 #endif

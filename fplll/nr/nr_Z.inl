@@ -12,9 +12,9 @@ template<class F> class FP_NR;
 
 
 /**
- * Z_NR stores integers. This template provides a uniform interface 
+ * Z_NR stores integers. This template provides a uniform interface
  *  for doing integer computations with several underlying types
- *  (long, double and mpz_t). 
+ *  (long, double and mpz_t).
  */
 template<class Z>
 class Z_NR
@@ -44,13 +44,13 @@ public:
   inline const Z& get_data() const {return data;}
 
   /**
-   * Converts this object to a double. If it does not fit in 
+   * Converts this object to a double. If it does not fit in
    *  a double, the result is undefined.
    */
   inline double get_d() const;
 
   /**
-   * Converts this object to a long double. If it does not fit in 
+   * Converts this object to a long double. If it does not fit in
    * a long double, the result is undefined.
    */
 #ifdef FPLLL_WITH_LONG_DOUBLE
@@ -59,17 +59,17 @@ public:
 
   /**
    * Converts this object to a long. If it does not fit in a long,
-   * the result is undefined. 
+   * the result is undefined.
    */
   inline long get_si() const;
 
   /**
-   * Converts this object to a mpz. 
+   * Converts this object to a mpz.
    */
   inline void get_mpz(mpz_t r) const;
 
   /**
-   * Returns the smallest non-negative expo such that |value| < 2^expo. 
+   * Returns the smallest non-negative expo such that |value| < 2^expo.
    */
   inline long exponent() const;
 
@@ -77,36 +77,36 @@ public:
    * Computes f and expo such that 0.5 <= f < 1 and value ~= 2^expo * f.
    *   The rounding direction is undefined.
    *   This function is implemented only for native floating-point types
-   *   (double and long double), otherwise the behaviour is undefined. 
+   *   (double and long double), otherwise the behaviour is undefined.
    */
   template<class F> inline void get_f_exp(F& f, long& expo);
 
   /** set data */
 
   /**
-   * Sets the value to x. When FT=mpfr_t, x is rounded to the nearest 
-   * integer and if the fractional part of x is 0.5, the even integer 
+   * Sets the value to x. When FT=mpfr_t, x is rounded to the nearest
+   * integer and if the fractional part of x is 0.5, the even integer
    * is chosen when. Otherwise, the rounding direction is undefined.
    */
   template<class F> inline void set_f(const FP_NR<F>& f);
 
   /**
-   * Sets the value to s, signed integer in basis 10. 
+   * Sets the value to s, signed integer in basis 10.
    */
   inline void set_str(const char* s);
 
   /** comparison */
 
   /**
-   * 3-way comparison. Returns a positive number if *this > m, a 
-   * negative number if *this &lt; m or zero is *this == m. 
+   * 3-way comparison. Returns a positive number if *this > m, a
+   * negative number if *this &lt; m or zero is *this == m.
    */
   inline int cmp(const Z_NR<Z>& m) const;
 
   /**
-   * Sign. Returns a positive number, a negative number or zero 
-   * if the value of this object is respectively positive, 
-   * negative or null. 
+   * Sign. Returns a positive number, a negative number or zero
+   * if the value of this object is respectively positive,
+   * negative or null.
    */
   inline int sgn() const;
 
@@ -147,28 +147,28 @@ public:
   /** arithmetic */
 
   /**
-   * value := a + b. 
+   * value := a + b.
    */
   inline void add(const Z_NR<Z>& a, const Z_NR<Z>& b);
   inline void add_ui(const Z_NR<Z>& a, unsigned int b);
   /**
-   * value := a - b. 
+   * value := a - b.
    */
   inline void sub(const Z_NR<Z>& a, const Z_NR<Z>& b);
   inline void sub_ui(const Z_NR<Z>& a, unsigned int b);
 
   /**
-   * value := -a. 
+   * value := -a.
    */
   inline void neg(const Z_NR<Z>& a);
 
   /**
-   * value := a * b. 
+   * value := a * b.
    */
   inline void mul(const Z_NR<Z>& a, const Z_NR<Z>& b);
 
   /**
-   * value := a * b. 
+   * value := a * b.
    */
   inline void mul_si(const Z_NR<Z>& a, long b);
   inline void mul_ui(const Z_NR<Z>& a, unsigned long b);
@@ -186,20 +186,20 @@ public:
   inline void div_2si(const Z_NR<Z>& a, long b);
 
   /**
-   * value := value + a * b. 
+   * value := value + a * b.
    */
   inline void addmul(const Z_NR<Z>& a, const Z_NR<Z>& b);
   inline void addmul_ui(const Z_NR<Z>& a, unsigned long b);
   inline void addmul_si(const Z_NR<Z>& a, long b);
 
   /**
-   * value := value - a * b. 
+   * value := value - a * b.
    */
   inline void submul(const Z_NR<Z>& a, const Z_NR<Z>& b);
   inline void submul_ui(const Z_NR<Z>& a, unsigned long b);
 
   /**
-   * value := absolute value of a. 
+   * value := absolute value of a.
    */
   inline void abs(const Z_NR<Z>& a);
 
@@ -209,19 +209,19 @@ public:
   inline void swap(Z_NR<Z>& a);
 
   /**
-   * Generates random integer between 0 and 2^bits-1. 
+   * Generates random integer between 0 and 2^bits-1.
    */
   inline void randb(int bits);
   inline void randb_si(int bits);
 
   /**
-   * Generates random integer between 0 and max - 1  
+   * Generates random integer between 0 and max - 1
    */
   inline void randm(const Z_NR<Z>& max);
   inline void randm_si(const Z_NR<Z>& max);
 
-  /**	 
-   * Generates smallest prime number above nbr 
+  /**
+   * Generates smallest prime number above nbr
   */
   inline void nextprime(const Z_NR<Z>& nbr);
 
@@ -290,9 +290,9 @@ private:
 /** overloading stream operators */
 
 /**
- * Prints x on stream os. 
+ * Prints x on stream os.
  */
-template<class T> 
+template<class T>
 ostream& operator<<(ostream& os, const Z_NR<T>& x);
 
 /**
