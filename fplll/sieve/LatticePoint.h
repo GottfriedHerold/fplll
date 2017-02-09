@@ -76,6 +76,15 @@ public:
 
 };
 
+template<class ZT>
+class IsLongerVector_class //should be moved to LatticePoint.h. Make sure getNorm is declared const.
+{
+    public:
+    bool operator() (LatticePoint<ZT> const &A, LatticePoint<ZT> const & B)
+    {
+     return (A.getNorm() > B.getNorm() );
+    }
+};
 
 
 //Simple dot_product
