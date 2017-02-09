@@ -66,7 +66,7 @@ template <class ZT> int main_run_sieve(ZZ_mat<ZT> B, Z_NR<ZT> goal_norm, int alg
 template<class DT>
 void ListTester(ListMultiThreaded<DT> * const Z, GarbageBin<DT> * const gb, int id,int verbose)
 {
-for (int i=0; i <25000; ++i)
+for (int i=0; i <25; ++i)
 {
     int count =0;
     int insertions=0;
@@ -120,7 +120,10 @@ int main(int argc, char **argv)
     sc_product(res,p1,p2);
     //Z_NR<long> X (0);
     //p1.printLatticePoint();
-    //add(res,p1,p2);
+    LatticePoint<Z_NR <long> > sum = p1+p2;
+    sum.printLatticePoint();
+    LatticePoint<Z_NR <long> > sub = sum - p2;
+    sub.printLatticePoint();
     cout << res << endl;
 
     int num_threads=4;

@@ -47,6 +47,7 @@ public:
     {
         this->data.resize(n);
         this->fill(fillwith);
+	
     }
 
     LatticePoint& operator=(LatticePoint that)
@@ -65,6 +66,8 @@ public:
 
     inline NV& getVector() {return this->data.get();}
     inline ZT getNorm() {return norm2;}
+
+    inline void setNorm2 (ZT norm) {this->norm2 = norm;}
 
     void printLatticePoint()
 {
@@ -85,6 +88,34 @@ class IsLongerVector_class //should be moved to LatticePoint.h. Make sure getNor
      return (A.getNorm() > B.getNorm() );
     }
 };
+
+template <class ZT>
+LatticePoint<ZT> operator+ (LatticePoint<ZT> const &A, LatticePoint<ZT> const &B)
+{	
+
+	LatticePoint<ZT> C(A);
+	//length-check is done in by add in numvect
+	C.add(B, A.size());
+	ZT norm;
+	sc_product (norm, C, C);
+	C.setNorm2(norm);
+	return C;
+
+}
+
+//unary minus
+template <class ZT>
+LatticePoint<ZT> operator- (LatticePoint<ZT> const &A, LatticePoint<ZT> const &B)
+{	
+
+	LatticePoint<ZT> C(A);
+	C.sub(B, A.size());
+	ZT norm;
+	sc_product (norm, C, C);
+	C.setNorm2(norm);
+	return C;
+
+}
 
 
 //Simple dot_product
