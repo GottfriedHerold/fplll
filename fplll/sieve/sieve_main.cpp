@@ -120,12 +120,28 @@ int main(int argc, char **argv)
     sc_product(res,p1,p2);
     //Z_NR<long> X (0);
     //p1.printLatticePoint();
-    LatticePoint<Z_NR <long> > sum = p1+p2;
-    sum.printLatticePoint();
-    LatticePoint<Z_NR <long> > sub = sum - p2;
-    sub.printLatticePoint();
-    cout << res << endl;
-
+//    LatticePoint<Z_NR <long> > sum = p1+p2;
+//    sum.printLatticePoint();
+//    LatticePoint<Z_NR <long> > sub = sum - p2;
+//    sub.printLatticePoint();
+//    cout << res << endl;
+    
+    // ZZ_mat is an integer row-oriented matrix. See /nr/matrix.h
+    ZZ_mat<mpz_t> B;
+    int dim = 10;
+    B.resize(dim, dim);
+    
+    //generates a lower-triangular matrix B; the argument determines the bit-size of entries
+    B.gen_trg(1.1);
+    
+    
+    // KleinSampler<ZT, F> is templated by two classes; returns NumVect<Z_NR<ZT> of dim = B.NumCols()
+    KleinSampler<mpz_t, FP_NR<double>> *Sampler = new KleinSampler<mpz_t, FP_NR<double>>(B, 0, 0);
+    NumVect<Z_NR<mpz_t> > sample(dim);
+    sample = Sampler->sample();
+    cout << sample << endl;
+    
+    
     int num_threads=4;
     ListMultiThreaded<int> Z;
     GarbageBin<int>* GarbageBins = new GarbageBin<int> [num_threads];
