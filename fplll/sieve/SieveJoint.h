@@ -53,12 +53,35 @@ using SieveMT = Sieve<ZT,true>;
 template<class ZT>
 class TerminationConditions
 {
-    int NumberOfCollisions;
-    bool CheckCollisions;
-    ZT TargetLength;
-    bool CheckLength;
-    int ListSizeLimit;
-    bool CheckListSize;
+    public:
+    TerminationConditions() = default;
+    TerminationConditions(TerminationConditions const &old)=default;
+    TerminationConditions(TerminationConditions && old)=default;
+    TerminationConditions & operator=(TerminationConditions const &old)=default;
+    TerminationConditions & operator=(TerminationConditions && old)=default;
+    ~TerminationConditions()= default;
+    enum class TerminationType //different basic types of termination check
+      {
+      CheckCollisions=1,
+      CheckLength=2,
+      CheckListSize=3
+      };
+    bool do_we_check_collisions() const {return do_we_check_collisions_;};
+    bool do_we_check_lenght() const {return do_we_check_length_;};
+    bool do_we_check_list_size() const {return do_we_check_list_size_;};
+    unsigned long int get_allowed_collisions() const {return allowed_collisions_;};
+    void set_allowed_collisions(unsigned long const &colls) {allowed_collisions_=colls;do_we_check_collisions_=true;return;};
+    unsigned long int get_allowed_list_size() const {return allowed_list_size_;};
+    void set_allowed_list_size(unsigned long const &maxsize){allowed_list_size_=maxsize;do_we_check_list_size_=true;return;};
+    ZT get_target_length() const {return target_length_;};
+    void set_target_length(ZT const &new_target_length) {target_length_=new_target_length;do_we_check_length_=true;return;};
+    private:
+    bool do_we_check_collisions_;
+    bool do_we_check_length_;
+    bool do_we_check_list_size_;
+    unsigned long int allowed_collisions_;
+    unsigned long int allowed_list_size_;
+    ZT target_length_;
 };
 #endif
 
@@ -82,9 +105,33 @@ Sieve & operator=(Sieve &&old) = default; //movable, but not copyable.
 //TODO: dump_status_to_stream
 //TODO: read_status_from_stream -> Make constructor
 
+#ifdef GAUSS_SIEVE_SINGLE_THREADED
+static bool const class_multithreaded = false;
+#else
+static bool const class_multithreaded = true;
+#endif //class_multithreaded is for introspection, is_multithreaded is what the caller wants (may differ if we dump and re-read with different params)
+
 void run_2_sieve(); //actually runs the Gauss Sieve.
 LPType get_SVP(); //obtains Shortest vector and it's length. If sieve has not yet run, start it.
 void run(); //runs the sieve specified by the parameters.
+void print_status(int verb = -1) const; //prints status to cout. verb override the verbosity unless set to -1.
+
+//getter / setter functions
+
+int get_verbosity() const {return verbosity;};
+void set_verbosity(int new_verbosity) {verbosity=new_verbosity;return;};
+unsigned int get_lattice_rank() const {return lattice_rank;};
+unsigned int get_ambient_dimension() const {return ambient_dimension;};
+unsigned int get_k() const {return sieve_k;};
+void set_k(unsigned int new_k) {sieve_k=new_k;return;};
+bool is_multithreaded_wanted() const {return multi_threaded_wanted;}; //Note: No setter
+LPType get_shortest_vector_found() const {return shortest_vector_found;};
+ZT get_best_length2() const {return get_shortest_vector_found().norm2; }
+bool check_whether_sieve_is_running() const {return sieve_is_running;};
+unsigned long int get_number_of_collisions() const {return number_of_collisions;};
+unsigned long int get_number_of_points_sampled() const {return number_of_points_sampled;};
+unsigned long int get_number_of_points_constructed() const {return number_of_points_constructed;};
+
 
 private:
 
@@ -92,21 +139,40 @@ private:
 //It should be possible to dump the status to harddisk and resume from dump using that information.
 //It should also be possible to suspend the run of the sieve, change (certain) parameters (like k!) and resume.
 
+//main data that is changing.
+
 MainListType main_list;
 MainQueueType main_queue;
+
+//information about lattice and algorithm we are using
+
 LatticeBasisType original_basis;
-int lattice_rank;
-int ambient_dimension; //consider merging theses into a latticespec class.
-bool multi_threaded;
-int sieve_k; //parameter k of the sieve currently running.
-int verbosity;
-
-TerminationConditions<ZT> term_cond;
-bool check_if_done();
-bool sieve_is_running;
-LPType shortest_vector_found;
-
+unsigned int lattice_rank;
+unsigned int ambient_dimension; //consider merging theses into a latticespec class.
+bool multi_threaded_wanted;
+//unsigned int num_threads_wanted;
+unsigned int sieve_k; //parameter k of the sieve currently running.
 SamplerType sampler;
+int verbosity;
+public:
+TerminationConditions<ZT> term_cond;
+private:
+//results
+
+bool check_if_done(); //Use termination Condition to check whether we are done, based on statistics so far.
+bool sieve_is_running;
+LPType shortest_vector_found; //including its length
+
+//statistics
+
+unsigned long int number_of_collisions;
+unsigned long int number_of_points_sampled;
+unsigned long int number_of_points_constructed; //sampling  + succesful pairs
+//length of shortest vector contained in shortest_vector_found
+
+//TODO: total time spent?
+
+
 };
 
 #define SIEVE_JOINT_H

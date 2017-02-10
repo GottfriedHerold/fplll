@@ -24,10 +24,12 @@
 template<class ZT>
 class LatticePoint : public NumVect<ZT>
 {
+       using NV = NumVect<ZT>;
+
     /* square L2 norm of the vector */
+public:
         ZT norm2;
 
-   using NV = NumVect<ZT>;
 
 public:
     LatticePoint(){}
@@ -63,7 +65,7 @@ public:
     }
 
     inline NV& getVector() const {return this->data.get();}
-    inline ZT getNorm() const {return norm2;}
+    inline ZT get_norm2() const {return norm2;}
 
     inline void setNorm2 (ZT norm) {this->norm2 = norm;}
 
@@ -83,7 +85,7 @@ template<class ZT> class IsLongerVector_class //should be moved to LatticePoint.
 {
     public: bool operator() (LatticePoint<ZT> const &A, LatticePoint<ZT> const & B)
     {
-     return (A.getNorm() > B.getNorm() );
+     return (A.get_norm2() > B.get_norm2() );
     }
 };
 
