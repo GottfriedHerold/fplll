@@ -91,17 +91,24 @@ class Sieve<ZT, GAUSS_SIEVE_IS_MULTI_THREADED >
 using LPType           = LatticePoint<ZT>;
 using MainQueueType    = std::priority_queue< LPType, std::vector<LPType>, IsLongerVector_class<ZT> >;
 using MainListType     = std::list<LPType>;
-using LatticeBasisType = std::list<LPType>;
-using SamplerType      = void*; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
+using LatticeBasisType = ZZ_mat<ZT>;
+using SamplerType      = KleinSampler<ZT, FP_NR<double>>* ; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
 public:
 
-Sieve() = default;
+//Sieve() = default;
 Sieve(Sieve const &old ) = delete;
 Sieve(Sieve &&old) = default;
 Sieve & operator=(Sieve const & old)=delete;
 Sieve & operator=(Sieve &&old) = default; //movable, but not copyable.
 ~Sieve()=default;
-//Sieve( ) //TODO : Construct from LatticeBasis and Term. Conditions.
+Sieve(LatticeBasisType B, TerminationConditions<ZT> termcond, int verbosity_sampler, int seed_sampler, int verbosity_sieve)
+    {
+        original_basis = B;
+        term_cond = termcond;
+        sampler = KleinSampler<ZT, FP_NR<double>>(B, verbosity_sampler, seed_sampler);
+        verbosity = verbosity_sieve;
+
+    }//TODO : Construct from LatticeBasis and Term. Conditions.
 //TODO: dump_status_to_stream
 //TODO: read_status_from_stream -> Make constructor
 
@@ -154,8 +161,10 @@ bool multi_threaded_wanted;
 unsigned int sieve_k; //parameter k of the sieve currently running.
 SamplerType sampler;
 int verbosity;
+    
 public:
 TerminationConditions<ZT> term_cond;
+    
 private:
 //results
 
