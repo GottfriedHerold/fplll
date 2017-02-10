@@ -47,7 +47,6 @@ public:
     {
         this->data.resize(n);
         this->fill(fillwith);
-
     }
 
     LatticePoint& operator=(LatticePoint that)
@@ -72,7 +71,7 @@ public:
     void printLatticePoint()
 {
     //using NV = NumVect<ZT>;
-    cout << *this << " of norm: " << this->norm2 << endl;
+    cout << * (static_cast<NumVect<ZT>*>(this)) << " of norm: " << this->norm2 << endl;
     //cout << this->getNorm() << endl;
 }
 
