@@ -1,10 +1,8 @@
 //
 //  LatticePoint.h
 //
-//
-
-#ifndef _lattice_vector_class_h
-#define _lattice_vector_class_h
+#ifndef LATTICE_VECTOR_CLASS_H
+#define LATTICE_VECTOR_CLASS_H
 
 #include "sieve_common.h"
 
@@ -63,8 +61,8 @@ public:
         std::swap(norm2, Point.norm2);
     }
 
-    inline NV& getVector() {return this->data.get();}
-    inline ZT getNorm() {return norm2;}
+    inline NV& getVector() const {return this->data.get();}
+    inline ZT getNorm() const {return norm2;}
 
     void printLatticePoint()
 {
