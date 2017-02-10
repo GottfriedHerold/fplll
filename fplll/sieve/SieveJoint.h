@@ -73,7 +73,7 @@ class TerminationConditions
     void set_allowed_collisions(unsigned long const &colls) {allowed_collisions_=colls;do_we_check_collisions_=true;return;};
     unsigned long int get_allowed_list_size() const {return allowed_list_size_;};
     void set_allowed_list_size(unsigned long const &maxsize){allowed_list_size_=maxsize;do_we_check_list_size_=true;return;};
-    ZT get_target_length() const {return target_length_;};
+    //ZT get_target_length() const {return target_length_;};  //in case ZT = mpz, it won't work
     void set_target_length(ZT const &new_target_length) {target_length_=new_target_length;do_we_check_length_=true;return;};
     private:
     bool do_we_check_collisions_;
@@ -95,20 +95,20 @@ using LatticeBasisType = ZZ_mat<ZT>;
 using SamplerType      = KleinSampler<ZT, FP_NR<double>>* ; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
 public:
 
-//Sieve() = default;
+Sieve() = default;
 Sieve(Sieve const &old ) = delete;
 Sieve(Sieve &&old) = default;
 Sieve & operator=(Sieve const & old)=delete;
 Sieve & operator=(Sieve &&old) = default; //movable, but not copyable.
 ~Sieve()=default;
-Sieve(LatticeBasisType B, TerminationConditions<ZT> termcond, int verbosity_sampler, int seed_sampler, int verbosity_sieve)
-    {
-        original_basis = B;
-        term_cond = termcond;
-        sampler = KleinSampler<ZT, FP_NR<double>>(B, verbosity_sampler, seed_sampler);
-        verbosity = verbosity_sieve;
+//Sieve(LatticeBasisType B, TerminationConditions<ZT> termcond, int verbosity_sampler, int seed_sampler, int verbosity_sieve)
+//    {
+//        original_basis = B;
+//        term_cond = termcond;
+//        sampler = KleinSampler<ZT, FP_NR<double>>(B, verbosity_sampler, seed_sampler);
+//        verbosity = verbosity_sieve;
 
-    }//TODO : Construct from LatticeBasis and Term. Conditions.
+//    }//TODO : Construct from LatticeBasis and Term. Conditions.
 //TODO: dump_status_to_stream
 //TODO: read_status_from_stream -> Make constructor
 
@@ -118,7 +118,10 @@ static bool const class_multithreaded = false;
 static bool const class_multithreaded = true;
 #endif //class_multithreaded is for introspection, is_multithreaded is what the caller wants (may differ if we dump and re-read with different params)
 
-void run_2_sieve(); //actually runs the Gauss Sieve.
+void run_2_sieve()
+{
+
+}; //actually runs the Gauss Sieve.
 LPType get_SVP(); //obtains Shortest vector and it's length. If sieve has not yet run, start it.
 void run(); //runs the sieve specified by the parameters.
 void print_status(int verb = -1) const; //prints status to cout. verb override the verbosity unless set to -1.
@@ -133,7 +136,7 @@ unsigned int get_k() const {return sieve_k;};
 void set_k(unsigned int new_k) {sieve_k=new_k;return;};
 bool is_multithreaded_wanted() const {return multi_threaded_wanted;}; //Note: No setter
 LPType get_shortest_vector_found() const {return shortest_vector_found;};
-ZT get_best_length2() const {return get_shortest_vector_found().norm2; }
+//ZT get_best_length2() const {return get_shortest_vector_found().norm2; } //in case ZT = mpz, it won't work
 bool check_whether_sieve_is_running() const {return sieve_is_running;};
 unsigned long int get_number_of_collisions() const {return number_of_collisions;};
 unsigned long int get_number_of_points_sampled() const {return number_of_points_sampled;};

@@ -64,7 +64,8 @@ public:
     }
 
     inline NV& getVector() const {return this->data.get();}
-    inline ZT get_norm2() const {return norm2;}
+    inline ZT get_norm2() const {return norm2;} //in case ZT = mpz, it won't work
+    inline void get_norm2 (ZT norm_to_return) {norm_to_return = norm2;}
 
     inline void setNorm2 (ZT norm) {this->norm2 = norm;}
 

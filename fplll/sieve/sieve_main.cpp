@@ -98,6 +98,17 @@ for (int i=0; i <25; ++i)
 return;
 }
 
+template<class ZT> void call_sieve (ZZ_mat<ZT> B, int sieve_verbosity)
+{
+
+	TerminationConditions<ZT> term_cond();
+	//Sieve<ZT, false> Test_2Sieve (B, term_cond, 0, 0, sieve_verbosity);
+	//Sieve<ZT, false> Test_2Sieve;
+	//Test_2Sieve.run_2_sieve();
+	
+	
+} 
+
 
 int main(int argc, char **argv)
 {
@@ -140,6 +151,8 @@ int main(int argc, char **argv)
     NumVect<Z_NR<mpz_t> > sample(dim);
     sample = Sampler->sample();
     cout << sample << endl;
+
+    call_sieve(B, 1);
     
     
     int num_threads=4;
