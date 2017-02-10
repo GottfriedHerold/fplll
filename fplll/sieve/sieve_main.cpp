@@ -9,7 +9,7 @@
 #include "PointList.h"
 #include <thread>
 #include <chrono>
-#include "SieveST.h"
+#include "SieveGauss.h"
 
 using namespace fplll;
 

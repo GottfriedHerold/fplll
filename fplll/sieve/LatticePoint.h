@@ -45,7 +45,7 @@ public:
     {
         this->data.resize(n);
         this->fill(fillwith);
-	
+
     }
 
     LatticePoint& operator=(LatticePoint that)
@@ -77,11 +77,11 @@ public:
 
 };
 
-template<class ZT>
-class IsLongerVector_class //should be moved to LatticePoint.h. Make sure getNorm is declared const.
+
+
+template<class ZT> class IsLongerVector_class //should be moved to LatticePoint.h. Make sure getNorm is declared const.
 {
-    public:
-    bool operator() (LatticePoint<ZT> const &A, LatticePoint<ZT> const & B)
+    public: bool operator() (LatticePoint<ZT> const &A, LatticePoint<ZT> const & B)
     {
      return (A.getNorm() > B.getNorm() );
     }
@@ -89,7 +89,7 @@ class IsLongerVector_class //should be moved to LatticePoint.h. Make sure getNor
 
 template <class ZT>
 LatticePoint<ZT> operator+ (LatticePoint<ZT> const &A, LatticePoint<ZT> const &B)
-{	
+{
 
 	LatticePoint<ZT> C(A);
 	//length-check is done in by add in numvect
@@ -104,7 +104,7 @@ LatticePoint<ZT> operator+ (LatticePoint<ZT> const &A, LatticePoint<ZT> const &B
 //unary minus
 template <class ZT>
 LatticePoint<ZT> operator- (LatticePoint<ZT> const &A, LatticePoint<ZT> const &B)
-{	
+{
 
 	LatticePoint<ZT> C(A);
 	C.sub(B, A.size());

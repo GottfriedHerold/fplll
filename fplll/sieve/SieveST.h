@@ -1,0 +1,18 @@
+#ifndef SIEVE_GAUSS_SINGLE_THREADED_H
+#define SIEVE_GAUSS_SINGLE_THREADED_H
+
+#define SIEVE_GAUSS_DEFAULT_THREADED false
+
+#ifdef GAUSS_SIEVE_MULTI_THREADED
+#undef GAUSS_SIEVE_MULTI_THREADED
+#endif
+
+#define GAUSS_SIEVE_SINGLE_THREADED
+#define GAUSS_SIEVE_IS_MULTI_THREADED false
+#include "SieveJoint.h"
+#include "SieveJoint.cpp"
+#include "SieveST.cpp"
+#undef  GAUSS_SIEVE_SINGLE_THREADED
+#undef  GAUSS_SIEVE_IS_MULTI_THREADED
+
+#endif
