@@ -31,6 +31,12 @@
 //actual code starts here.
 //Be aware that this code may be read twice.
 
+#include "SieveJoint.h"
+
+void run_2_sieve()
+{
+    cout << "Currently running run_2_sieve\n";
+}; //actually runs the Gauss Sieve.
 
 #define SIEVE_JOINT_CPP
 #endif
