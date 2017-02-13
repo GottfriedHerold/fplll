@@ -101,13 +101,13 @@ return;
 template<class ZT> void call_sieve (ZZ_mat<ZT> B, int sieve_verbosity)
 {
 
-	TerminationConditions<ZT> term_cond();
-	//Sieve<ZT, false> Test_2Sieve (B, term_cond, 0, 0, sieve_verbosity);
+	TerminationConditions< Z_NR<ZT> > term_cond;
+	Sieve<Z_NR< ZT > , false> Test_2Sieve (B, term_cond, 0, 0, sieve_verbosity);
 	//Sieve<ZT, false> Test_2Sieve;
-	//Test_2Sieve.run_2_sieve();
-	
-	
-} 
+	Test_2Sieve.run_2_sieve();
+
+
+}
 
 
 int main(int argc, char **argv)
@@ -136,16 +136,15 @@ int main(int argc, char **argv)
 //    LatticePoint<Z_NR <long> > sub = sum - p2;
 //    sub.printLatticePoint();
 //    cout << res << endl;
-    
+
     // ZZ_mat is an integer row-oriented matrix. See /nr/matrix.h
     ZZ_mat<mpz_t> B;
     int dim = 10;
     B.resize(dim, dim);
-    
-    //generates a lower-triangular matrix B; the argument determines the bit-size of entries
+
+    //generates a lower-triangular matrix B; the argument determines (in a complicated way) the bit-size of entries
     B.gen_trg(1.1);
-    
-    
+
     // KleinSampler<ZT, F> is templated by two classes; returns NumVect<Z_NR<ZT> of dim = B.NumCols()
     KleinSampler<mpz_t, FP_NR<double>> *Sampler = new KleinSampler<mpz_t, FP_NR<double>>(B, 0, 0);
     NumVect<Z_NR<mpz_t> > sample(dim);
@@ -153,8 +152,8 @@ int main(int argc, char **argv)
     cout << sample << endl;
 
     call_sieve(B, 1);
-    
-    
+
+
     int num_threads=4;
     ListMultiThreaded<int> Z;
     GarbageBin<int>* GarbageBins = new GarbageBin<int> [num_threads];

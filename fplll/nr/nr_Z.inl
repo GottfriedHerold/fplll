@@ -24,6 +24,7 @@ class Z_NR
 
 public:
 
+  using underlying_data_type = Z;
   /**
    * Constructors.
    */

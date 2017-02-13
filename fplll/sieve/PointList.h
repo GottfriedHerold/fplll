@@ -233,7 +233,7 @@ Node* preced=nextgood->prev_node;
 newnode->next_node=nextgood;
 newnode->prev_node=preced;
 nextgood->prev_node=newnode;
-//until here, no other thread can observe our writes.
+//until here, no other thread can observe our writes, since we did not publish the pointer.
 preced->next_node.store(newnode,memory_order_release);
 //this one can be observed (even prior to releasing the lock), and we have to make sure that other non-mutex-protected threads that see this write also see the (non-atomic) writes to newnode.
 mutex_currently_writing.unlock();
