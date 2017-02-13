@@ -31,12 +31,12 @@
 //actual code starts here.
 //Be aware that this code may be read twice.
 
-#include "SieveJoint.h"
 
-void run_2_sieve()
+template<class ET>
+void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::run_2_sieve()
 {
     cout << "Currently running run_2_sieve\n";
-}; //actually runs the Gauss Sieve.
+};
 
 #define SIEVE_JOINT_CPP
 #endif

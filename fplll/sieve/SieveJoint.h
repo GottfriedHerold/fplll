@@ -133,7 +133,7 @@ static bool const class_multithreaded = false;
 static bool const class_multithreaded = true;
 #endif //class_multithreaded is for introspection, is_multithreaded is what the caller wants (may differ if we dump and re-read with different params)
 
-//void run_2_sieve(){}; //actually runs the Gauss Sieve.
+void run_2_sieve(); //actually runs the Gauss Sieve.
 LPType get_SVP(); //obtains Shortest vector and it's length. If sieve has not yet run, start it.
 void run(); //runs the sieve specified by the parameters.
 void print_status(int verb = -1, std::ostream &out = cout) const;
@@ -216,7 +216,6 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
 main_list(),
 main_queue(),
 original_basis(B),
-//lattice_rank(),
 lattice_rank(B.get_rows()),
 ambient_dimension(B.get_columns()), //Note : this means that rows of B form the basis.
 multi_threaded_wanted(GAUSS_SIEVE_IS_MULTI_THREADED),
