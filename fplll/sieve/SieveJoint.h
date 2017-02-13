@@ -112,14 +112,6 @@ Sieve & operator=(Sieve const & old)=delete;
 Sieve & operator=(Sieve &&old) = default; //movable, but not copyable.
 
 Sieve(LatticeBasisType B, unsigned int k=2, TerminationConditions<ET> termcond = {}, unsigned int verbosity_=1, int seed_sampler = 0);
-Sieve(LatticeBasisType B, TerminationConditions<ET> termcond, int verbosity_sampler, int seed_sampler, int verbosity_sieve)
-    {
-        original_basis = B;
-        term_cond = termcond;
-        sampler = new KleinSampler<typename ET::underlying_data_type , FP_NR<double>>(B, verbosity_sampler, seed_sampler);
-        verbosity = verbosity_sieve;
-
-    }//TODO : Construct from LatticeBasis and Term. Conditions.
 //TODO: dump_status_to_stream
 //TODO: read_status_from_stream -> Make constructor
 
@@ -217,7 +209,7 @@ main_list(),
 main_queue(),
 original_basis(B),
 lattice_rank(B.get_rows()),
-ambient_dimension(B.get_columns()), //Note : this means that rows of B form the basis.
+ambient_dimension(B.get_cols()), //Note : this means that rows of B form the basis.
 multi_threaded_wanted(GAUSS_SIEVE_IS_MULTI_THREADED),
 sieve_k(k),
 sampler(nullptr),
