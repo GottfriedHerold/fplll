@@ -39,18 +39,18 @@ template<class T>
 class IsLongerVector_class;
 template<class T>
 class TerminationConditions;
-template<class ZT, bool MultiThreaded>
+template<class ET, bool MultiThreaded>
 class Sieve;
 
 #ifndef SIEVE_JOINT_H
 //The following should be done only once (even if we include this header twice)
-template<class ZT>
-using SieveST = Sieve<ZT,false>;
+template<class ET>
+using SieveST = Sieve<ET,false>;
 
-template<class ZT>
-using SieveMT = Sieve<ZT,true>;
+template<class ET>
+using SieveMT = Sieve<ET,true>;
 
-template<class ZT>
+template<class ET>
 class TerminationConditions
 {
     public:
@@ -73,29 +73,29 @@ class TerminationConditions
     void set_allowed_collisions(unsigned long const &colls) {allowed_collisions_=colls;do_we_check_collisions_=true;return;};
     unsigned long int get_allowed_list_size() const {return allowed_list_size_;};
     void set_allowed_list_size(unsigned long const &maxsize){allowed_list_size_=maxsize;do_we_check_list_size_=true;return;};
-    ZT get_target_length() const {return target_length_;};  //in case ZT = mpz, it won't work
-    void set_target_length(ZT const &new_target_length) {target_length_=new_target_length;do_we_check_length_=true;return;};
+    ET get_target_length() const {return target_length_;};  //in case ET = mpz, it won't work
+    void set_target_length(ET const &new_target_length) {target_length_=new_target_length;do_we_check_length_=true;return;};
     private:
     bool do_we_check_collisions_;
     bool do_we_check_length_;
     bool do_we_check_list_size_;
     unsigned long int allowed_collisions_;
     unsigned long int allowed_list_size_;
-    ZT target_length_;
+    ET target_length_;
 };
 #endif
 //The following may be included once or twice (with different values for GAUSS_SIEVE_IS_MULTI_THREADED)
 
 #include <type_traits>
 
-template<class ZT> //ZT : underlying entries of the vectors. Should be a Z_NR<foo> - type. Consider making argument template itself.
-class Sieve<ZT, GAUSS_SIEVE_IS_MULTI_THREADED >
+template<class ET> //ET : underlying entries of the vectors. Should be a Z_NR<foo> - type. Consider making argument template itself.
+class Sieve<ET, GAUSS_SIEVE_IS_MULTI_THREADED >
 {
-using LPType           = LatticePoint<ZT>;
-using MainQueueType    = std::priority_queue< LPType, std::vector<LPType>, IsLongerVector_class<ZT> >;
+using LPType           = LatticePoint<ET>;
+using MainQueueType    = std::priority_queue< LPType, std::vector<LPType>, IsLongerVector_class<ET> >;
 using MainListType     = std::list<LPType>;
-using LatticeBasisType = ZZ_mat<typename ZT::underlying_data_type>;
-using SamplerType      = KleinSampler<typename ZT::underlying_data_type, FP_NR<double>> *; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
+using LatticeBasisType = ZZ_mat<typename ET::underlying_data_type>;
+using SamplerType      = KleinSampler<typename ET::underlying_data_type, FP_NR<double>> *; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
 public:
 
 Sieve() = default;
@@ -104,11 +104,11 @@ Sieve(Sieve &&old) = default;
 Sieve & operator=(Sieve const & old)=delete;
 Sieve & operator=(Sieve &&old) = default; //movable, but not copyable.
 ~Sieve() {delete sampler;};
-Sieve(LatticeBasisType B, TerminationConditions<ZT> termcond, int verbosity_sampler, int seed_sampler, int verbosity_sieve)
+Sieve(LatticeBasisType B, TerminationConditions<ET> termcond, int verbosity_sampler, int seed_sampler, int verbosity_sieve)
     {
         original_basis = B;
         term_cond = termcond;
-        sampler = new KleinSampler<typename ZT::underlying_data_type , FP_NR<double>>(B, verbosity_sampler, seed_sampler);
+        sampler = new KleinSampler<typename ET::underlying_data_type , FP_NR<double>>(B, verbosity_sampler, seed_sampler);
         verbosity = verbosity_sieve;
 
     }//TODO : Construct from LatticeBasis and Term. Conditions.
@@ -139,7 +139,7 @@ unsigned int get_k() const {return sieve_k;};
 void set_k(unsigned int new_k) {sieve_k=new_k;return;};
 bool is_multithreaded_wanted() const {return multi_threaded_wanted;}; //Note: No setter
 LPType get_shortest_vector_found() const {return shortest_vector_found;};
-ZT get_best_length2() const {return get_shortest_vector_found().norm2; } //in case ZT = mpz, it won't work -- ZT is supposed to be copy-constructible, so Z_NR<mpz_t> should work.
+ET get_best_length2() const {return get_shortest_vector_found().norm2; } //in case ET = mpz, it won't work -- ET is supposed to be copy-constructible, so Z_NR<mpz_t> should work.
 bool check_whether_sieve_is_running() const {return sieve_is_running;};
 unsigned long int get_number_of_collisions() const {return number_of_collisions;};
 unsigned long int get_number_of_points_sampled() const {return number_of_points_sampled;};
@@ -169,7 +169,7 @@ SamplerType sampler;
 int verbosity;
 
 public:
-TerminationConditions<ZT> term_cond;
+TerminationConditions<ET> term_cond;
 
 private:
 //results

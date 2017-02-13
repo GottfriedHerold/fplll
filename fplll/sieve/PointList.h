@@ -21,8 +21,8 @@
 //The structure of the algorithm allows for relatively simple garbage collection.
 
 
-template <class ZT>
-using PointListSingleThreaded = std::forward_list<LatticePoint <ZT> >; //list or forward_list?
+template <class ET>
+using PointListSingleThreaded = std::forward_list<LatticePoint <ET> >; //list or forward_list?
 
 //Note: PointListMultiThreaded owns all its lattice vectors that are reachable by forward iteration.
 
@@ -30,12 +30,12 @@ template <class DT> class ListMultiThreaded;
 template <class DT> class ListMTNode;
 template <class DT> class MTListIterator;
 
-template <class ZT>
-using PointListMTNode = ListMTNode<LatticePoint<ZT> >;
-template <class ZT>
-using PointListIterator=MTListIterator< LatticePoint<ZT> >;
-template <class ZT>
-using PointListMultiThreaded=ListMultiThreaded< LatticePoint <ZT> >;
+template <class ET>
+using PointListMTNode = ListMTNode<LatticePoint<ET> >;
+template <class ET>
+using PointListIterator=MTListIterator< LatticePoint<ET> >;
+template <class ET>
+using PointListMultiThreaded=ListMultiThreaded< LatticePoint <ET> >;
 
 //TODO:ListBin
 template <class DT>
@@ -64,7 +64,7 @@ class GarbageBin : public std::queue< ListMTNode<DT> * >
 
 template <class DT>
 class ListMultiThreaded{
-//friend PointListMTNode<ZT>;
+//friend PointListMTNode<ET>;
 public:
     using Node=ListMTNode<DT>;
     using DataType    = DT;
@@ -238,9 +238,9 @@ preced->next_node.store(newnode,memory_order_release);
 //this one can be observed (even prior to releasing the lock), and we have to make sure that other non-mutex-protected threads that see this write also see the (non-atomic) writes to newnode.
 mutex_currently_writing.unlock();
 }
-//template <class ZT>
-//using PointListMultiThreaded= ListMultiThreaded<LatticePoint<ZT>>;
-//template <class ZT> class PointListIterator;
+//template <class ET>
+//using PointListMultiThreaded= ListMultiThreaded<LatticePoint<ET>>;
+//template <class ET> class PointListIterator;
 
 
 
