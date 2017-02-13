@@ -22,7 +22,8 @@
 
 
 template <class ET>
-using PointListSingleThreaded = std::forward_list<LatticePoint <ET> >; //list or forward_list?
+using PointListSingleThreaded = std::forward_list<LatticePoint <ET> >; //list or forward_list? 
+									// Where is this ever used? In the SieveClass for the SingleThreaded implementation we are using list<LPType>
 
 //Note: PointListMultiThreaded owns all its lattice vectors that are reachable by forward iteration.
 

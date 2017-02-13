@@ -126,6 +126,7 @@ int main(int argc, char **argv)
     //LatticePoint<long int> p = LatticePoint<long int> (10, 2);
     LatticePoint<Z_NR <long> > p1 (10,3);
     LatticePoint<Z_NR <long> > p2 (10,1);
+    LatticePoint<Z_NR <long> > p3 (9);
     Z_NR<long> res;
     sc_product(res,p1,p2);
     //Z_NR<long> X (0);

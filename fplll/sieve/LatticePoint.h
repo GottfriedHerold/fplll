@@ -4,7 +4,7 @@
 #ifndef LATTICE_VECTOR_CLASS_H
 #define LATTICE_VECTOR_CLASS_H
 
-#include "sieve_common.h"
+#include "sieve_common.h" //needed (at least for convertions from MatrixRow (the header has to be revised);
 
 /**
  * Class for list element
@@ -36,11 +36,11 @@ public:
 
     LatticePoint(const LatticePoint &Point) = default; // : NumVect<ET>::data(Point.data), norm2(Point.norm2) {}
     LatticePoint(LatticePoint &&Point) = default ; // : NumVect<ET> (), norm2(0) {swap(Point.NV::data), swap(Point.norm2);}
-    LatticePoint(int n) : NumVect<ET>(n), norm2(0) //creates all-zero vector of length n
+    LatticePoint(int n) : NumVect<ET>(n), norm2() //creates all-zero vector of length n
         {
            this->data.resize(n);
            this->fill(0);
-	   //norm2 = 0; //why? LatticePoint(int n) : NumVect<ET>(n), norm(0) errs
+	   norm2 = 0; //why? LatticePoint(int n) : NumVect<ET>(n), norm(0) errs
         }
 
     // for debugging
@@ -48,6 +48,12 @@ public:
     {
         this->data.resize(n);
         this->fill(fillwith);
+    }
+
+    LatticePoint(NumVect<ET> vector)
+    {
+	data(vector);
+  	sc_prod(this->norm, this, this);
     }
 
     LatticePoint& operator=(LatticePoint that)
@@ -65,7 +71,7 @@ public:
     }
 
     inline NV& getVector() const {return this->data.get();}
-    inline ET get_norm2() const {return norm2;} //in case ET = mpz, it won't work
+    inline ET get_norm2() const {return norm2;} 
     inline void get_norm2 (ET norm_to_return) {norm_to_return = norm2;}
 
     inline void setNorm2 (ET norm) {this->norm2 = norm;}
@@ -104,7 +110,6 @@ LatticePoint<ET> operator+ (LatticePoint<ET> const &A, LatticePoint<ET> const &B
 
 }
 
-//unary minus
 template <class ET>
 LatticePoint<ET> operator- (LatticePoint<ET> const &A, LatticePoint<ET> const &B)
 {
@@ -123,8 +128,19 @@ LatticePoint<ET> operator- (LatticePoint<ET> const &A, LatticePoint<ET> const &B
 template <class ET>
 void sc_product (ET &result, const LatticePoint<ET> &p1, const LatticePoint<ET> &p2)
 {
-    //using NV = NumVect<ET>;
    dot_product(result, p1, p2);
 }
+
+//Convert MatrixRow to LatticePoint
+
+template <class ET>
+LatticePoint<ET> conv_to_lattice_point (const MatrixRow<Z_NR<ET>> &row)
+{
+	LatticePoint<ET> res;
+	NumVect<Z_NR<ET> > tmp;
+	return res;
+} 
+
+// Convert sample() result NumVect to LatticePoint
 
 #endif
