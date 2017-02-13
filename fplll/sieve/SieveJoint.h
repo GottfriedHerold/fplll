@@ -26,14 +26,9 @@
 
 #endif
 
-#include "LatticePoint.h"
-#include "PointList.h"
 
 #ifdef DO_INCLUDE_SIEVE_JOINT_H
 
-
-#include "LatticePoint.h"
-#include "PointList.h"
 
 template<class T>
 class IsLongerVector_class;
@@ -44,6 +39,13 @@ class Sieve;
 
 #ifndef SIEVE_JOINT_H
 //The following should be done only once (even if we include this header twice)
+#include "LatticePoint.h"
+#include "PointList.h"
+#include <iostream>
+#include <type_traits>
+#include <sys/stat.h>
+#include <fstream>
+
 template<class ET>
 using SieveST = Sieve<ET,false>;
 
@@ -54,7 +56,7 @@ template<class ET>
 class TerminationConditions
 {
     public:
-    TerminationConditions() = default;
+    TerminationConditions() : default_condition(true){}; //if this is set, we are to ignore all other values.
     TerminationConditions(TerminationConditions const &old)=default;
     TerminationConditions(TerminationConditions && old)=default;
     TerminationConditions & operator=(TerminationConditions const &old)=default;
@@ -69,6 +71,7 @@ class TerminationConditions
     bool do_we_check_collisions() const {return do_we_check_collisions_;};
     bool do_we_check_lenght() const {return do_we_check_length_;};
     bool do_we_check_list_size() const {return do_we_check_list_size_;};
+    bool do_we_use_default_condition() const {return default_condition;};
     unsigned long int get_allowed_collisions() const {return allowed_collisions_;};
     void set_allowed_collisions(unsigned long const &colls) {allowed_collisions_=colls;do_we_check_collisions_=true;return;};
     unsigned long int get_allowed_list_size() const {return allowed_list_size_;};
@@ -79,6 +82,7 @@ class TerminationConditions
     bool do_we_check_collisions_;
     bool do_we_check_length_;
     bool do_we_check_list_size_;
+    bool default_condition;
     unsigned long int allowed_collisions_;
     unsigned long int allowed_list_size_;
     ET target_length_;
@@ -86,7 +90,6 @@ class TerminationConditions
 #endif
 //The following may be included once or twice (with different values for GAUSS_SIEVE_IS_MULTI_THREADED)
 
-#include <type_traits>
 
 template<class ET> //ET : underlying entries of the vectors. Should be a Z_NR<foo> - type. Consider making argument template itself.
 class Sieve<ET, GAUSS_SIEVE_IS_MULTI_THREADED >
@@ -100,17 +103,15 @@ using MainListType     = std::list<LPType>;
 using LatticeBasisType = ZZ_mat<typename ET::underlying_data_type>;
 using SamplerType      = KleinSampler<typename ET::underlying_data_type, FP_NR<double>> *; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
 
-
 public:
-
 //constructors:
-Sieve() = default;
+Sieve() = delete;
 Sieve(Sieve const &old ) = delete;
 Sieve(Sieve &&old) = default;
 Sieve & operator=(Sieve const & old)=delete;
 Sieve & operator=(Sieve &&old) = default; //movable, but not copyable.
-Sieve(LatticeBasisType B, unsigned int k=2, unsigned int verbosity=0, int seed_sampler = 0);
-Sieve(LatticeBasisType B, unsigned int k, TerminationConditions<ET> termcond, int verbosity=0, int seed_sampler = 0);
+
+Sieve(LatticeBasisType B, unsigned int k=2, TerminationConditions<ET> termcond = {}, unsigned int verbosity_=1, int seed_sampler = 0);
 Sieve(LatticeBasisType B, TerminationConditions<ET> termcond, int verbosity_sampler, int seed_sampler, int verbosity_sieve)
     {
         original_basis = B;
@@ -138,7 +139,11 @@ void run_2_sieve()
 }; //actually runs the Gauss Sieve.
 LPType get_SVP(); //obtains Shortest vector and it's length. If sieve has not yet run, start it.
 void run(); //runs the sieve specified by the parameters.
-void print_status(int verb = -1) const; //prints status to cout. verb overrides the verbosity unless set to -1.
+void print_status(int verb = -1, std::ostream &out = cout) const;
+ //prints status to out. verb overrides the verbosity unless set to -1.
+void dump_status_to_stream(std::string const &outfilename, bool overwrite = false);
+
+
 
 //getter / setter functions
 
@@ -151,11 +156,10 @@ void set_k(unsigned int new_k) {sieve_k=new_k;return;};
 bool is_multithreaded_wanted() const {return multi_threaded_wanted;}; //Note: No setter
 LPType get_shortest_vector_found() const {return shortest_vector_found;};
 ET get_best_length2() const {return get_shortest_vector_found().norm2; } //in case ET = mpz, it won't work -- ET is supposed to be copy-constructible, so Z_NR<mpz_t> should work.
-bool check_whether_sieve_is_running() const {return sieve_is_running;};
+bool check_whether_sieve_is_running() const {return (sieve_status==SieveStatus::sieve_status_running);};
 unsigned long int get_number_of_collisions() const {return number_of_collisions;};
 unsigned long int get_number_of_points_sampled() const {return number_of_points_sampled;};
 unsigned long int get_number_of_points_constructed() const {return number_of_points_constructed;};
-
 
 private:
 
@@ -186,7 +190,13 @@ public: TerminationConditions<ET> term_cond; private: //to avoid complicated (du
 
 //results
 
-bool sieve_is_running;
+enum class SieveStatus
+{
+  sieve_status_error  =  -1, //indicates an error (add error codes as neccessary)
+  sieve_status_init   =  1, //we have initialized data (and may yet initialize some more, but sieve has not started
+  sieve_status_running=  2, //sieve is currently running
+  sieve_status_finished=100 //sieve has finished
+} sieve_status;
 LPType shortest_vector_found; //including its length
 
 //statistics
@@ -200,6 +210,51 @@ unsigned long int number_of_points_constructed; //sampling  + succesful pairs
 
 
 };
+
+//MOVE TO CPP FROM HERE:
+
+
+template<class ET> //ET : underlying entries of the vectors. Should be a Z_NR<foo> - type. Consider making argument template itself.
+Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int k, TerminationConditions<ET> termcond , unsigned int verbosity_, int seed_sampler): //move to cpp //TODO:MT
+main_list(),
+main_queue(),
+original_basis(B),
+lattice_rank(),
+original_basis(B),
+lattice_rank(B.get_rows()),
+ambient_dimension(B.get_columns()), //Note : this means that rows of B form the basis.
+multi_threaded_wanted(GAUSS_SIEVE_IS_MULTI_THREADED),
+sieve_k(k),
+sampler(nullptr),
+verbosity(verbosity_),
+term_cond(termcond),
+sieve_status(SieveStatus::sieve_status_init),
+shortest_vector_found(), //TODO : initialize to meaningful value, e.g. any vector of B.
+number_of_collisions(0),
+number_of_points_sampled(0),
+number_of_points_constructed(0)
+{
+ sampler = new KleinSampler<typename ET::underlying_data_type , FP_NR<double>>(B, verbosity, seed_sampler);
+ //TODO : initialize term_condition to some meaningful default.
+};
+
+template<class ET>
+void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_stream(std::string const &outfilename, bool overwrite)
+{
+if(!overwrite)
+{
+  //checks if file exists
+  struct stat buffer;
+  if (::stat(outfilename.c_str(), &buffer) == 0)
+  {
+  cerr << "Trying to dump to existing file without overwrite flag set. Aborting dump." << endl;
+  return;
+  }
+  //std::ofstream of(outfilename,std::ofstream::out || std::ofstream::trunc || std::ofstream::binary)
+}
+}
+
+
 
 #define SIEVE_JOINT_H
 #endif
