@@ -242,7 +242,4 @@ mutex_currently_writing.unlock();
 //using PointListMultiThreaded= ListMultiThreaded<LatticePoint<ET>>;
 //template <class ET> class PointListIterator;
 
-
-
-
 #endif

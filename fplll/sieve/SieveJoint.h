@@ -91,19 +91,26 @@ class TerminationConditions
 template<class ET> //ET : underlying entries of the vectors. Should be a Z_NR<foo> - type. Consider making argument template itself.
 class Sieve<ET, GAUSS_SIEVE_IS_MULTI_THREADED >
 {
+
+//data types: Note that these may change, so use these typedef's rather than constructions with ET directly.
+
 using LPType           = LatticePoint<ET>;
 using MainQueueType    = std::priority_queue< LPType, std::vector<LPType>, IsLongerVector_class<ET> >;
 using MainListType     = std::list<LPType>;
 using LatticeBasisType = ZZ_mat<typename ET::underlying_data_type>;
 using SamplerType      = KleinSampler<typename ET::underlying_data_type, FP_NR<double>> *; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
+
+
 public:
 
+//constructors:
 Sieve() = default;
 Sieve(Sieve const &old ) = delete;
 Sieve(Sieve &&old) = default;
 Sieve & operator=(Sieve const & old)=delete;
 Sieve & operator=(Sieve &&old) = default; //movable, but not copyable.
-~Sieve() {delete sampler;};
+Sieve(LatticeBasisType B, unsigned int k=2, unsigned int verbosity=0, int seed_sampler = 0);
+Sieve(LatticeBasisType B, unsigned int k, TerminationConditions<ET> termcond, int verbosity=0, int seed_sampler = 0);
 Sieve(LatticeBasisType B, TerminationConditions<ET> termcond, int verbosity_sampler, int seed_sampler, int verbosity_sieve)
     {
         original_basis = B;
@@ -114,6 +121,10 @@ Sieve(LatticeBasisType B, TerminationConditions<ET> termcond, int verbosity_samp
     }//TODO : Construct from LatticeBasis and Term. Conditions.
 //TODO: dump_status_to_stream
 //TODO: read_status_from_stream -> Make constructor
+
+//destructor:
+~Sieve() {delete sampler;};
+
 
 #ifdef GAUSS_SIEVE_SINGLE_THREADED
 static bool const class_multithreaded = false;
@@ -127,7 +138,7 @@ void run_2_sieve()
 }; //actually runs the Gauss Sieve.
 LPType get_SVP(); //obtains Shortest vector and it's length. If sieve has not yet run, start it.
 void run(); //runs the sieve specified by the parameters.
-void print_status(int verb = -1) const; //prints status to cout. verb override the verbosity unless set to -1.
+void print_status(int verb = -1) const; //prints status to cout. verb overrides the verbosity unless set to -1.
 
 //getter / setter functions
 
@@ -147,6 +158,9 @@ unsigned long int get_number_of_points_constructed() const {return number_of_poi
 
 
 private:
+
+//Use termination Condition to check whether we are done, based on statistics so far.
+bool check_if_done();
 
 //Note: The member fields of Sieve denote the (global) "internal" status of the sieve during a run or execution.
 //It should be possible to dump the status to harddisk and resume from dump using that information.
@@ -168,13 +182,10 @@ unsigned int sieve_k; //parameter k of the sieve currently running.
 SamplerType sampler;
 int verbosity;
 
-public:
-TerminationConditions<ET> term_cond;
+public: TerminationConditions<ET> term_cond; private: //to avoid complicated (due to template hack) friend - declaration.
 
-private:
 //results
 
-bool check_if_done(); //Use termination Condition to check whether we are done, based on statistics so far.
 bool sieve_is_running;
 LPType shortest_vector_found; //including its length
 
