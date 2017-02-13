@@ -250,7 +250,7 @@ if(!overwrite)
   cerr << "Trying to dump to existing file without overwrite flag set. Aborting dump." << endl;
   return;
   }
-  //std::ofstream of(outfilename,std::ofstream::out || std::ofstream::trunc || std::ofstream::binary)
+  std::ofstream of(outfilename,std::ofstream::out || std::ofstream::trunc);
 }
 }
 
