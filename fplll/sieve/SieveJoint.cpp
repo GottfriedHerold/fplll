@@ -32,5 +32,11 @@
 //Be aware that this code may be read twice.
 
 
+template<class ET>
+void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::run_2_sieve()
+{
+    cout << "Currently running run_2_sieve\n";
+};
+
 #define SIEVE_JOINT_CPP
 #endif

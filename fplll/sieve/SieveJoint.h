@@ -112,14 +112,6 @@ Sieve & operator=(Sieve const & old)=delete;
 Sieve & operator=(Sieve &&old) = default; //movable, but not copyable.
 
 Sieve(LatticeBasisType B, unsigned int k=2, TerminationConditions<ET> termcond = {}, unsigned int verbosity_=1, int seed_sampler = 0);
-Sieve(LatticeBasisType B, TerminationConditions<ET> termcond, int verbosity_sampler, int seed_sampler, int verbosity_sieve)
-    {
-        original_basis = B;
-        term_cond = termcond;
-        sampler = new KleinSampler<typename ET::underlying_data_type , FP_NR<double>>(B, verbosity_sampler, seed_sampler);
-        verbosity = verbosity_sieve;
-
-    }//TODO : Construct from LatticeBasis and Term. Conditions.
 //TODO: dump_status_to_stream
 //TODO: read_status_from_stream -> Make constructor
 
@@ -133,10 +125,7 @@ static bool const class_multithreaded = false;
 static bool const class_multithreaded = true;
 #endif //class_multithreaded is for introspection, is_multithreaded is what the caller wants (may differ if we dump and re-read with different params)
 
-void run_2_sieve()
-{
-    cout << "Currently running run_2_sieve\n";
-}; //actually runs the Gauss Sieve.
+void run_2_sieve(); //actually runs the Gauss Sieve.
 LPType get_SVP(); //obtains Shortest vector and it's length. If sieve has not yet run, start it.
 void run(); //runs the sieve specified by the parameters.
 void print_status(int verb = -1, std::ostream &out = cout) const;
@@ -219,10 +208,8 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
 main_list(),
 main_queue(),
 original_basis(B),
-lattice_rank(),
-original_basis(B),
 lattice_rank(B.get_rows()),
-ambient_dimension(B.get_columns()), //Note : this means that rows of B form the basis.
+ambient_dimension(B.get_cols()), //Note : this means that rows of B form the basis.
 multi_threaded_wanted(GAUSS_SIEVE_IS_MULTI_THREADED),
 sieve_k(k),
 sampler(nullptr),

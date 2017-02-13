@@ -102,8 +102,7 @@ template<class ZT> void call_sieve (ZZ_mat<ZT> B, int sieve_verbosity)
 {
 
 	TerminationConditions< Z_NR<ZT> > term_cond;
-	Sieve<Z_NR< ZT > , false> Test_2Sieve (B, term_cond, 0, 0, sieve_verbosity);
-	//Sieve<ZT, false> Test_2Sieve;
+	Sieve<Z_NR< ZT > , false> Test_2Sieve (B);
 	Test_2Sieve.run_2_sieve();
 
 
