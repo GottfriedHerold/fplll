@@ -45,6 +45,10 @@ class Sieve;
 #include <type_traits>
 #include <sys/stat.h>
 #include <fstream>
+#include <string>
+#include <exception>
+
+bool string_consume(istream &is, std::string const & str, bool elim_ws= true, bool verbose=true);
 
 template<class ET>
 using SieveST = Sieve<ET,false>;
@@ -52,11 +56,17 @@ using SieveST = Sieve<ET,false>;
 template<class ET>
 using SieveMT = Sieve<ET,true>;
 
+class bad_dumpread_TermCond:public exception{ }; //exception indicating that
+template<class ET> ostream & operator<<(ostream &os,TerminationConditions<ET> const &term_cond); //printing
+template<class ET> istream & operator>>(istream &is,TerminationConditions<ET> &term_cond); //reading (also used by constructor from istream)
 template<class ET>
 class TerminationConditions
 {
+    friend ostream & operator<< <ET>(ostream &os,TerminationConditions const &term_cond); //printing
+    friend istream & operator>> <ET>(istream &is,TerminationConditions &term_cond);
     public:
     TerminationConditions() : default_condition(true){}; //if this is set, we are to ignore all other values.
+    explicit TerminationConditions(istream &is):default_condition(true){is>> (*this);};
     TerminationConditions(TerminationConditions const &old)=default;
     TerminationConditions(TerminationConditions && old)=default;
     TerminationConditions & operator=(TerminationConditions const &old)=default;
@@ -112,7 +122,8 @@ Sieve(Sieve &&old) = default;
 Sieve & operator=(Sieve const & old)=delete;
 Sieve & operator=(Sieve &&old) = default; //movable, but not copyable.
 
-Sieve(LatticeBasisType B, unsigned int k=2, TerminationConditions<ET> termcond = {}, unsigned int verbosity_=1, int seed_sampler = 0);
+explicit Sieve(LatticeBasisType B, unsigned int k=2, TerminationConditions<ET> termcond = {}, unsigned int verbosity_=1, int seed_sampler = 0);
+explicit Sieve(std::string const &infilename); //read from dump file.
 //TODO: dump_status_to_stream
 //TODO: read_status_from_stream -> Make constructor
 
@@ -131,7 +142,7 @@ LPType get_SVP(); //obtains Shortest vector and it's length. If sieve has not ye
 void run(); //runs the sieve specified by the parameters.
 void print_status(int verb = -1, std::ostream &out = cout) const;
  //prints status to out. verb overrides the verbosity unless set to -1.
-void dump_status_to_stream(std::string const &outfilename, bool overwrite = false);
+void dump_status_to_file(std::string const &outfilename, bool overwrite = false);
 
 
 
@@ -226,20 +237,180 @@ number_of_points_constructed(0)
  //TODO : initialize term_condition to some meaningful default.
 };
 
-template<class ET>
-void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_stream(std::string const &outfilename, bool overwrite)
+
+
+//Dumping / reading routines
+//Note: Actually, we want an unformatted binary dump. Unfortunately, the underlying FPLLL types support only
+// << and >> operations with formated input / output. So we will do with formatted input / output for now.
+//The main issue here is that mpz_t only provides formatted stream - I/O or unformatted I/O via old-style C FILE* interfaces, neither of which is what we really want.
+
+// We assume that << writing data to a filestream and >> reading it back will give back the same data.
+
+// This might cause problems if e.g.:
+// separation chars (whitespace) are used in a data field
+// locales are different
+// some subobject changes format flags
+// output loses data (e.g. rounding of floats)
+
+//helper functions:
+
+/*
+Reads length(str) chars from stream is, expecting them to equal str. If what is read differs we output false. If verbose, we also display an error.
+*/
+
+#ifndef SIEVE_JOINT_H
+
+bool string_consume(istream &is, std::string const & str, bool elim_ws, bool verbose)
 {
+  unsigned int len = str.length();
+  char *buf = new char[len+1];
+  buf[len] = 0; //for error message.
+  if (elim_ws)
+  {
+    is >> std::ws;
+  }
+  is.read(buf,len);
+  if(is.gcount() != len)
+  {
+    if(verbose)
+    {
+      cerr << "Failure reading header: Expected to read" << str << endl;
+      cerr << "Read only "<<is.gcount() << "bytes. String read was" << buf<<endl;
+    }
+    return false;
+  }
+  if(elim_ws)
+  {
+    is >> std::ws;
+  }
+  if(str.compare(0,len,buf,len)!=0)
+  {
+    if(verbose)
+    {
+      cerr << "Failure reading header: Expected to read" << str << endl;
+      cerr << "Read instead:" << buf << endl;
+    }
+    return false;
+  }
+  return true;
+}
+
+template<class ET> ostream & operator<<(ostream &os,TerminationConditions<ET> const &term_cond) //printing
+{
+
+  os << "Default_Conditions=" << term_cond.default_condition << endl;
+  if(!term_cond.default_condition)
+  {
+    os << "Check Collisions=" << term_cond.do_we_check_collisions_ << endl;
+    if(term_cond.do_we_check_collisions_)
+    {
+      os << "Number=" << term_cond.allowed_collisions_ << endl;
+    }
+    os << "Check List Size=" << term_cond.do_we_check_list_size_ << endl;
+    if(term_cond.do_we_check_list_size_)
+    {
+      os << "Number=" << term_cond.allowed_list_size_ << endl;
+    }
+    os << "Check Target Length=" << term_cond.do_we_check_length_ << endl;
+    if(term_cond.do_we_check_length_)
+    {
+      os << "Target Length=" << term_cond.target_length_ << endl;
+    }
+  }
+return os;
+}
+template<class ET> istream & operator>>(istream &is,TerminationConditions<ET> &term_cond)
+{
+    bool do_we_check_collisions_;
+    bool do_we_check_length_;
+    bool do_we_check_list_size_;
+    bool default_condition;
+    unsigned long int allowed_collisions_;
+    unsigned long int allowed_list_size_;
+    ET target_length_;
+ //We should probably throw an exception rather than return is.
+  if (!string_consume(is,"Default_Conditions=")) return is;
+  is >> term_cond.default_condition;
+  if(!term_cond.default_condition)
+  {
+    if(!string_consume(is,"Check Collisions=")) return is;
+    is>> term_cond.do_we_check_collisions_;
+    if(term_cond.do_we_check_collisions_)
+    {
+      if(!string_consume(is,"Number=")) return is;
+      is >> term_cond.allowed_collisions;
+    }
+    if(!string_consume(is,"Check List Size=")) return is;
+    is>> term_cond.do_we_check_list_size_;
+    if(term_cond.do_we_check_list_size_)
+    {
+      if(!string_consume(is,"Number=")) return is;
+      is>> term_cond.allows_list_size_;
+    }
+    if(!string_consume(is,"Check Target Length=")) return is;
+    is>>term_cond.do_we_check_length_;
+    if(term_cond.do_we_check_length_)
+    {
+
+    }
+
+  }
+return is;
+
+} //reading (also used by constructor from istream)
+
+
+#endif
+
+
+#define SIEVE_FILE_ID "kTuple-Sieve dump file"
+//version string for dump file
+#define SIEVE_VER_STR "Version TEST1"
+#define SIEVE_FILE_ML "Main List"
+#define SIEVE_FILE_QUEUE "Queue"
+
+
+template<class ET>
+void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_file(std::string const &outfilename, bool overwrite)
+{
+if(verbosity>=2)
+{
+  cout << "Dumping to file " << outfilename << " ..." << endl;
+}
 if(!overwrite)
 {
   //checks if file exists
   struct stat buffer;
   if (::stat(outfilename.c_str(), &buffer) == 0)
   {
-  cerr << "Trying to dump to existing file without overwrite flag set. Aborting dump." << endl;
+  if (verbosity>=1)
+  {
+    cerr << "Trying to dump to existing file without overwrite flag set. Aborting dump." << endl;
+  }
   return;
   }
-  std::ofstream of(outfilename,std::ofstream::out || std::ofstream::trunc);
 }
+std::ofstream of(outfilename,std::ofstream::out | std::ofstream::trunc);
+of << SIEVE_FILE_ID << endl;
+of << SIEVE_VER_STR << endl;
+of << "Params:" << endl;
+of << "Multithreaded version=" << class_multithreaded << endl;
+of << "Multithreaded is wanted" << multi_threaded_wanted << endl;
+of << "k=" << sieve_k << endl;
+of << "verbosity=" << verbosity << endl;
+of << "sieve_status=" << static_cast<int>(sieve_status) << endl;
+of << "Lattice rank=" << lattice_rank << endl;
+of << "Ambient dimension=" << ambient_dimension << endl;
+of << "Termination Conditions:" << endl;
+of << term_cond;
+of << "Sampler:"<< endl;
+of << "Sampler Initialized" << static_cast<bool>(sampler!=nullptr) << endl;
+
+if(verbosity>=2)
+{
+  cout << "Dump successful." << endl;
+}
+
 }
 
 
