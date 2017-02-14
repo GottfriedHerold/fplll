@@ -140,13 +140,20 @@ void sc_product (ET &result, const LatticePoint<ET> &p1, const LatticePoint<ET> 
 //Convert MatrixRow to LatticePoint
 
 template <class ET>
-LatticePoint<ET> conv_to_lattice_point (MatrixRow<ET> const &row)
+LatticePoint<ET> conv_matrixrow_to_lattice_point (MatrixRow<ET> const &row)
 {
 	LatticePoint<ET> res(row.get_underlying_row());
-	NumVect<ET> tmp(row.get_underlying_row());
+	//NumVect<ET> tmp(row.get_underlying_row());
 	return res;
 }
 
 // Convert sample() result NumVect to LatticePoint
+
+template<class ET>
+inline LatticePoint<ET>* conv_sample_to_lattice_point (NumVect<ET> const &sample)
+{
+    LatticePoint<ET> *p = new LatticePoint<ET> (sample);
+    return p;
+}
 
 #endif
