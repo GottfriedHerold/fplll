@@ -22,8 +22,7 @@
 
 
 template <class ET>
-using PointListSingleThreaded = std::forward_list<LatticePoint <ET> >; //list or forward_list? 
-									// Where is this ever used? In the SieveClass for the SingleThreaded implementation we are using list<LPType>
+using PointListSingleThreaded = std::forward_list<LatticePoint <ET> >; //list or forward_list?
 
 //Note: PointListMultiThreaded owns all its lattice vectors that are reachable by forward iteration.
 
@@ -115,14 +114,10 @@ public:
   void enlist(MTListIterator<DT> const &pos, DT * const &valref); //moves *DT just before pos, transfering ownership to the list.
 
 private:
-  //marked for deletion.
   std::mutex mutex_currently_writing;
   NodePointer const start_sentinel_node; //node before the start of the list. This is never modified, so no atomic here.
   NodePointer const end_sentinel_node; //node after the end of the list, could probably do with a single sentinel.
 };
-//
-//
-//
 
 //restriction: Iterator itself is thread-local.
 

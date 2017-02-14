@@ -37,17 +37,15 @@ class LatticePoint : public NumVect<ET>
 public:
         ET norm2;
 
-
 public:
     LatticePoint(){}
-
     LatticePoint(const LatticePoint &Point) = default; // : NumVect<ET>::data(Point.data), norm2(Point.norm2) {}
     LatticePoint(LatticePoint &&Point) = default ; // : NumVect<ET> (), norm2(0) {swap(Point.NV::data), swap(Point.norm2);}
     LatticePoint(int n) : NumVect<ET>(n), norm2() //creates all-zero vector of length n
         {
            this->data.resize(n);
            this->fill(0);
-	   norm2 = 0; //why? LatticePoint(int n) : NumVect<ET>(n), norm(0) errs
+	       norm2 = 0; //why? LatticePoint(int n) : NumVect<ET>(n), norm(0) errs
         }
 
     // for debugging
@@ -55,7 +53,10 @@ public:
     {
         this->data.resize(n);
         this->fill(fillwith);
+        sc_product(this->norm2, *this, *this);
+        //norm2 = fillwith*fillwith*n; gives type problems.
     }
+    //TODO: fillwith should be ET, not long.
 
     LatticePoint(NumVect<ET> vector_) : NumVect<ET>(vector_)
     {
@@ -78,7 +79,7 @@ public:
 
     inline NV& getVector() const {return this->data.get();}
     inline ET get_norm2() const {return norm2;}
-    inline void get_norm2 (ET norm_to_return) {norm_to_return = norm2;}
+    inline void get_norm2 (ET norm_to_return) const {norm_to_return = norm2;}
 
     inline void setNorm2 (ET norm) {this->norm2 = norm;}
 
@@ -88,11 +89,7 @@ public:
     cout << * (static_cast<NumVect<ET>*>(this)) << " of norm: " << this->norm2 << endl;
     //cout << this->getNorm() << endl;
 }
-
-
 };
-
-
 
 template<class ET> class IsLongerVector_class //should be moved to LatticePoint.h. Make sure getNorm is declared const.
 {

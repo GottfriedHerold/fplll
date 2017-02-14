@@ -87,7 +87,7 @@ template<class ET>
 using SieveMT = Sieve<ET,true>;
 
 
-/*Class for TerminationConditions */
+/* CLASS FOR TERMINATION CONDITIONS */
 
 class bad_dumpread_TermCond:public std::runtime_error{bad_dumpread_TermCond():runtime_error("Dump read failed for Termination Condition"){}}; //exception indicating that read from dump failed.
 template<class ET> ostream & operator<<(ostream &os,TerminationConditions<ET> const &term_cond); //printing
@@ -129,7 +129,7 @@ class TerminationConditions
     unsigned long int allowed_collisions_;
     unsigned long int allowed_list_size_;
     ET target_length_;
-};
+}; //end of termination condition class
 
 
 #endif
@@ -173,10 +173,10 @@ static bool const class_multithreaded = true;
 void run_2_sieve(); //actually runs the Gauss Sieve.
 LPType get_SVP(); //obtains Shortest vector and it's length. If sieve has not yet run, start it.
 void run(); //runs the sieve specified by the parameters.
-void print_status(int verb = -1, std::ostream &out = cout) const;
+//void print_status(int verb = -1, std::ostream &out = cout) const{dump_status_to_stream(out,false,verb);};
  //prints status to out. verb overrides the verbosity unless set to -1.
 void dump_status_to_file(std::string const &outfilename, bool overwrite = false); //dumps to file
-void dump_status_to_stream(ostream &of, bool everything = false); //dumps to stream. Can be read back if everything == true. Otherwise, verbosity determines what is output.
+void dump_status_to_stream(ostream &of, bool everything = false, int verb=-1); //dumps to stream. Can be read back if everything == true. Otherwise, verbosity determines what is output.
 
 
 //getter / setter functions
@@ -215,7 +215,7 @@ MainQueueType main_queue;
 
 LatticeBasisType original_basis;
 unsigned int lattice_rank;
-unsigned int ambient_dimension; //consider merging theses into a latticespec class.
+unsigned int ambient_dimension; //consider merging these into a latticespec struct.
 bool multi_threaded_wanted;
 //unsigned int num_threads_wanted;
 unsigned int sieve_k; //parameter k of the sieve currently running.
@@ -223,8 +223,6 @@ SamplerType sampler;
 int verbosity;
 
 public: TerminationConditions<ET> term_cond; private: //to avoid complicated (due to template hack) friend - declaration.
-
-//results
 
 enum class SieveStatus
 {
@@ -244,8 +242,6 @@ unsigned long int current_list_size;
 //length of shortest vector contained in shortest_vector_found
 
 //TODO: total time spent?
-
-
 };
 
 //MOVE TO CPP FROM HERE:
@@ -276,7 +272,8 @@ current_list_size(0)
 
 
 
-//Dumping / reading routines
+/*DUMPING / READING ROUTINES */
+
 //Note: Actually, we want an unformatted binary dump. Unfortunately, the underlying FPLLL types support only
 // << and >> operations with formated input / output. So we will do with formatted input / output for now.
 //The main issue here is that mpz_t only provides formatted stream - I/O or unformatted I/O via old-style C FILE* interfaces, neither of which is what we really want.
@@ -436,9 +433,9 @@ if(verbosity>=2)
 }
 
 template<class ET>
-void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_stream(ostream &of, bool everything)
+void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_stream(ostream &of, bool everything, int verb)
 {
-int howverb = everything ? 100 : verbosity;
+int howverb = everything ? 100 : (verb==-1 ? verbosity : verb);
 if(howverb>=2) of << SIEVE_FILE_ID << endl;
 if(howverb>=2) of << SIEVE_VER_STR << endl;
 if(howverb>=2) of << "--Params--" << endl;
@@ -461,7 +458,7 @@ if(howverb>=2) cerr << "Note : Dumping of internal data of sampler not yet suppo
 if(howverb>=1) of << "Original Basis:" << endl;
 if(howverb>=1) of << original_basis;
 if(howverb>=2) of << "--End of Params--" << endl << endl;
-if(howverb>=1) of << "--Statistics --" << endl;
+if(howverb>=1) of << "--Statistics--" << endl;
 if(howverb>=1) of << "Number of collisions=" << number_of_collisions << endl;
 if(howverb>=1) of << "Number of Points Sampled=" << number_of_points_sampled << endl;
 if(howverb>=1) of << "Number of Points Constructed=" << number_of_points_constructed << endl;
@@ -471,12 +468,20 @@ if(howverb>=1) of << "Current Queue Size="<< get_current_queue_size()<< endl;
 if(howverb>=1) of << "--End of Statistics--" << endl << endl;
 if(howverb>=3)
 {
-  of << "--Current List" << endl;
+  of << "--Main List--" << endl;
   for(auto it = main_list.begin();it!=main_list.end();++it)
   {
     of << (*it);
   }
+  of << "--End of Main List--" << endl << endl;
+  of << "--Main Queue--" << endl;
+  for(auto it = main_queue.begin();it!=main_queue.end();++it)
+  {
+
+  }
 }
+
+
 }
 
 
