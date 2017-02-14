@@ -1,3 +1,11 @@
+
+/*
+------DO NOT INCLUDE THIS FILE MANUALLY.--------
+USE SieveGauss.h / SieveMT.h / SieveST.h INSTEAD
+
+*/
+
+/* Preprocessor magic starts here */
 #undef DO_INCLUDE_SIEVE_JOINT_H
 #ifndef GAUSS_SIEVE_IS_MULTI_THREADED
 #error wrong usage of SieveJoint.h -- 1
@@ -29,16 +37,28 @@
 
 #ifdef DO_INCLUDE_SIEVE_JOINT_H
 
+//
+//end of (most) preprocessor stuff
+//
 
-template<class T>
-class IsLongerVector_class;
-template<class T>
-class TerminationConditions;
-template<class ET, bool MultiThreaded>
-class Sieve;
+
+
 
 #ifndef SIEVE_JOINT_H
-//The following should be done only once (even if we include this header twice)
+/*
+
+THE FOLLOWING PARTS ARE ONLY PARSED ONCE BY THE COMPILER,
+EVEN IF WE USE BOTH MULTI-THREADED AND SINGLE-THREADED VARIANTS.
+
+DECLARATIONS CAN GO HERE.
+
+HELPER CLASSES AND FUNCTIONS WHICH ARE NOT TEMPLATES WITH TEMPLATE PARAMETER
+GAUSS_SIEVE_IS_MULTI_THREADED
+NEED TO GO HERE:
+*/
+
+/*INCLUDES */
+
 #include "LatticePoint.h"
 #include "PointList.h"
 #include <iostream>
@@ -48,6 +68,16 @@ class Sieve;
 #include <string>
 #include <exception>
 
+/*Declarations */
+
+template<class T>
+class IsLongerVector_class;
+template<class T>
+class TerminationConditions;
+template<class ET, bool MultiThreaded>
+class Sieve;
+
+
 bool string_consume(istream &is, std::string const & str, bool elim_ws= true, bool verbose=true);
 
 template<class ET>
@@ -56,7 +86,10 @@ using SieveST = Sieve<ET,false>;
 template<class ET>
 using SieveMT = Sieve<ET,true>;
 
-class bad_dumpread_TermCond:public exception{ }; //exception indicating that
+
+/*Class for TerminationConditions */
+
+class bad_dumpread_TermCond:public std::runtime_error{bad_dumpread_TermCond():runtime_error("Dump read failed for Termination Condition"){}}; //exception indicating that read from dump failed.
 template<class ET> ostream & operator<<(ostream &os,TerminationConditions<ET> const &term_cond); //printing
 template<class ET> istream & operator>>(istream &is,TerminationConditions<ET> &term_cond); //reading (also used by constructor from istream)
 template<class ET>
@@ -97,16 +130,22 @@ class TerminationConditions
     unsigned long int allowed_list_size_;
     ET target_length_;
 };
+
+
 #endif
+
+/*
+EVERYTHING BELOW HERE IS POTENTIALLY INCLUDED TWICE.
+TEMPLATES WITH TEMPLATE ARGUMENT GAUSS_SIEVE_IS_MULTI_THREADED
+GO HERE.
+*/
+
 //The following may be included once or twice (with different values for GAUSS_SIEVE_IS_MULTI_THREADED)
 
-
-template<class ET> //ET : underlying entries of the vectors. Should be a Z_NR<foo> - type. Consider making argument template itself.
+template<class ET>
 class Sieve<ET, GAUSS_SIEVE_IS_MULTI_THREADED >
 {
-
-//data types: Note that these may change, so use these typedef's rather than constructions with ET directly.
-
+/*DATA TYPES*/
 using LPType           = LatticePoint<ET>;
 using MainQueueType    = std::priority_queue< LPType, std::vector<LPType>, IsLongerVector_class<ET> >;
 using MainListType     = PointListSingleThreaded<ET>;
@@ -115,21 +154,15 @@ using LatticeBasisType = ZZ_mat<typename ET::underlying_data_type>;
 using SamplerType      = KleinSampler<typename ET::underlying_data_type, FP_NR<double>> *; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
 
 public:
-//constructors:
+/*CONSTRUCTORS / DESTRUCTORS */
 Sieve() = delete;
 Sieve(Sieve const &old ) = delete;
 Sieve(Sieve &&old) = default;
 Sieve & operator=(Sieve const & old)=delete;
 Sieve & operator=(Sieve &&old) = default; //movable, but not copyable.
-
 explicit Sieve(LatticeBasisType B, unsigned int k=2, TerminationConditions<ET> termcond = {}, unsigned int verbosity_=1, int seed_sampler = 0);
-explicit Sieve(std::string const &infilename); //read from dump file.
-//TODO: dump_status_to_stream
-//TODO: read_status_from_stream -> Make constructor
-
-//destructor:
+//explicit Sieve(std::string const &infilename); //read from dump file.
 ~Sieve() {delete sampler;};
-
 
 #ifdef GAUSS_SIEVE_SINGLE_THREADED
 static bool const class_multithreaded = false;
@@ -142,8 +175,8 @@ LPType get_SVP(); //obtains Shortest vector and it's length. If sieve has not ye
 void run(); //runs the sieve specified by the parameters.
 void print_status(int verb = -1, std::ostream &out = cout) const;
  //prints status to out. verb overrides the verbosity unless set to -1.
-void dump_status_to_file(std::string const &outfilename, bool overwrite = false);
-
+void dump_status_to_file(std::string const &outfilename, bool overwrite = false); //dumps to file
+void dump_status_to_stream(ostream &of, bool everything = false); //dumps to stream. Can be read back if everything == true. Otherwise, verbosity determines what is output.
 
 
 //getter / setter functions
@@ -161,6 +194,8 @@ bool check_whether_sieve_is_running() const {return (sieve_status==SieveStatus::
 unsigned long int get_number_of_collisions() const {return number_of_collisions;};
 unsigned long int get_number_of_points_sampled() const {return number_of_points_sampled;};
 unsigned long int get_number_of_points_constructed() const {return number_of_points_constructed;};
+unsigned long int get_current_list_size() const{return current_list_size;};
+unsigned long int get_current_queue_size()const{return main_queue.size();};
 
 private:
 
@@ -205,6 +240,7 @@ LPType shortest_vector_found; //including its length
 unsigned long int number_of_collisions;
 unsigned long int number_of_points_sampled;
 unsigned long int number_of_points_constructed; //sampling  + succesful pairs
+unsigned long int current_list_size;
 //length of shortest vector contained in shortest_vector_found
 
 //TODO: total time spent?
@@ -231,7 +267,8 @@ sieve_status(SieveStatus::sieve_status_init),
 shortest_vector_found(), //TODO : initialize to meaningful value, e.g. any vector of B.
 number_of_collisions(0),
 number_of_points_sampled(0),
-number_of_points_constructed(0)
+number_of_points_constructed(0),
+current_list_size(0)
 {
  sampler = new KleinSampler<typename ET::underlying_data_type , FP_NR<double>>(B, verbosity, seed_sampler);
  //TODO : initialize term_condition to some meaningful default.
@@ -329,25 +366,25 @@ template<class ET> istream & operator>>(istream &is,TerminationConditions<ET> &t
     unsigned long int allowed_list_size_;
     ET target_length_;
  //We should probably throw an exception rather than return is.
-  if (!string_consume(is,"Default_Conditions=")) return is;
+  if (!string_consume(is,"Default_Conditions=")) throw bad_dumpread_TermCond();
   is >> term_cond.default_condition;
   if(!term_cond.default_condition)
   {
-    if(!string_consume(is,"Check Collisions=")) return is;
+    if(!string_consume(is,"Check Collisions=")) throw bad_dumpread_TermCond();
     is>> term_cond.do_we_check_collisions_;
     if(term_cond.do_we_check_collisions_)
     {
-      if(!string_consume(is,"Number=")) return is;
+      if(!string_consume(is,"Number=")) throw bad_dumpread_TermCond();
       is >> term_cond.allowed_collisions;
     }
-    if(!string_consume(is,"Check List Size=")) return is;
+    if(!string_consume(is,"Check List Size=")) throw bad_dumpread_TermCond();
     is>> term_cond.do_we_check_list_size_;
     if(term_cond.do_we_check_list_size_)
     {
-      if(!string_consume(is,"Number=")) return is;
+      if(!string_consume(is,"Number=")) throw bad_dumpread_TermCond();
       is>> term_cond.allows_list_size_;
     }
-    if(!string_consume(is,"Check Target Length=")) return is;
+    if(!string_consume(is,"Check Target Length=")) throw bad_dumpread_TermCond();
     is>>term_cond.do_we_check_length_;
     if(term_cond.do_we_check_length_)
     {
@@ -391,26 +428,55 @@ if(!overwrite)
   }
 }
 std::ofstream of(outfilename,std::ofstream::out | std::ofstream::trunc);
-of << SIEVE_FILE_ID << endl;
-of << SIEVE_VER_STR << endl;
-of << "Params:" << endl;
-of << "Multithreaded version=" << class_multithreaded << endl;
-of << "Multithreaded is wanted" << multi_threaded_wanted << endl;
-of << "k=" << sieve_k << endl;
-of << "verbosity=" << verbosity << endl;
-of << "sieve_status=" << static_cast<int>(sieve_status) << endl;
-of << "Lattice rank=" << lattice_rank << endl;
-of << "Ambient dimension=" << ambient_dimension << endl;
-of << "Termination Conditions:" << endl;
-of << term_cond;
-of << "Sampler:"<< endl;
-of << "Sampler Initialized" << static_cast<bool>(sampler!=nullptr) << endl;
-
+dump_status_to_stream(of, true);
 if(verbosity>=2)
 {
   cout << "Dump successful." << endl;
 }
+}
 
+template<class ET>
+void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_stream(ostream &of, bool everything)
+{
+int howverb = everything ? 100 : verbosity;
+if(howverb>=2) of << SIEVE_FILE_ID << endl;
+if(howverb>=2) of << SIEVE_VER_STR << endl;
+if(howverb>=2) of << "--Params--" << endl;
+if(howverb>=2) of << "Multithreaded version=" << class_multithreaded << endl;
+if(howverb>=2) of << "Multithreaded is wanted" << multi_threaded_wanted << endl;
+if(howverb>=2) of << "k=" << sieve_k << endl;
+if(howverb>=2) of << "verbosity=" << verbosity << endl;
+if(howverb>=1) of << "sieve_status=" << static_cast<int>(sieve_status) << endl;
+if(howverb>=2) of << "Lattice rank=" << lattice_rank << endl;
+if(howverb>=2) of << "Ambient dimension=" << ambient_dimension << endl;
+if(howverb>=2) of << "Termination Conditions:" << endl;
+if(howverb>=2) of << term_cond;
+if(howverb>=2) of << "Sampler:"<< endl;
+if(howverb>=2) of << "Sampler Initialized" << static_cast<bool>(sampler!=nullptr) << endl;
+if(sampler!=nullptr)
+{
+if(howverb>=2) cerr << "Note : Dumping of internal data of sampler not yet supported" << endl;
+  //dump internals of sampler?
+}
+if(howverb>=1) of << "Original Basis:" << endl;
+if(howverb>=1) of << original_basis;
+if(howverb>=2) of << "--End of Params--" << endl << endl;
+if(howverb>=1) of << "--Statistics --" << endl;
+if(howverb>=1) of << "Number of collisions=" << number_of_collisions << endl;
+if(howverb>=1) of << "Number of Points Sampled=" << number_of_points_sampled << endl;
+if(howverb>=1) of << "Number of Points Constructed=" << number_of_points_constructed << endl;
+if(howverb>=1) of << "Best vector found so far=" << shortest_vector_found << endl; //TODO : Display length seperately
+if(howverb>=1) of << "Current List Size=" << get_current_list_size() << endl;
+if(howverb>=1) of << "Current Queue Size="<< get_current_queue_size()<< endl;
+if(howverb>=1) of << "--End of Statistics--" << endl << endl;
+if(howverb>=3)
+{
+  of << "--Current List" << endl;
+  for(auto it = main_list.begin();it!=main_list.end();++it)
+  {
+    of << (*it);
+  }
+}
 }
 
 
