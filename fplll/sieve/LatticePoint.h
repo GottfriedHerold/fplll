@@ -150,9 +150,9 @@ LatticePoint<ET> conv_matrixrow_to_lattice_point (MatrixRow<ET> const &row)
 // Convert sample() result NumVect to LatticePoint
 
 template<class ET>
-inline LatticePoint<ET>* conv_sample_to_lattice_point (NumVect<ET> const &sample)
+inline LatticePoint<ET> conv_sample_to_lattice_point (NumVect<ET> const &sample)
 {
-    LatticePoint<ET> *p = new LatticePoint<ET> (sample);
+    LatticePoint<ET> p (sample);
     return p;
 }
 

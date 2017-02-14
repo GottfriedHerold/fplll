@@ -49,17 +49,17 @@ void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::run_2_sieve()
         //it = main_list.insert_after(it, p);
     }
     for ( LatticePoint<ET> & x : main_list) cout << x << endl;
-    
+
     /* can do main_list.sort here, but I assume original_basis is preporcessed
-    
+
      */
-    
+
     int i=0;
     int MaxIteration = 10;
-    
-    LatticePoint<ET> const *p;
+
+    LatticePoint<ET> p;
     NumVect<ET> sample;
-    
+
     while(i < MaxIteration) // TerminationCondition Here
     {
         if (main_queue.empty())
@@ -69,23 +69,27 @@ void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::run_2_sieve()
         }
         else
         {
-            p =  &(main_queue.top()); //why does this return contst?
+            p = main_queue.top(); //why does this return contst?
             main_queue.pop();
         }
-        
-        //SieveIteration(p);
-        
-        i++;
+
+        SieveIteration(p);
+
+        ++i;
     }
-    
-    
+
+
 }
 
-//template<class ET> - does not work (read twice)
-//void SieveIteration (LatticePoint<ET> p)
-//{
-//    cout << "running SieveIteration " << endl;
-//};
+#ifndef SIEVE_JOINT_CPP
+
+template<class ET> //does not work (read twice)
+void SieveIteration (LatticePoint<ET> &p)
+{
+    cout << "running SieveIteration " << endl;
+};
+
+#endif
 
 #define SIEVE_JOINT_CPP
 #endif
