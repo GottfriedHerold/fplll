@@ -99,7 +99,8 @@ class Sieve<ET, GAUSS_SIEVE_IS_MULTI_THREADED >
 
 using LPType           = LatticePoint<ET>;
 using MainQueueType    = std::priority_queue< LPType, std::vector<LPType>, IsLongerVector_class<ET> >;
-using MainListType     = std::list<LPType>;
+using MainListType     = PointListSingleThreaded<ET>;
+//using MainListType     = std::list<LPType>;
 using LatticeBasisType = ZZ_mat<typename ET::underlying_data_type>;
 using SamplerType      = KleinSampler<typename ET::underlying_data_type, FP_NR<double>> *; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
 

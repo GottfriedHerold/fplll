@@ -71,7 +71,7 @@ public:
     }
 
     inline NV& getVector() const {return this->data.get();}
-    inline ET get_norm2() const {return norm2;} 
+    inline ET get_norm2() const {return norm2;}
     inline void get_norm2 (ET norm_to_return) {norm_to_return = norm2;}
 
     inline void setNorm2 (ET norm) {this->norm2 = norm;}
@@ -134,12 +134,12 @@ void sc_product (ET &result, const LatticePoint<ET> &p1, const LatticePoint<ET> 
 //Convert MatrixRow to LatticePoint
 
 template <class ET>
-LatticePoint<ET> conv_to_lattice_point (const MatrixRow<Z_NR<ET>> &row)
+LatticePoint<ET> conv_to_lattice_point (MatrixRow<ET> const &row)
 {
 	LatticePoint<ET> res;
-	NumVect<Z_NR<ET> > tmp;
+	NumVect<ET> tmp;
 	return res;
-} 
+}
 
 // Convert sample() result NumVect to LatticePoint
 
