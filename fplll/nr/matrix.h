@@ -73,6 +73,8 @@ public:
     row.addmul_si_2exp(v.row, x, expo, n, tmp);
   }
 
+  NumVect<T> & get_underlying_row() const {return row;};
+
   friend class Matrix<T>;
 
 private:

@@ -21,6 +21,13 @@
 
 **/
 
+template <class ET> class LatticePoint;
+
+template <class ET>
+void sc_product (ET &result, const LatticePoint<ET> &p1, const LatticePoint<ET> &p2);
+
+
+
 template<class ET> //ET: entries of the individual vectors. Required to be copy-constructible. Use E = Z_NR<mpz_t> rather than E=mpz_t.
 class LatticePoint : public NumVect<ET>
 {
@@ -50,10 +57,9 @@ public:
         this->fill(fillwith);
     }
 
-    LatticePoint(NumVect<ET> vector)
+    LatticePoint(NumVect<ET> vector_) : NumVect<ET>(vector_)
     {
-	data(vector);
-  	sc_prod(this->norm, this, this);
+    sc_product(this->norm2, *this, *this);
     }
 
     LatticePoint& operator=(LatticePoint that)
@@ -136,8 +142,8 @@ void sc_product (ET &result, const LatticePoint<ET> &p1, const LatticePoint<ET> 
 template <class ET>
 LatticePoint<ET> conv_to_lattice_point (MatrixRow<ET> const &row)
 {
-	LatticePoint<ET> res;
-	NumVect<ET> tmp;
+	LatticePoint<ET> res(row.get_underlying_row());
+	NumVect<ET> tmp(row.get_underlying_row());
 	return res;
 }
 
