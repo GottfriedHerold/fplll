@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <forward_list>
 
 #include "../defs.h"
 #include "sampler_basic.h"

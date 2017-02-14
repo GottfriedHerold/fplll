@@ -37,13 +37,16 @@ void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::run_2_sieve()
 {
     using SieveT = Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
 
-    //want to put my basis-vectors into the main list
+    //want to put my basis-vectors into the main_list
 
     unsigned int n = lattice_rank;
-    //auto it = SieveT::main_list.size();
-    for (unsigned int i=0; i<n; i++) {}
-	//main_list.emplace_after(it, B[i]) //assume B[i] is reduced, hence sorted
-    LatticePoint<ET> p (  conv_to_lattice_point (original_basis[1]) );
+    auto it = main_list.before_begin();
+    for (unsigned int i=0; i<n; i++) {
+        LatticePoint<ET> p (  conv_to_lattice_point (original_basis[i]) );
+        it = main_list.emplace_after(it, p);
+        //it = main_list.insert_after(it, p);
+    }
+    for ( LatticePoint<ET> & x : main_list) cout << x << endl;
 };
 
 #define SIEVE_JOINT_CPP
