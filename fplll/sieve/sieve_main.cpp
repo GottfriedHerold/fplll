@@ -150,6 +150,8 @@ int main(int argc, char **argv)
     NumVect<Z_NR<mpz_t> > sample(dim);
     sample = Sampler->sample();
     cout << sample << endl;
+    
+    lll_reduction(B, LLL_DEF_DELTA, LLL_DEF_ETA, LM_WRAPPER);
 
     call_sieve(B, 1);
 

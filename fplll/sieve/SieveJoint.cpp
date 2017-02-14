@@ -47,6 +47,14 @@ void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::run_2_sieve()
         //it = main_list.insert_after(it, p);
     }
     for ( LatticePoint<ET> & x : main_list) cout << x << endl;
+    
+    /* can do main_list.sort here, but I assume original_basis is preporcessed
+    
+     */
+    
+    
+    
+    
 };
 
 #define SIEVE_JOINT_CPP
