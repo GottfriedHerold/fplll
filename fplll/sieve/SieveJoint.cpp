@@ -108,7 +108,36 @@
 template<class ET>
 bool check2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2)
 {
-    cout << "inside check2red" << endl;
+
+    //cout << "before the reduction: ";
+    //p1.printLatticePoint();
+    
+    ET sc_prod, abs_2scprod, scalar;
+    sc_product(sc_prod, p1, p2);
+    abs_2scprod.mul_ui(sc_prod,2);
+    abs_2scprod.abs(abs_2scprod);
+    
+    // check if |2 * <p1, p2>| <= |p2|^2. If yes, no reduction
+    if (abs_2scprod <= p2.norm2)
+        return false;
+    
+    // compute the (integer) multiple for p1: mult = round(<p1, p2> / |p2|^2)
+    FP_NR<double> mult, tmp; //may be can use another type
+    mult.set_z(sc_prod); //conversions
+    tmp.set_z(p2.norm2);
+    
+    
+    mult.div(mult, tmp);
+    mult.rnd(mult);
+    scalar.set_f(mult); //converts mult to the type suitable for mult_const;
+
+    
+    LatticePoint<ET> res(p2);
+    scalar_mult(res, scalar);
+    p1 = p1 - res;
+    
+    //cout << endl << "after the reduction: ";
+    //p1.printLatticePoint();
     return true;
 }
 
