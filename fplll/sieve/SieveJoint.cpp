@@ -104,6 +104,14 @@
 //    //cout << "running SieveIteration " << endl;
 //};
 
+// p1 > p2; reduce p1
+template<class ET>
+bool check2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2)
+{
+    cout << "inside check2red" << endl;
+    return true;
+}
+
 
 #endif
 

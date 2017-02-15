@@ -41,7 +41,7 @@ void Sieve<ET,false>::run_2_sieve()
         }
         else
         {
-            p = main_queue.top(); //why does this return contst?
+            p = main_queue.top();
             main_queue.pop();
         }
         
@@ -68,8 +68,8 @@ void Sieve<ET,false>::SieveIteration (LatticePoint<ET> &p)
             if (p.norm2 < (*it1).norm2) {
                 break;
             }
-
-
+            bool check  = check2red(p, *it1);
+            
         }
     }
     //cout << "running SieveIteration " << endl;

@@ -273,6 +273,9 @@ current_list_size(0)
 };
 
 
+template<class ET>
+bool check2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2);
+
 
 /*DUMPING / READING ROUTINES */
 
