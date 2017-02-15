@@ -475,7 +475,9 @@ if(howverb>=3)
   }
   of << "--End of Main List--" << endl << endl;
   of << "--Main Queue--" << endl;
-  for(auto it = main_queue.begin();it!=main_queue.end();++it)
+//  for(auto it = main_queue.begin();it!=main_queue.end();++it)
+  cerr << "Dumping of main queue not supported yet.";
+  of << "--End of Main Queue--";
   {
 
   }
@@ -483,8 +485,6 @@ if(howverb>=3)
 
 
 }
-
-
 
 #define SIEVE_JOINT_H
 #endif
