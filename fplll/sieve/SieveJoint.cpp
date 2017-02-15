@@ -1,11 +1,11 @@
 #undef DO_INCLUDE_SIEVE_JOINT_CPP
 #ifndef GAUSS_SIEVE_IS_MULTI_THREADED
-#error wrong usage of SieveJoint.cpp -- 1
+#error wrong usage of SieveJoint.cpp --1
 #endif
 
 #if GAUSS_SIEVE_IS_MULTI_THREADED == false
 
-#if !defined(GAUSS_SIEVE_SINGLE_THREADED) || defined(GAUSS_SIEVE_MULTI_THREADED)
+#if !defined(SIEVE_GAUSS_SINGLE_THREADED)
 #error wrong usage of SieveJoint.cpp -- 2
 #endif
 
@@ -15,7 +15,7 @@
 #endif
 
 #elif GAUSS_SIEVE_IS_MULTI_THREADED == true
-#if defined(GAUSS_SIEVE_SINGLE_THREADED) || !defined(GAUSS_SIEVE_MULTI_THREADED)
+#if !defined(SIEVE_GAUSS_MULTI_THREADED)
 #error wrong usage of SieveJoint.cpp -- 3
 #endif
 

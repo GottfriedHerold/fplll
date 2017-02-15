@@ -22,6 +22,8 @@
 **/
 
 template <class ET> class LatticePoint;
+template <class ET> class IsLongerVector_class; //class wrapper to compare vectors by length. Needs to be wrapped in a class to work seamlessly with some STL containers.
+
 
 template <class ET>
 void sc_product (ET &result, const LatticePoint<ET> &p1, const LatticePoint<ET> &p2);
