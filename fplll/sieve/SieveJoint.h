@@ -89,7 +89,7 @@ using SieveMT = Sieve<ET,true>;
 
 /* CLASS FOR TERMINATION CONDITIONS */
 
-class bad_dumpread_TermCond:public std::runtime_error{bad_dumpread_TermCond():runtime_error("Dump read failed for Termination Condition"){}}; //exception indicating that read from dump failed.
+class bad_dumpread_TermCond:public std::runtime_error{public:bad_dumpread_TermCond():runtime_error("Dump read failed for Termination Condition"){}}; //exception indicating that read from dump failed.
 template<class ET> ostream & operator<<(ostream &os,TerminationConditions<ET> const &term_cond); //printing
 template<class ET> istream & operator>>(istream &is,TerminationConditions<ET> &term_cond); //reading (also used by constructor from istream)
 template<class ET>
