@@ -111,6 +111,7 @@ public:
 #endif //class_multithreaded is for introspection, is_multithreaded is what the caller wants (may differ if we dump and re-read with different params)
 
     void run_2_sieve(); //actually runs the Gauss Sieve.
+    void SieveIteration (LatticePoint<ET> &p); //one run through the main_list
     LPType get_SVP(); //obtains Shortest vector and it's length. If sieve has not yet run, start it.
     void run(); //runs the sieve specified by the parameters.
     //void print_status(int verb = -1, std::ostream &out = cout) const{dump_status_to_stream(out,false,verb);};
@@ -211,6 +212,9 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
 //TODO : initialize term_condition to some meaningful default.
 };
 
+
+template<class ET>
+bool check2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2);
 
 
 /*DUMPING / READING ROUTINES */

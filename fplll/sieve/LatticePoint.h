@@ -86,11 +86,13 @@ public:
     inline void setNorm2 (ET norm) {this->norm2 = norm;}
 
     void printLatticePoint()
-{
-    //using NV = NumVect<ET>;
-    cout << * (static_cast<NumVect<ET>*>(this)) << " of norm: " << this->norm2 << endl;
-    //cout << this->getNorm() << endl;
-}
+    {
+        cout << * (static_cast<NumVect<ET>*>(this)) << " of norm: " << this->norm2 << endl;
+    }
+//    void subtr (LatticePoint<ET> const A)
+//    {
+//        this->this.sub(A, A.size());
+//    }
 };
 
 template<class ET> class IsLongerVector_class //should be moved to LatticePoint.h. Make sure getNorm is declared const.
@@ -126,6 +128,12 @@ LatticePoint<ET> operator- (LatticePoint<ET> const &A, LatticePoint<ET> const &B
 	C.setNorm2(norm);
 	return C;
 
+}
+
+template <class ET>
+void scalar_mult (LatticePoint<ET> &A, ET multiple)
+{
+    A.mul(A, A.size(), multiple);
 }
 
 
