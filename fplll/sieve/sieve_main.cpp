@@ -146,10 +146,10 @@ int main(int argc, char **argv)
     B.gen_trg(1.1);
 
     // KleinSampler<ZT, F> is templated by two classes; returns NumVect<Z_NR<ZT> of dim = B.NumCols()
-    KleinSampler<mpz_t, FP_NR<double>> *Sampler = new KleinSampler<mpz_t, FP_NR<double>>(B, 0, 0);
-    NumVect<Z_NR<mpz_t> > sample(dim);
-    sample = Sampler->sample();
-    cout << sample << endl;
+    //KleinSampler<mpz_t, FP_NR<double>> *Sampler = new KleinSampler<mpz_t, FP_NR<double>>(B, 0, 0);
+    //NumVect<Z_NR<mpz_t> > sample(dim);
+    //sample = Sampler->sample();
+    //cout << sample << endl;
     
     lll_reduction(B, LLL_DEF_DELTA, LLL_DEF_ETA, LM_WRAPPER);
 

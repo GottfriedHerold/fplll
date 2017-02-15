@@ -56,14 +56,15 @@ void Sieve<ET,false>::run_2_sieve()
 template<class ET>
 void Sieve<ET,false>::SieveIteration (LatticePoint<ET> &p)
 {
-    //auto it = main_list.before_begin();
-
+    auto it1= main_list.before_begin();
+    auto prev = main_list.before_begin();
     bool loop = true;
+    
 
     while (loop) //while p keeps changing
     {
         loop = false;
-        for (auto it1 = main_list.begin(); it1!=main_list.end(); ++it1) {
+        for (it1 = main_list.begin(); it1!=main_list.end(); ++it1) {
             if (p.norm2 < (*it1).norm2) {
                 break;
             }
@@ -72,7 +73,53 @@ void Sieve<ET,false>::SieveIteration (LatticePoint<ET> &p)
 
         }
     }
-    //cout << "running SieveIteration " << endl;
+
+    if (p.norm2 == 0)
+	{
+		//increase the number of collisions
+		number_of_collisions++;
+		return;
+	}
+    
+    
+    //insert p into main_list; 
+     cout << "----- before the insertion ---- " << endl;
+     for (auto it2 = main_list.begin(); it2!=main_list.end(); ++it2) {
+    	(*it2).printLatticePoint();
+    }
+
+    it1 = main_list.emplace_after (it1, p);
+
+    cout << "----- after the insertion ---- " << endl;
+     for (auto it2 = main_list.begin(); it2!=main_list.end(); ++it2) {
+    	(*it2).printLatticePoint();
+    }
+
+    
+    prev = it1;
+    if(it1!=main_list.end()) ++it1;
+    
+    while (it1 !=main_list.end()) {
+		if (check2red(*it1, p)) //*it was changed, remove it from the list, put
+    		{
+			cout << "v was found" <<  endl;
+			main_queue.emplace(*it1);
+			it1 = main_list.erase_after(prev); //+it1 is done
+			
+		}
+		else  
+		{
+			prev = it1;
+			++it1;
+		}
+		
+    }
+   
+    /* print for debugging */
+    //for (it1 = main_list.begin(); it1!=main_list.end(); ++it1) {
+    //	(*it1).printLatticePoint();
+    //}
+
 };
 
 #endif
