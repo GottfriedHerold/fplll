@@ -24,7 +24,6 @@
 template <class ET> class LatticePoint;
 template <class ET> class IsLongerVector_class; //class wrapper to compare vectors by length. Needs to be wrapped in a class to work seamlessly with some STL containers.
 
-
 template <class ET>
 void sc_product (ET &result, const LatticePoint<ET> &p1, const LatticePoint<ET> &p2);
 
@@ -95,13 +94,14 @@ public:
 //    }
 };
 
-template<class ET> class IsLongerVector_class //should be moved to LatticePoint.h. Make sure getNorm is declared const.
+template<class ET> class IsLongerVector_class
 {
     public: bool operator() (LatticePoint<ET> const &A, LatticePoint<ET> const & B)
     {
      return (A.get_norm2() > B.get_norm2() );
     }
 };
+
 
 template <class ET>
 LatticePoint<ET> operator+ (LatticePoint<ET> const &A, LatticePoint<ET> const &B)

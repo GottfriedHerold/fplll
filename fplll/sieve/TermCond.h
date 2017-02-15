@@ -6,7 +6,7 @@ class TerminationConditions;
 
 class bad_dumpread_TermCond:public std::runtime_error
 {
-    bad_dumpread_TermCond():runtime_error("Dump read failed for Termination Condition") {}
+   public: bad_dumpread_TermCond():runtime_error("Dump read failed for Termination Condition") {}
 }; //exception indicating that read from dump failed.
 
 template<class ET> ostream & operator<<(ostream &os,TerminationConditions<ET> const &term_cond); //printing

@@ -122,7 +122,7 @@ public:
         DT * const tmp = new DT(val);
         enlist(pos,tmp);
     }; //inserts a copy of DT just before pos.
-    void enlist(MTListIterator<DT> const &pos, DT * const &valref); //moves *DT just before pos, transfering ownership to the list.
+    void enlist(MTListIterator<DT> const &pos, DT * const valref); //moves *DT just before pos, transfering ownership to the list.
 
 private:
     std::mutex mutex_currently_writing;
@@ -286,7 +286,7 @@ void ListMultiThreaded<DT>::unlink(Iterator const & pos, GarbageBin<DT> &gb)
 
 
 template <class DT>
-void ListMultiThreaded<DT>::enlist(MTListIterator<DT> const &pos, DT * const &valref)
+void ListMultiThreaded<DT>::enlist(MTListIterator<DT> const &pos, DT * const valref)
 {
     Node* newnode = new Node;
     newnode->latpoint = valref;

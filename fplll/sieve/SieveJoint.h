@@ -68,6 +68,7 @@ bool string_consume(istream &is, std::string const & str, bool elim_ws= true, bo
 #include <string>
 #include <exception>
 #include "TermCond.h"
+#include "GaussQueue.h"
 
 #endif //end of ONLY-ONCE part
 
