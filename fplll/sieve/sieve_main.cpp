@@ -139,17 +139,17 @@ int main(int argc, char **argv)
 
     // ZZ_mat is an integer row-oriented matrix. See /nr/matrix.h
     ZZ_mat<mpz_t> B;
-    int dim = 10;
+    int dim = 30;
     B.resize(dim, dim);
 
     //generates a lower-triangular matrix B; the argument determines (in a complicated way) the bit-size of entries
-    B.gen_trg(1.1);
+    B.gen_trg(1.0);
 
-    // KleinSampler<ZT, F> is templated by two classes; returns NumVect<Z_NR<ZT> of dim = B.NumCols()
-    //KleinSampler<mpz_t, FP_NR<double>> *Sampler = new KleinSampler<mpz_t, FP_NR<double>>(B, 0, 0);
-    //NumVect<Z_NR<mpz_t> > sample(dim);
-    //sample = Sampler->sample();
-    //cout << sample << endl;
+    //KleinSampler<ZT, F> is templated by two classes; returns NumVect<Z_NR<ZT> of dim = B.NumCols()
+//    KleinSampler<mpz_t, FP_NR<double>> *Sampler = new KleinSampler<mpz_t, FP_NR<double>>(B, 0, 234234);
+//    NumVect<Z_NR<mpz_t> > sample(dim);
+//    sample = Sampler->sample();
+//    cout << sample << endl;
     
     lll_reduction(B, LLL_DEF_DELTA, LLL_DEF_ETA, LM_WRAPPER);
 

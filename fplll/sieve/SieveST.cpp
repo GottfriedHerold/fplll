@@ -19,14 +19,14 @@ void Sieve<ET,false>::run_2_sieve()
         it = main_list.emplace_after(it, p);
         //it = main_list.insert_after(it, p);
     }
-    for ( LatticePoint<ET> & x : main_list) cout << x << endl;
+    //for ( LatticePoint<ET> & x : main_list) cout << x << endl;
 
     /* can do main_list.sort here, but I assume original_basis is preporcessed
 
      */
 
     int i=0;
-    int MaxIteration = 2;
+    int MaxIteration = 30;
 
     LatticePoint<ET> p;
     NumVect<ET> sample;
@@ -37,17 +37,21 @@ void Sieve<ET,false>::run_2_sieve()
         {
             sample = sampler -> sample();
             p = conv_sample_to_lattice_point(sample);
+            cout << "sampled p: ";
+            p.printLatticePoint();
+            cout<< endl;
         }
         else
         {
             p = main_queue.top();
             main_queue.pop();
+            cout << "popped p: ";
+            p.printLatticePoint();
+            cout<< endl;
         }
 
 
-	cout << "sampled p: "; 
-   	p.printLatticePoint();
-    	cout<< endl;
+	
         
 	SieveIteration(p);
 
@@ -88,17 +92,17 @@ void Sieve<ET,false>::SieveIteration (LatticePoint<ET> &p)
     
     
     //insert p into main_list; 
-     cout << "----- before the insertion ---- " << endl;
-     for (auto it2 = main_list.begin(); it2!=main_list.end(); ++it2) {
-    	(*it2).printLatticePoint();
-    }
+//     cout << "----- before the insertion ---- " << endl;
+//     for (auto it2 = main_list.begin(); it2!=main_list.end(); ++it2) {
+//    	(*it2).printLatticePoint();
+//    }
 
     it1 = main_list.emplace_after (it1, p);
-
-    cout << "----- after the insertion ---- " << endl;
-     for (auto it2 = main_list.begin(); it2!=main_list.end(); ++it2) {
-    	(*it2).printLatticePoint();
-    }
+//
+//    cout << "----- after the insertion ---- " << endl;
+//     for (auto it2 = main_list.begin(); it2!=main_list.end(); ++it2) {
+//    	(*it2).printLatticePoint();
+//    }
 
     
     prev = it1;
