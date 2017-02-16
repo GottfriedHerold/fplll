@@ -98,12 +98,12 @@ for (int i=0; i <25; ++i)
 return;
 }
 
-template<class ZT> void call_sieve (ZZ_mat<ZT> B, int sieve_verbosity)
+template<class ZT> void call_sieve (ZZ_mat<ZT> B, int sieve_verbosity, Z_NR<ZT> target_norm)
 {
 
 	TerminationConditions< Z_NR<ZT> > term_cond;
 	Sieve<Z_NR< ZT > , false> Test_2Sieve (B);
-	Test_2Sieve.run_2_sieve();
+	Test_2Sieve.run_2_sieve(target_norm);
 
 
 }
@@ -111,11 +111,36 @@ template<class ZT> void call_sieve (ZZ_mat<ZT> B, int sieve_verbosity)
 
 int main(int argc, char **argv)
 {
-  //char *input_file_name = NULL;
-  //char *goal_norm_s     = NULL;
-  //bool flag_verbose = false, flag_file = false;
-  //int option, alg, dim = 10, seed = 0, bs = 0;
-    cout<< "Hello" << endl;
+  
+    char *target_norm_string = NULL;
+    int opt, dim = 10;
+    Z_NR<mpz_t> target_norm;
+    
+    
+    if (argc == 1)
+    {
+        cout << " please, provide the dimension" << endl;
+        return -1;
+    }
+    
+    while ((opt = getopt(argc, argv, "d:t:")) != -1) {
+        switch (opt) {
+            case 'd':
+                dim = atoi(optarg);
+                break;
+            case 't':
+                target_norm_string = optarg;
+                break;
+        }
+    }
+    
+    if (target_norm_string!=NULL)
+    {
+        target_norm.set_str(target_norm_string);
+    }
+    
+    cout << "target norm set: " << target_norm << endl;
+    
 
 
     //PointListSingleThreaded<long int> X;
@@ -139,11 +164,11 @@ int main(int argc, char **argv)
 
     // ZZ_mat is an integer row-oriented matrix. See /nr/matrix.h
     ZZ_mat<mpz_t> B;
-    int dim = 30;
+  
     B.resize(dim, dim);
 
     //generates a lower-triangular matrix B; the argument determines (in a complicated way) the bit-size of entries
-    B.gen_trg(0.9);
+    B.gen_trg(1.1);
 
     //KleinSampler<ZT, F> is templated by two classes; returns NumVect<Z_NR<ZT> of dim = B.NumCols()
 //    KleinSampler<mpz_t, FP_NR<double>> *Sampler = new KleinSampler<mpz_t, FP_NR<double>>(B, 0, 234234);
@@ -152,8 +177,11 @@ int main(int argc, char **argv)
 //    cout << sample << endl;
     
     lll_reduction(B, LLL_DEF_DELTA, LLL_DEF_ETA, LM_WRAPPER);
+    
+    cout << "run sieve on B[0] = " << B[0] << endl;
+    //cout << "B[1] = " << B[1] << endl;
 
-    call_sieve(B, 1);
+    call_sieve(B, 1, target_norm);
 
 
     int num_threads=4;

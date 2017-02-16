@@ -6,7 +6,7 @@
 #endif
 
 template<class ET>
-void Sieve<ET,false>::run_2_sieve()
+void Sieve<ET,false>::run_2_sieve(ET target_norm)
 {
     //using SieveT = Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
 
@@ -26,29 +26,30 @@ void Sieve<ET,false>::run_2_sieve()
      */
 
     int i=0;
-    int MaxIteration = 80;
+    int MaxIteration = 8000;
 
     LatticePoint<ET> p;
     NumVect<ET> sample;
 
-    while(i < MaxIteration) // TerminationCondition Here
+    //while(i < MaxIteration) // TerminationCondition Here
+    while (main_list.front().norm2 > target_norm)
     {
         if (main_queue.empty())
         {
             sample = sampler -> sample();
             p = conv_sample_to_lattice_point(sample);
             
-            cout << "sampled p: ";
-            p.printLatticePoint();
-            cout<< endl;
+            //cout << "sampled p: ";
+            //p.printLatticePoint();
+            //cout<< endl;
         }
         else
         {
             p = main_queue.top();
             main_queue.pop();
-            cout << "popped p: ";
-            p.printLatticePoint();
-            cout<< endl;
+//            cout << "popped p: ";
+//            p.printLatticePoint();
+//            cout<< endl;
         }
 
 
@@ -57,8 +58,14 @@ void Sieve<ET,false>::run_2_sieve()
 	SieveIteration(p);
 
         ++i;
+        if (i % 500 == 0) {
+            cout << "# of collisions: " << number_of_collisions << endl;
+            cout << "norm2 of the so far shortest vector: " << main_list.front().norm2 << endl;
+        }
     }
 
+    cout << "sv is " << endl;
+    main_list.front().printLatticePoint();
 
 }
 
@@ -113,7 +120,7 @@ void Sieve<ET,false>::SieveIteration (LatticePoint<ET> &p)
     while (it1 !=main_list.end()) {
 		if (check2red(*it1, p)) //*it was changed, remove it from the list, put
     		{
-			cout << "v was found" <<  endl;
+			//cout << "v was found" <<  endl;
                 
             if ((*it1).norm2 == 0)
             {

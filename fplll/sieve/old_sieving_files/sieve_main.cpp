@@ -164,6 +164,10 @@ int main(int argc, char **argv)
     bkz_reduction(B, bs, BKZ_DEFAULT, FT_DEFAULT, 0);
   else
     lll_reduction(B, LLL_DEF_DELTA, LLL_DEF_ETA, LM_WRAPPER);
+    
+
+    cout << "run sieve on B[0] = " << B[0] << endl;
+    //cout << "B[1] = " << B[1] << endl;
 
   clock_t etime = clock();
   double secs   = (etime - stime) / (double)CLOCKS_PER_SEC;
@@ -194,8 +198,8 @@ int main(int argc, char **argv)
   }
   else
 #endif
- //   main_run_sieve<mpz_t>(B, goal_norm, alg, flag_verbose, seed); //commented out for test
-
+      main_run_sieve<mpz_t>(B, goal_norm, alg, flag_verbose, seed);
+    
   etime = clock();
   secs  = (etime - stime) / (double)CLOCKS_PER_SEC;
   if (flag_verbose)
