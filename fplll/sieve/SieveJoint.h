@@ -98,7 +98,7 @@ public:
     Sieve(Sieve &&old) = default;
     Sieve & operator=(Sieve const & old)=delete;
     Sieve & operator=(Sieve &&old) = default; //movable, but not copyable.
-    explicit Sieve(LatticeBasisType B, unsigned int k=2, TerminationConditions<ET> termcond = {}, unsigned int verbosity_=1, int seed_sampler = 0);
+    explicit Sieve(LatticeBasisType B, unsigned int k=2, TerminationConditions<ET> termcond = {}, unsigned int verbosity_=1, int seed_sampler = 324);
     //explicit Sieve(std::string const &infilename); //read from dump file.
     ~Sieve()
     {
@@ -199,7 +199,7 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
     ambient_dimension(B.get_cols()), //Note : this means that rows of B form the basis.
     multi_threaded_wanted(GAUSS_SIEVE_IS_MULTI_THREADED),
     sieve_k(k),
-    //sampler(NULL),
+    sampler(nullptr),
     verbosity(verbosity_),
     term_cond(termcond),
     sieve_status(SieveStatus::sieve_status_init),
@@ -209,7 +209,7 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
     number_of_points_constructed(0),
     current_list_size(0)
 {
-    sampler = new KleinSampler<typename ET::underlying_data_type, FP_NR<double>>(B, verbosity, 8979);
+    sampler = new KleinSampler<typename ET::underlying_data_type, FP_NR<double>>(B, verbosity, seed_sampler);
 //TODO : initialize term_condition to some meaningful default.
 };
 
