@@ -73,7 +73,7 @@ typename GaussQueue<ET,false>::LPType const & GaussQueue<ET,false>::top() const
     {
         LPType * newpointptr = new LPType ( sampler->sample() );
     }
-    return * ( our_queue.top() );
+    return * ( our_queue.front() );
 }
 
 template<class ET>

@@ -75,6 +75,7 @@ void Sieve<ET,false>::run_2_sieve(ET target_norm)
 
     cout << "sv is " << endl;
     main_list.front().printLatticePoint();
+    print_status();
 
 }
 

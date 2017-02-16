@@ -89,4 +89,69 @@ private:
     ET target_length_;
 }; //end of termination condition class
 
+template<class ET> ostream & operator<<(ostream &os,TerminationConditions<ET> const &term_cond) //printing
+{
+
+    os << "Default_Conditions=" << term_cond.default_condition << endl;
+    if(!term_cond.default_condition)
+    {
+        os << "Check Collisions=" << term_cond.do_we_check_collisions_ << endl;
+        if(term_cond.do_we_check_collisions_)
+        {
+            os << "Number=" << term_cond.allowed_collisions_ << endl;
+        }
+        os << "Check List Size=" << term_cond.do_we_check_list_size_ << endl;
+        if(term_cond.do_we_check_list_size_)
+        {
+            os << "Number=" << term_cond.allowed_list_size_ << endl;
+        }
+        os << "Check Target Length=" << term_cond.do_we_check_length_ << endl;
+        if(term_cond.do_we_check_length_)
+        {
+            os << "Target Length=" << term_cond.target_length_ << endl;
+        }
+    }
+    return os;
+}
+template<class ET> istream & operator>>(istream &is,TerminationConditions<ET> &term_cond)
+{
+    bool do_we_check_collisions_;
+    bool do_we_check_length_;
+    bool do_we_check_list_size_;
+    bool default_condition;
+    unsigned long int allowed_collisions_;
+    unsigned long int allowed_list_size_;
+    ET target_length_;
+//We should probably throw an exception rather than return is.
+    if (!string_consume(is,"Default_Conditions=")) throw bad_dumpread_TermCond();
+    is >> term_cond.default_condition;
+    if(!term_cond.default_condition)
+    {
+        if(!string_consume(is,"Check Collisions=")) throw bad_dumpread_TermCond();
+        is>> term_cond.do_we_check_collisions_;
+        if(term_cond.do_we_check_collisions_)
+        {
+            if(!string_consume(is,"Number=")) throw bad_dumpread_TermCond();
+            is >> term_cond.allowed_collisions;
+        }
+        if(!string_consume(is,"Check List Size=")) throw bad_dumpread_TermCond();
+        is>> term_cond.do_we_check_list_size_;
+        if(term_cond.do_we_check_list_size_)
+        {
+            if(!string_consume(is,"Number=")) throw bad_dumpread_TermCond();
+            is>> term_cond.allows_list_size_;
+        }
+        if(!string_consume(is,"Check Target Length=")) throw bad_dumpread_TermCond();
+        is>>term_cond.do_we_check_length_;
+        if(term_cond.do_we_check_length_)
+        {
+
+        }
+
+    }
+    return is;
+
+} //reading (also used by constructor from istream)
+
+
 #endif

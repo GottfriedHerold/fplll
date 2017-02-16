@@ -190,31 +190,6 @@ private: //to avoid complicated (due to template hack) friend - declaration.
 
 //MOVE TO CPP FROM HERE:
 
-
-template<class ET> //ET : underlying entries of the vectors. Should be a Z_NR<foo> - type. Consider making argument template itself.
-Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int k, TerminationConditions<ET> termcond, unsigned int verbosity_, int seed_sampler):  //move to cpp //TODO:MT
-    main_list(),
-    main_queue(),
-    original_basis(B),
-    lattice_rank(B.get_rows()),
-    ambient_dimension(B.get_cols()), //Note : this means that rows of B form the basis.
-    multi_threaded_wanted(GAUSS_SIEVE_IS_MULTI_THREADED),
-    sieve_k(k),
-    sampler(nullptr),
-    verbosity(verbosity_),
-    term_cond(termcond),
-    sieve_status(SieveStatus::sieve_status_init),
-    shortest_vector_found(), //TODO : initialize to meaningful value, e.g. any vector of B.
-    number_of_collisions(0),
-    number_of_points_sampled(0),
-    number_of_points_constructed(0),
-    current_list_size(0)
-{
-    sampler = new KleinSampler<typename ET::underlying_data_type, FP_NR<double>>(B, verbosity, seed_sampler);
-//TODO : initialize term_condition to some meaningful default.
-};
-
-
 template<class ET>
 bool check2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2);
 
@@ -241,104 +216,7 @@ Reads length(str) chars from stream is, expecting them to equal str. If what is 
 
 #ifndef SIEVE_JOINT_H
 
-bool string_consume(istream &is, std::string const & str, bool elim_ws, bool verbose)
-{
-    unsigned int len = str.length();
-    char *buf = new char[len+1];
-    buf[len] = 0; //for error message.
-    if (elim_ws)
-    {
-        is >> std::ws;
-    }
-    is.read(buf,len);
-    if(is.gcount() != len)
-    {
-        if(verbose)
-        {
-            cerr << "Failure reading header: Expected to read" << str << endl;
-            cerr << "Read only "<<is.gcount() << "bytes. String read was" << buf<<endl;
-        }
-        return false;
-    }
-    if(elim_ws)
-    {
-        is >> std::ws;
-    }
-    if(str.compare(0,len,buf,len)!=0)
-    {
-        if(verbose)
-        {
-            cerr << "Failure reading header: Expected to read" << str << endl;
-            cerr << "Read instead:" << buf << endl;
-        }
-        return false;
-    }
-    return true;
-}
 
-template<class ET> ostream & operator<<(ostream &os,TerminationConditions<ET> const &term_cond) //printing
-{
-
-    os << "Default_Conditions=" << term_cond.default_condition << endl;
-    if(!term_cond.default_condition)
-    {
-        os << "Check Collisions=" << term_cond.do_we_check_collisions_ << endl;
-        if(term_cond.do_we_check_collisions_)
-        {
-            os << "Number=" << term_cond.allowed_collisions_ << endl;
-        }
-        os << "Check List Size=" << term_cond.do_we_check_list_size_ << endl;
-        if(term_cond.do_we_check_list_size_)
-        {
-            os << "Number=" << term_cond.allowed_list_size_ << endl;
-        }
-        os << "Check Target Length=" << term_cond.do_we_check_length_ << endl;
-        if(term_cond.do_we_check_length_)
-        {
-            os << "Target Length=" << term_cond.target_length_ << endl;
-        }
-    }
-    return os;
-}
-template<class ET> istream & operator>>(istream &is,TerminationConditions<ET> &term_cond)
-{
-    bool do_we_check_collisions_;
-    bool do_we_check_length_;
-    bool do_we_check_list_size_;
-    bool default_condition;
-    unsigned long int allowed_collisions_;
-    unsigned long int allowed_list_size_;
-    ET target_length_;
-//We should probably throw an exception rather than return is.
-    if (!string_consume(is,"Default_Conditions=")) throw bad_dumpread_TermCond();
-    is >> term_cond.default_condition;
-    if(!term_cond.default_condition)
-    {
-        if(!string_consume(is,"Check Collisions=")) throw bad_dumpread_TermCond();
-        is>> term_cond.do_we_check_collisions_;
-        if(term_cond.do_we_check_collisions_)
-        {
-            if(!string_consume(is,"Number=")) throw bad_dumpread_TermCond();
-            is >> term_cond.allowed_collisions;
-        }
-        if(!string_consume(is,"Check List Size=")) throw bad_dumpread_TermCond();
-        is>> term_cond.do_we_check_list_size_;
-        if(term_cond.do_we_check_list_size_)
-        {
-            if(!string_consume(is,"Number=")) throw bad_dumpread_TermCond();
-            is>> term_cond.allows_list_size_;
-        }
-        if(!string_consume(is,"Check Target Length=")) throw bad_dumpread_TermCond();
-        is>>term_cond.do_we_check_length_;
-        if(term_cond.do_we_check_length_)
-        {
-
-        }
-
-    }
-    return is;
-
-} //reading (also used by constructor from istream)
 
 
 #endif

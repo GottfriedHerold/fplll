@@ -83,6 +83,7 @@
 
 #ifndef SIEVE_JOINT_CPP
 
+
 //template<class ET, GAUSS_SIEVE_IS_MULTI_THREADED>
 //void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::SieveIteration (LatticePoint<ET> &p)
 //{
@@ -141,8 +142,69 @@ bool check2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2)
     return true;
 }
 
+//helper function for reading in from streams. Gobbles up str from the stream (and whitespace before/after).
+//If str is not on the stream, outputs an error.
+//Note that whitespace inside str is OK, as long as it is not at the beginning or end.
+
+bool string_consume(istream &is, std::string const & str, bool elim_ws, bool verbose)
+{
+    unsigned int len = str.length();
+    char *buf = new char[len+1];
+    buf[len] = 0; //for error message.
+    if (elim_ws)
+    {
+        is >> std::ws;
+    }
+    is.read(buf,len);
+    if(is.gcount() != len)
+    {
+        if(verbose)
+        {
+            cerr << "Failure reading header: Expected to read" << str << endl;
+            cerr << "Read only "<<is.gcount() << "bytes. String read was" << buf<<endl;
+        }
+        return false;
+    }
+    if(elim_ws)
+    {
+        is >> std::ws;
+    }
+    if(str.compare(0,len,buf,len)!=0)
+    {
+        if(verbose)
+        {
+            cerr << "Failure reading header: Expected to read" << str << endl;
+            cerr << "Read instead:" << buf << endl;
+        }
+        return false;
+    }
+    return true;
+}
 
 #endif
+
+template<class ET> //ET : underlying entries of the vectors. Should be a Z_NR<foo> - type. Consider making argument template itself.
+Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int k, TerminationConditions<ET> termcond, unsigned int verbosity_, int seed_sampler):  //move to cpp //TODO:MT
+    main_list(),
+    main_queue(),
+    original_basis(B),
+    lattice_rank(B.get_rows()),
+    ambient_dimension(B.get_cols()), //Note : this means that rows of B form the basis.
+    multi_threaded_wanted(GAUSS_SIEVE_IS_MULTI_THREADED),
+    sieve_k(k),
+    sampler(nullptr),
+    verbosity(verbosity_),
+    term_cond(termcond),
+    sieve_status(SieveStatus::sieve_status_init),
+    shortest_vector_found(), //TODO : initialize to meaningful value, e.g. any vector of B.
+    number_of_collisions(0),
+    number_of_points_sampled(0),
+    number_of_points_constructed(0),
+    current_list_size(0)
+{
+    sampler = new KleinSampler<typename ET::underlying_data_type, FP_NR<double>>(B, verbosity, seed_sampler);
+//TODO : initialize term_condition to some meaningful default.
+};
 
 #define SIEVE_JOINT_CPP
 #endif
