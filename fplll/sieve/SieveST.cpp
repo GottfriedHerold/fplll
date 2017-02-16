@@ -26,7 +26,7 @@ void Sieve<ET,false>::run_2_sieve()
      */
 
     int i=0;
-    int MaxIteration = 10;
+    int MaxIteration = 2;
 
     LatticePoint<ET> p;
     NumVect<ET> sample;
@@ -44,7 +44,12 @@ void Sieve<ET,false>::run_2_sieve()
             main_queue.pop();
         }
 
-        SieveIteration(p);
+
+	cout << "sampled p: "; 
+   	p.printLatticePoint();
+    	cout<< endl;
+        
+	SieveIteration(p);
 
         ++i;
     }

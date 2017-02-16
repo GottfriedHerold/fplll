@@ -199,7 +199,7 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
     ambient_dimension(B.get_cols()), //Note : this means that rows of B form the basis.
     multi_threaded_wanted(GAUSS_SIEVE_IS_MULTI_THREADED),
     sieve_k(k),
-    sampler(nullptr),
+    //sampler(NULL),
     verbosity(verbosity_),
     term_cond(termcond),
     sieve_status(SieveStatus::sieve_status_init),
@@ -209,7 +209,7 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
     number_of_points_constructed(0),
     current_list_size(0)
 {
-    sampler = new KleinSampler<typename ET::underlying_data_type, FP_NR<double>>(B, verbosity, seed_sampler);
+    sampler = new KleinSampler<typename ET::underlying_data_type, FP_NR<double>>(B, verbosity, 8979);
 //TODO : initialize term_condition to some meaningful default.
 };
 
