@@ -39,50 +39,38 @@ public:
         ET norm2;
 
 public:
-    LatticePoint(){}
+    LatticePoint()=default;
     LatticePoint(const LatticePoint &Point) = default; // : NumVect<ET>::data(Point.data), norm2(Point.norm2) {}
     LatticePoint(LatticePoint &&Point) = default ; // : NumVect<ET> (), norm2(0) {swap(Point.NV::data), swap(Point.norm2);}
-    LatticePoint(int n) : NumVect<ET>(n), norm2() //creates all-zero vector of length n
-        {
-           this->data.resize(n);
-           this->fill(0);
-	       norm2 = 0; //why? LatticePoint(int n) : NumVect<ET>(n), norm(0) errs
-        }
-
-    // for debugging
-    LatticePoint(int n, long fillwith) : NumVect<ET>(n),norm2()
-    {
-        this->data.resize(n);
-        this->fill(fillwith);
-        sc_product(this->norm2, *this, *this);
-        //norm2 = fillwith*fillwith*n; gives type problems.
-    }
-    //TODO: fillwith should be ET, not long.
-
+    LatticePoint(int n); //creates all-zero vector of length n
+    LatticePoint(int n, long fillwith);    //TODO: fillwith should be ET, not long.
     LatticePoint(NumVect<ET> vector_) : NumVect<ET>(vector_)
     {
-    sc_product(this->norm2, *this, *this);
+        Normalize();
     }
+    void Normalize(); //sets norm2 to the correct value. Use after using operations from the NumVect<ET> base class.
 
+    LatticePoint& operator=(LatticePoint const &that) =default;
+    LatticePoint& operator=(LatticePoint && that) =default;
+    /*
     LatticePoint& operator=(LatticePoint that)
-        {
-            swap(that);
-            return *this;
-        }
-
+    {
+        swap(*this,that);
+        return *this;
+    }
+    */
     ~LatticePoint() {}
 
-    void swap(LatticePoint &Point)
+    friend void swap(LatticePoint &A, LatticePoint &B)
     {
-        this->data.swap(Point.data);
-        std::swap(norm2, Point.norm2);
+        std::swap(A.data, B.data);
+        std::swap(A.norm2,B.norm2);
     }
 
     inline NV& getVector() const {return this->data.get();}
     inline ET get_norm2() const {return norm2;}
     inline void get_norm2 (ET norm_to_return) const {norm_to_return = norm2;}
-
-    inline void setNorm2 (ET norm) {this->norm2 = norm;}
+    inline void setNorm2 (ET norm) {this->norm2 = norm;} //should not be required, actually.
 
     void printLatticePoint()
     {
@@ -94,7 +82,28 @@ public:
 //    }
 };
 
-template<class ET> class IsLongerVector_class
+template<class ET>
+LatticePoint<ET>::LatticePoint(int n)
+    :
+    NumVect<ET>(n), //creates all-zero vector of length n
+    norm2()
+{
+    this->data.resize(n);
+    this->fill(0);
+    norm2 = 0; //why? LatticePoint(int n) : NumVect<ET>(n), norm(0) errs
+}
+
+template<class ET>
+LatticePoint<ET>::LatticePoint(int n, long fillwith) : NumVect<ET>(n),norm2() // for debugging
+{
+    this->data.resize(n);
+    this->fill(fillwith);
+    sc_product(this->norm2, *this, *this);
+    //norm2 = fillwith*fillwith*n; gives type problems.
+}
+
+
+template<class ET> class IsLongerVector_class //TODO : Move to GaussQueue.h
 {
     public: bool operator() (LatticePoint<ET> const &A, LatticePoint<ET> const & B)
     {
@@ -109,10 +118,8 @@ LatticePoint<ET> operator+ (LatticePoint<ET> const &A, LatticePoint<ET> const &B
 
 	LatticePoint<ET> C(A);
 	//length-check is done in by add in numvect
-	C.add(B, A.size());
-	ET norm;
-	sc_product (norm, C, C);
-	C.setNorm2(norm);
+	C.NumVect<ET>::add(B, A.size());
+	C.Normalize();
 	return C;
 
 }
@@ -122,10 +129,8 @@ LatticePoint<ET> operator- (LatticePoint<ET> const &A, LatticePoint<ET> const &B
 {
 
 	LatticePoint<ET> C(A);
-	C.sub(B, A.size());
-	ET norm;
-	sc_product (norm, C, C);
-	C.setNorm2(norm);
+	C.NumVect<ET>::sub(B, A.size());
+	C.Normalize();
 	return C;
 
 }
@@ -133,7 +138,8 @@ LatticePoint<ET> operator- (LatticePoint<ET> const &A, LatticePoint<ET> const &B
 template <class ET>
 void scalar_mult (LatticePoint<ET> &A, ET multiple)
 {
-    A.mul(A, A.size(), multiple);
+    A.NumVect<ET>::mul(A, A.size(), multiple);
+    A.Normalize(); //we could do smarter.
 }
 
 
@@ -147,6 +153,12 @@ void sc_product (ET &result, const LatticePoint<ET> &p1, const LatticePoint<ET> 
 //Convert MatrixRow to LatticePoint
 
 template <class ET>
+void LatticePoint<ET>::Normalize() //sets norm2 to the correct value. Use after using operations from the NumVect<ET> base class.
+{
+    sc_product(this->norm2, *this,*this);
+};
+
+template <class ET>
 LatticePoint<ET> conv_matrixrow_to_lattice_point (MatrixRow<ET> const &row)
 {
 	LatticePoint<ET> res(row.get_underlying_row());
@@ -155,6 +167,7 @@ LatticePoint<ET> conv_matrixrow_to_lattice_point (MatrixRow<ET> const &row)
 }
 
 // Convert sample() result NumVect to LatticePoint
+
 
 template<class ET>
 inline LatticePoint<ET> conv_sample_to_lattice_point (NumVect<ET> const &sample)

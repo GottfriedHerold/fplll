@@ -61,6 +61,7 @@ void GaussQueue<ET,false>::pop()
 {
     if(!our_queue.empty())
     {
+        delete our_queue.front();
         our_queue.pop();
     }
 }
@@ -68,15 +69,11 @@ void GaussQueue<ET,false>::pop()
 template<class ET>
 typename GaussQueue<ET,false>::LPType const & GaussQueue<ET,false>::top() const
 {
-    if(!our_queue.empty())
+    if(our_queue.empty())
     {
-        return our_queue.top();
+        LPType * newpointptr = new LPType ( sampler->sample() );
     }
-    else
-    {
-
-    }
-
+    return * ( our_queue.top() );
 }
 
 template<class ET>
