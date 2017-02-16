@@ -85,7 +85,8 @@ class Sieve<ET, GAUSS_SIEVE_IS_MULTI_THREADED >
 {
     /*DATA TYPES*/
     using LPType           = LatticePoint<ET>;
-    using MainQueueType    = std::priority_queue< LPType, std::vector<LPType>, IsLongerVector_class<ET> >;
+    //using MainQueueType    = std::priority_queue< LPType, std::vector<LPType>, IsLongerVector_class<ET> >;
+    using MainQueueType =std::queue<LPType>;
     using MainListType     = PointListSingleThreaded<ET>;
     //using MainListType     = std::list<LPType>;
     using LatticeBasisType = ZZ_mat<typename ET::underlying_data_type>;
@@ -115,7 +116,7 @@ public:
     void SieveIteration (LatticePoint<ET> &p); //one run through the main_list
     LPType get_SVP(); //obtains Shortest vector and it's length. If sieve has not yet run, start it.
     void run(); //runs the sieve specified by the parameters.
-    //void print_status(int verb = -1, std::ostream &out = cout) const{dump_status_to_stream(out,false,verb);};
+    void print_status(int verb = -1, std::ostream &out = cout) {dump_status_to_stream(out,false,verb);};
     //prints status to out. verb overrides the verbosity unless set to -1.
     void dump_status_to_file(std::string const &outfilename, bool overwrite = false); //dumps to file
     void dump_status_to_stream(ostream &of, bool everything = false, int verb=-1); //dumps to stream. Can be read back if everything == true. Otherwise, verbosity determines what is output.
@@ -401,8 +402,8 @@ void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_stream(ostream &of,
         if(howverb>=2) cerr << "Note : Dumping of internal data of sampler not yet supported" << endl;
         //dump internals of sampler?
     }
-    if(howverb>=1) of << "Original Basis:" << endl;
-    if(howverb>=1) of << original_basis;
+    if(howverb>=2) of << "Original Basis:" << endl;
+    if(howverb>=2) of << original_basis;
     if(howverb>=2) of << "--End of Params--" << endl << endl;
     if(howverb>=1) of << "--Statistics--" << endl;
     if(howverb>=1) of << "Number of collisions=" << number_of_collisions << endl;

@@ -13,13 +13,19 @@ void Sieve<ET,false>::run_2_sieve(ET target_norm)
     //want to put my basis-vectors into the main_list --Make a separate function for that
 
     unsigned int n = lattice_rank;
+    //auto it = main_list.before_begin();
+    assert(main_list.empty());
     auto it = main_list.before_begin();
     for (unsigned int i=0; i<n; i++) {
-        LatticePoint<ET> p (  conv_matrixrow_to_lattice_point (original_basis[i]) );
-        it = main_list.emplace_after(it, p);
+        //LatticePoint<ET> p (  conv_matrixrow_to_lattice_point (original_basis[i]) );
+        it = main_list.emplace_after(it,  conv_matrixrow_to_lattice_point (original_basis[i])  );
         //it = main_list.insert_after(it, p);
     }
-    //for ( LatticePoint<ET> & x : main_list) cout << x << endl;
+    current_list_size+=n;
+    main_list.sort();
+
+
+    //for ( LatticePoint<ET> & x : main_list) cout << x.norm2 << endl;
 
     /* can do main_list.sort here, but I assume original_basis is preporcessed
 
@@ -38,14 +44,15 @@ void Sieve<ET,false>::run_2_sieve(ET target_norm)
         {
             sample = sampler -> sample();
             p = conv_sample_to_lattice_point(sample);
-            
+            ++number_of_points_sampled;
             //cout << "sampled p: ";
             //p.printLatticePoint();
             //cout<< endl;
         }
         else
         {
-            p = main_queue.top();
+            //p = main_queue.top();
+            p=main_queue.front();
             main_queue.pop();
 //            cout << "popped p: ";
 //            p.printLatticePoint();
@@ -53,14 +60,16 @@ void Sieve<ET,false>::run_2_sieve(ET target_norm)
         }
 
 
-	
-        
+
+
 	SieveIteration(p);
 
         ++i;
-        if (i % 500 == 0) {
-            cout << "# of collisions: " << number_of_collisions << endl;
+        if (i % 200 == 0) {
+            //print_status();
+            //cout << "# of collisions: " << number_of_collisions << endl;
             cout << "norm2 of the so far shortest vector: " << main_list.front().norm2 << endl;
+
         }
     }
 
@@ -76,20 +85,25 @@ void Sieve<ET,false>::SieveIteration (LatticePoint<ET> &p)
     auto it1= main_list.before_begin();
     auto prev = main_list.before_begin();
     bool loop = true;
-    
+
 
     while (loop) //while p keeps changing
     {
         loop = false;
-        for (it1 = main_list.begin(); it1!=main_list.end(); ++it1) {
-            if (p.norm2 < (*it1).norm2) {
+        prev = main_list.before_begin();
+        for (it1 = main_list.begin(); it1!=main_list.end(); ++it1)
+        {
+            if (p.norm2 < (*it1).norm2)
+            {
                 break;
             }
             if(check2red(p, *it1)) //p was changed
+            {
                 loop = true;
-            
-            prev = it1;
+                break;
+            }
 
+            prev = it1;
         }
     }
 
@@ -99,47 +113,49 @@ void Sieve<ET,false>::SieveIteration (LatticePoint<ET> &p)
 		number_of_collisions++;
 		return;
 	}
-    
-    
-    //insert p into main_list; 
+
+
+    //insert p into main_list;
 //     cout << "----- before the insertion ---- " << endl;
 //     for (auto it2 = main_list.begin(); it2!=main_list.end(); ++it2) {
 //    	(*it2).printLatticePoint();
 //    }
     it1 = main_list.emplace_after (prev, p);
+    ++current_list_size;
 //
 //    cout << "----- after the insertion ---- " << endl;
 //     for (auto it2 = main_list.begin(); it2!=main_list.end(); ++it2) {
 //    	(*it2).printLatticePoint();
 //    }
 
-    
+
     prev = it1;
     if(it1!=main_list.end()) ++it1;
-    
+
     while (it1 !=main_list.end()) {
 		if (check2red(*it1, p)) //*it was changed, remove it from the list, put
     		{
 			//cout << "v was found" <<  endl;
-                
+
             if ((*it1).norm2 == 0)
             {
                 number_of_collisions++;
                 break;
             }
-                
+
 			main_queue.emplace(*it1);
 			it1 = main_list.erase_after(prev); //+it1 is done
-			
+			--current_list_size;
+
 		}
-		else  
+		else
 		{
 			prev = it1;
 			++it1;
 		}
-		
+
     }
-   
+
     /* print for debugging */
     //for (it1 = main_list.begin(); it1!=main_list.end(); ++it1) {
     //	(*it1).printLatticePoint();

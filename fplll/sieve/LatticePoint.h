@@ -76,6 +76,7 @@ public:
     {
         cout << * (static_cast<NumVect<ET>*>(this)) << " of norm: " << this->norm2 << endl;
     }
+    bool operator< (LatticePoint<ET> const &other ) const {return (this->norm2 < other.norm2);};
 //    void subtr (LatticePoint<ET> const A)
 //    {
 //        this->this.sub(A, A.size());
