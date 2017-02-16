@@ -96,7 +96,6 @@ void Sieve<ET,false>::SieveIteration (LatticePoint<ET> &p)
 //     for (auto it2 = main_list.begin(); it2!=main_list.end(); ++it2) {
 //    	(*it2).printLatticePoint();
 //    }
-
     it1 = main_list.emplace_after (it1, p);
 //
 //    cout << "----- after the insertion ---- " << endl;
@@ -112,6 +111,13 @@ void Sieve<ET,false>::SieveIteration (LatticePoint<ET> &p)
 		if (check2red(*it1, p)) //*it was changed, remove it from the list, put
     		{
 			cout << "v was found" <<  endl;
+                
+            if ((*it1).norm2 == 0)
+            {
+                number_of_collisions++;
+                return;
+            }
+                
 			main_queue.emplace(*it1);
 			it1 = main_list.erase_after(prev); //+it1 is done
 			
