@@ -111,18 +111,18 @@ template<class ZT> void call_sieve (ZZ_mat<ZT> B, int sieve_verbosity, Z_NR<ZT> 
 
 int main(int argc, char **argv)
 {
-  
+
     char *target_norm_string = NULL;
     int opt, dim = 10;
     Z_NR<mpz_t> target_norm;
-    
-    
+
+
     if (argc == 1)
     {
         cout << " please, provide the dimension" << endl;
         return -1;
     }
-    
+
     while ((opt = getopt(argc, argv, "d:t:")) != -1) {
         switch (opt) {
             case 'd':
@@ -133,14 +133,14 @@ int main(int argc, char **argv)
                 break;
         }
     }
-    
+
     if (target_norm_string!=NULL)
     {
         target_norm.set_str(target_norm_string);
     }
-    
+
     cout << "target norm set: " << target_norm << endl;
-    
+
 
 
     //PointListSingleThreaded<long int> X;
@@ -164,7 +164,7 @@ int main(int argc, char **argv)
 
     // ZZ_mat is an integer row-oriented matrix. See /nr/matrix.h
     ZZ_mat<mpz_t> B;
-  
+
     B.resize(dim, dim);
 
     //generates a lower-triangular matrix B; the argument determines (in a complicated way) the bit-size of entries
@@ -175,37 +175,17 @@ int main(int argc, char **argv)
 //    NumVect<Z_NR<mpz_t> > sample(dim);
 //    sample = Sampler->sample();
 //    cout << sample << endl;
-    
+
     lll_reduction(B, LLL_DEF_DELTA, LLL_DEF_ETA, LM_WRAPPER);
-    
+
     cout << "run sieve on B[0] = " << B[0] << endl;
     //cout << "B[1] = " << B[1] << endl;
-
-    call_sieve(B, 1, target_norm);
-
-
-    int num_threads=4;
-    ListMultiThreaded<int> Z;
-    GarbageBin<int>* GarbageBins = new GarbageBin<int> [num_threads];
-    std::vector <std::thread> threads;
-    //ListTester<int>(&Z,GarbageBins[2],2);
     auto start = std::chrono::high_resolution_clock::now();
-    cout<< "Starting threads." << endl;
-    for(int i=0; i <num_threads; ++i)
-    {
-    std::thread tmp(ListTester<int>, &Z, GarbageBins+i,i,0);
-    tmp.join();
-        //threads.push_back(std::thread(ListTester<int>, &Z, GarbageBins+i,i,0));
-    //for(auto &th: threads) th.join();
-    }
-
-    cout << "Waiting for them to finish" <<endl;
-    //for(auto &th: threads) th.join();
-    cout << "Finished" << endl;
+    call_sieve(B, 1, target_norm);
     auto finish = std::chrono::high_resolution_clock::now();
     auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(finish-start);
-    cout << " Time taken: " << microseconds.count() << endl;
-    delete[] GarbageBins;
+    cout << " Time taken: " << microseconds.count()/1000000.0 << "sec" << endl;
+
 #if 0
 #if 0
   dot_time = 0;
