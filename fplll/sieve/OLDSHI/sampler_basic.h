@@ -4,9 +4,9 @@
 #ifndef FPLLL_SIEVE_SAMPLER_BASIC_H
 #define FPLLL_SIEVE_SAMPLER_BASIC_H
 
-#include "../fplll.h"
+#include "../../fplll.h"
 
-#include "util_gso.cpp"
+//#include "util_gso.cpp"
 
 extern "C" 
 {

@@ -98,7 +98,7 @@ public:
     Sieve(Sieve &&old) = default;
     Sieve & operator=(Sieve const & old)=delete;
     Sieve & operator=(Sieve &&old) = default; //movable, but not copyable.
-    explicit Sieve(LatticeBasisType B, unsigned int k=2, TerminationConditions<ET> termcond = {}, unsigned int verbosity_=1, int seed_sampler = 324);
+    explicit Sieve(LatticeBasisType B, unsigned int k=2, TerminationConditions<ET> termcond = {}, unsigned int verbosity_=1, int seed_sampler = 0);
     //explicit Sieve(std::string const &infilename); //read from dump file.
     ~Sieve()
     {
@@ -111,7 +111,7 @@ public:
     static bool const class_multithreaded = true;
 #endif //class_multithreaded is for introspection, is_multithreaded is what the caller wants (may differ if we dump and re-read with different params)
 
-    void run_2_sieve(); //actually runs the Gauss Sieve.
+    void run_2_sieve(ET target_norm); //actually runs the Gauss Sieve.
     void SieveIteration (LatticePoint<ET> &p); //one run through the main_list
     LPType get_SVP(); //obtains Shortest vector and it's length. If sieve has not yet run, start it.
     void run(); //runs the sieve specified by the parameters.
