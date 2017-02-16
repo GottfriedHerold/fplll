@@ -32,8 +32,8 @@ class GaussQueue<ET,false>
 {
 public:
     using LPType = LatticePoint<ET>;
-    using QueueType = std::priority_queue< LPType *, std::vector<LPType* >, IsLongerVector_classPtr<ET> >;
-    using SamplerType      = KleinSampler<typename ET::underlying_data_type, FP_NR<double> > ;
+    using QueueType =      std::priority_queue< LPType* , std::vector<LPType* >, IsLongerVector_classPtr<ET> >;
+    using SamplerType =    KleinSampler<typename ET::underlying_data_type, FP_NR<double> > ;
 
 
     GaussQueue()=delete;
@@ -53,7 +53,7 @@ public:
 private:
     QueueType our_queue;
     Sieve<ET,false>* gauss_sieve; //caller object.
-    SamplerType *sampler; //controlled by the GaussSieve currently not?
+    SamplerType *sampler; //controlled by the GaussSieve currently?
 };
 
 template<class ET>
@@ -68,19 +68,27 @@ void GaussQueue<ET,false>::pop()
 template<class ET>
 typename GaussQueue<ET,false>::LPType const & GaussQueue<ET,false>::top() const
 {
-    return our_queue.top();
+    if(!our_queue.empty())
+    {
+        return our_queue.top();
+    }
+    else
+    {
+
+    }
+
 }
 
 template<class ET>
 typename GaussQueue<ET,false>::QueueType::size_type GaussQueue<ET,false>::size() const
 {
-return our_queue.size();
+    return our_queue.size();
 }
 
 template<class ET>
 bool GaussQueue<ET,false>::empty() const
 {
-return our_queue.empty();
+    return our_queue.empty();
 }
 
 template<class ET>
@@ -88,6 +96,7 @@ GaussQueue<ET,false>::~GaussQueue()
 {
 //TODO: Delete sampler if owned.
 //Note that deletion of points is already done.
+//May need to delete points if underlying type is switched to pointer.
 }
 
 #endif

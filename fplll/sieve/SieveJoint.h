@@ -429,7 +429,6 @@ void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_stream(ostream &of,
         }
     }
 
-
 }
 
 #define SIEVE_JOINT_H
