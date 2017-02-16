@@ -143,7 +143,7 @@ int main(int argc, char **argv)
     B.resize(dim, dim);
 
     //generates a lower-triangular matrix B; the argument determines (in a complicated way) the bit-size of entries
-    B.gen_trg(1.0);
+    B.gen_trg(0.9);
 
     //KleinSampler<ZT, F> is templated by two classes; returns NumVect<Z_NR<ZT> of dim = B.NumCols()
 //    KleinSampler<mpz_t, FP_NR<double>> *Sampler = new KleinSampler<mpz_t, FP_NR<double>>(B, 0, 234234);

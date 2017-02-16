@@ -26,7 +26,7 @@ void Sieve<ET,false>::run_2_sieve()
      */
 
     int i=0;
-    int MaxIteration = 30;
+    int MaxIteration = 80;
 
     LatticePoint<ET> p;
     NumVect<ET> sample;
@@ -37,6 +37,7 @@ void Sieve<ET,false>::run_2_sieve()
         {
             sample = sampler -> sample();
             p = conv_sample_to_lattice_point(sample);
+            
             cout << "sampled p: ";
             p.printLatticePoint();
             cout<< endl;
@@ -79,6 +80,8 @@ void Sieve<ET,false>::SieveIteration (LatticePoint<ET> &p)
             }
             if(check2red(p, *it1)) //p was changed
                 loop = true;
+            
+            prev = it1;
 
         }
     }
@@ -96,7 +99,7 @@ void Sieve<ET,false>::SieveIteration (LatticePoint<ET> &p)
 //     for (auto it2 = main_list.begin(); it2!=main_list.end(); ++it2) {
 //    	(*it2).printLatticePoint();
 //    }
-    it1 = main_list.emplace_after (it1, p);
+    it1 = main_list.emplace_after (prev, p);
 //
 //    cout << "----- after the insertion ---- " << endl;
 //     for (auto it2 = main_list.begin(); it2!=main_list.end(); ++it2) {
@@ -115,7 +118,7 @@ void Sieve<ET,false>::SieveIteration (LatticePoint<ET> &p)
             if ((*it1).norm2 == 0)
             {
                 number_of_collisions++;
-                return;
+                break;
             }
                 
 			main_queue.emplace(*it1);
