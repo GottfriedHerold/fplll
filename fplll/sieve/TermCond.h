@@ -33,52 +33,37 @@ public:
         CheckLength=2,
         CheckListSize=3
     };
-    bool do_we_check_collisions() const
-    {
-        return do_we_check_collisions_;
-    };
-    bool do_we_check_lenght() const
-    {
-        return do_we_check_length_;
-    };
-    bool do_we_check_list_size() const
-    {
-        return do_we_check_list_size_;
-    };
-    bool do_we_use_default_condition() const
-    {
-        return default_condition;
-    };
-    unsigned long int get_allowed_collisions() const
-    {
-        return allowed_collisions_;
-    };
+    bool do_we_check_collisions() const                     {return do_we_check_collisions_;};
+    bool do_we_check_lenght() const                         {return do_we_check_length_;};
+    bool do_we_check_list_size() const                      {return do_we_check_list_size_;};
+    bool do_we_use_default_condition() const                {return default_condition;};
+    unsigned long int get_allowed_collisions() const        {return allowed_collisions_;};
+    ET get_target_length() const                            {return target_length_;};
+    unsigned long int get_allowed_list_size() const         {return allowed_list_size_;};
+
     void set_allowed_collisions(unsigned long const &colls)
-    {
-        allowed_collisions_=colls;
+    {   allowed_collisions_=colls;
         do_we_check_collisions_=true;
+        default_condition = false;
         return;
     };
-    unsigned long int get_allowed_list_size() const
-    {
-        return allowed_list_size_;
-    };
+
     void set_allowed_list_size(unsigned long const &maxsize)
     {
         allowed_list_size_=maxsize;
         do_we_check_list_size_=true;
+        default_condition = false;
         return;
     };
-    ET get_target_length() const
-    {
-        return target_length_;
-    };  //in case ET = mpz, it won't work
+
     void set_target_length(ET const &new_target_length)
     {
         target_length_=new_target_length;
         do_we_check_length_=true;
+        default_condition = false;
         return;
     };
+
 private:
     bool do_we_check_collisions_;
     bool do_we_check_length_;

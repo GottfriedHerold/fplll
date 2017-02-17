@@ -206,5 +206,21 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
 //TODO : initialize term_condition to some meaningful default.
 };
 
+template<class ET>
+bool Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::check_if_done()
+{
+    if(term_cond->do_we_use_default_condition())
+    {
+        //compute Minkwoski
+        //term_cond(set_target_length(Minkowski))
+    }
+    if(term_cond->do_we_check_length())
+    {
+
+    }
+    //...
+    //return ...
+}
+
 #define SIEVE_JOINT_CPP
 #endif
