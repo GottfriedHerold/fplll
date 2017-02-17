@@ -209,12 +209,15 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
 template<class ET>
 bool Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::check_if_done()
 {
-    if(term_cond->do_we_use_default_condition())
+    if(term_cond.do_we_use_default_condition())
     {
         //compute Minkwoski
+        //ET det;
+        
+        //FT MatGSO< ZT, FT >::get_root_det in gso.cpp
         //term_cond(set_target_length(Minkowski))
     }
-    if(term_cond->do_we_check_length())
+    if(term_cond.do_we_check_length())
     {
 
     }

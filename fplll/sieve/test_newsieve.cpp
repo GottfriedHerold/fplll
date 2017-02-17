@@ -24,8 +24,8 @@ void test_run_sieve(int dim)
     Sieve<Z_NR<ZT>, false> Test_Queue (B);
     //Test_Queue.run_2_sieve(term_cond); //file-name to output the results of tests
     {
-    std::ofstream ofs("FILENAME");
-    Test_Queue.print_status(-1,ofs);
+        std::ofstream ofs("FILENAME");
+        Test_Queue.print_status(-1,ofs);
     }
 }
 
