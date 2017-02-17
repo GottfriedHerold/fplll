@@ -85,10 +85,12 @@ class Sieve<ET, GAUSS_SIEVE_IS_MULTI_THREADED >
 {
     /*DATA TYPES*/
     using LPType           = LatticePoint<ET>;
-    using MainQueueType    = std::priority_queue< LPType, std::vector<LPType>, IsLongerVector_class<ET> >;
+    //using MainQueueType    = std::priority_queue< LPType, std::vector<LPType>, IsLongerVector_class<ET> >;
     //using MainQueueType =std::queue<LPType>;
-    //using MainQueueType = GaussQueue<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
-    using MainListType     = PointListSingleThreaded<ET>;
+    using MainQueueType = GaussQueue<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
+    //using MainListType     = PointListSingleThreaded<ET>;
+    //using MainListType2    = PointListMultiThreaded<ET>;
+    using MainListType     = ListSingleThreaded<LPType>;
     //using MainListType     = std::list<LPType>;
     using LatticeBasisType = ZZ_mat<typename ET::underlying_data_type>;
     using SamplerType      = KleinSampler<typename ET::underlying_data_type, FP_NR<double>> *; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
@@ -108,7 +110,6 @@ public:
     {
         delete sampler;
     };
-
 #ifdef GAUSS_SIEVE_SINGLE_THREADED
     static bool const class_multithreaded = false;
 #else
@@ -116,7 +117,7 @@ public:
 #endif //class_multithreaded is for introspection, is_multithreaded is what the caller wants (may differ if we dump and re-read with different params)
 
     void run_2_sieve(ET target_norm); //actually runs the Gauss Sieve.
-    void SieveIteration (LatticePoint<ET> &p); //one run through the main_list
+    void SieveIteration2 (LatticePoint<ET> &p); //one run through the main_list (of 2-sieve)
     LPType get_SVP(); //obtains Shortest vector and it's length. If sieve has not yet run, start it.
     void run(); //runs the sieve specified by the parameters.
     void print_status(int verb = -1, std::ostream &out = cout) {dump_status_to_stream(out,false,verb);};
@@ -138,9 +139,10 @@ public:
     bool check_whether_sieve_is_running() const                 {return (sieve_status==SieveStatus::sieve_status_running);};
     unsigned long int get_number_of_collisions() const          {return number_of_collisions;};
     unsigned long int get_number_of_points_sampled() const      {return number_of_points_sampled;};
-    unsigned long int get_number_of_points_constructed() const  {return number_of_points_constructed;};
+    unsigned long long get_number_of_points_constructed() const {return number_of_points_constructed;};
     unsigned long int get_current_list_size() const             {return current_list_size;};
     unsigned long int get_current_queue_size()const             {return main_queue.size();};
+    unsigned long long get_number_of_scprods() const            {return number_of_scprods;};
 
 private:
 
@@ -154,6 +156,7 @@ private:
 //main data that is changing.
 
     MainListType main_list;
+    //MainListType3 main_list_test;
     MainQueueType main_queue;
 
 //information about lattice and algorithm we are using
@@ -184,8 +187,9 @@ private: //to avoid complicated (due to template hack) friend - declaration.
 
     unsigned long int number_of_collisions;
     unsigned long int number_of_points_sampled;
-    unsigned long int number_of_points_constructed; //sampling  + succesful pairs
+    unsigned long long int number_of_points_constructed; //sampling  + succesful pairs
     unsigned long int current_list_size;
+    unsigned long long int number_of_scprods;
 //length of shortest vector contained in shortest_vector_found
 
 //TODO: total time spent?
@@ -297,7 +301,7 @@ void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_stream(ostream &of,
     if(howverb>=3)
     {
         of << "--Main List--" << endl;
-        for(auto it = main_list.begin(); it!=main_list.end(); ++it)
+        for(auto it = main_list.cbegin(); it!=main_list.cend(); ++it)
         {
             of << (*it);
         }

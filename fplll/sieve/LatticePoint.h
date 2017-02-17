@@ -72,9 +72,9 @@ public:
     inline void get_norm2 (ET norm_to_return) const {norm_to_return = norm2;}
     inline void setNorm2 (ET norm) {this->norm2 = norm;} //should not be required, actually.
 
-    void printLatticePoint()
+    void printLatticePoint() const
     {
-        cout << * (static_cast<NumVect<ET>*>(this)) << " of norm: " << this->norm2 << endl;
+        cout << * (static_cast<NumVect<ET> const *>(this)) << " of norm: " << this->norm2 << endl;
     }
     bool operator< (LatticePoint<ET> const &other ) const {return (this->norm2 < other.norm2);};
 //    void subtr (LatticePoint<ET> const A)

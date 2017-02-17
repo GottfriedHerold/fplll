@@ -186,7 +186,7 @@ bool string_consume(istream &is, std::string const & str, bool elim_ws, bool ver
 template<class ET> //ET : underlying entries of the vectors. Should be a Z_NR<foo> - type. Consider making argument template itself.
 Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int k, TerminationConditions<ET> termcond, unsigned int verbosity_, int seed_sampler):  //move to cpp //TODO:MT
     main_list(),
-    main_queue(),
+    main_queue(this),
     original_basis(B),
     lattice_rank(B.get_rows()),
     ambient_dimension(B.get_cols()), //Note : this means that rows of B form the basis.
@@ -203,6 +203,21 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
     current_list_size(0)
 {
     sampler = new KleinSampler<typename ET::underlying_data_type, FP_NR<double>>(B, verbosity, seed_sampler);
+    //unsigned int n = lattice_rank;
+    //auto it = main_list.before_begin();
+    //assert(main_list.empty()); We don't have a function to check that yet...
+    auto it = main_list.cbegin();
+    for (unsigned int i=0; i<lattice_rank; ++i)
+    {
+        //LatticePoint<ET> p (  conv_matrixrow_to_lattice_point (original_basis[i]) );
+        main_list.insert_before(it,  conv_matrixrow_to_lattice_point (original_basis[i])  );
+        //it = main_list.insert_after(it, p);
+    }
+    current_list_size+=lattice_rank;
+    main_list.sort();
+
+
+
 //TODO : initialize term_condition to some meaningful default.
 };
 
@@ -213,7 +228,7 @@ bool Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::check_if_done()
     {
         //compute Minkwoski
         //ET det;
-        
+
         //FT MatGSO< ZT, FT >::get_root_det in gso.cpp
         //term_cond(set_target_length(Minkowski))
     }
