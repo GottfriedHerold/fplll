@@ -33,7 +33,7 @@ nobase_include_fplll_HEADERS=defs.h fplll.h \
 	enum/enumerate.h enum/enumerate_base.h enum/enumerate_ext.h \
 	pruner.h
 
-bin_PROGRAMS=fplll latticegen latsieve newlatsieve
+bin_PROGRAMS=fplll latticegen latsieve newlatsieve testsieve
 check_PROGRAMS=llldiff
 EXTRA_PROGRAMS=fplll_dbg latticegen_dbg
 lib_LTLIBRARIES=libfplll.la
@@ -67,6 +67,10 @@ latsieve_LDADD=libfplll.la $(LIBQD_LIBADD)
 newlatsieve_SOURCES=sieve/sieve_main.cpp sieve/sieve_main.h
 newlatsieve_LDADD=libfplll.la $(LIBQD_LIBADD)
 newlatsieve_CXXFLAGS=-pthread $(AM_XCCFLAGS)
+
+# testsieve bin
+testsieve_SOURCES=sieve/test_newsieve.cpp sieve/test_newsieve.h
+testsieve_LDADD=libfplll.la $(LIBQD_LIBADD)
 
 # libfplll
 libfplll_la_SOURCES=fplll.cpp fplll.h \
