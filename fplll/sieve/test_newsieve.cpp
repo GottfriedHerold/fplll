@@ -22,7 +22,7 @@ void test_run_sieve(int dim)
     B.gen_trg(1.1);
     lll_reduction(B, LLL_DEF_DELTA, LLL_DEF_ETA, LM_WRAPPER);
     Sieve<Z_NR<ZT>, false> Test_Queue (B);
-    //Test_Queue.run_2_sieve(term_cond);
+    //Test_Queue.run_2_sieve(term_cond); //file-name to output the results of tests
     
 }
 
