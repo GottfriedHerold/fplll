@@ -12,6 +12,8 @@ void Sieve<ET,false>::run_2_sieve(ET target_norm)
 
     //want to put my basis-vectors into the main_list --Make a separate function for that
 
+    //TODO : Move this away.
+
     unsigned int n = lattice_rank;
     //auto it = main_list.before_begin();
     assert(main_list.empty());
@@ -24,15 +26,10 @@ void Sieve<ET,false>::run_2_sieve(ET target_norm)
     current_list_size+=n;
     main_list.sort();
 
-
     //for ( LatticePoint<ET> & x : main_list) cout << x.norm2 << endl;
 
-    /* can do main_list.sort here, but I assume original_basis is preporcessed
-
-     */
-
     int i=0;
-    int MaxIteration = 8000;
+    //int MaxIteration = 8000;
 
     LatticePoint<ET> p;
     NumVect<ET> sample;
@@ -52,7 +49,7 @@ void Sieve<ET,false>::run_2_sieve(ET target_norm)
         else
         {
             //p = main_queue.top();
-            p=main_queue.front();
+            p=main_queue.top();
             main_queue.pop();
 //            cout << "popped p: ";
 //            p.printLatticePoint();

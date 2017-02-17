@@ -85,14 +85,17 @@ class Sieve<ET, GAUSS_SIEVE_IS_MULTI_THREADED >
 {
     /*DATA TYPES*/
     using LPType           = LatticePoint<ET>;
-    //using MainQueueType    = std::priority_queue< LPType, std::vector<LPType>, IsLongerVector_class<ET> >;
-    using MainQueueType =std::queue<LPType>;
+    using MainQueueType    = std::priority_queue< LPType, std::vector<LPType>, IsLongerVector_class<ET> >;
+    //using MainQueueType =std::queue<LPType>;
+    //using MainQueueType = GaussQueue<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
     using MainListType     = PointListSingleThreaded<ET>;
     //using MainListType     = std::list<LPType>;
     using LatticeBasisType = ZZ_mat<typename ET::underlying_data_type>;
     using SamplerType      = KleinSampler<typename ET::underlying_data_type, FP_NR<double>> *; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
 
 public:
+    /*FRIENDS */
+    friend GaussQueue<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
     /*CONSTRUCTORS / DESTRUCTORS */
     Sieve() = delete;
     Sieve(Sieve const &old ) = delete;
@@ -219,7 +222,7 @@ Reads length(str) chars from stream is, expecting them to equal str. If what is 
 
 
 
-#endif
+#endif // SIEVE_JOINT_H
 
 
 #define SIEVE_FILE_ID "kTuple-Sieve dump file"
@@ -307,8 +310,7 @@ void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_stream(ostream &of,
 
         }
     }
-
 }
 
 #define SIEVE_JOINT_H
-#endif
+#endif // DO_INCLUDE_SIEVE_JOINT_H
