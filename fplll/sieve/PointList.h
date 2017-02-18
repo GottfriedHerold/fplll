@@ -59,6 +59,7 @@ public:
     using DataPointer=DT*;
     using UnderlyingContainer = std::list<DT>;
     using Iterator = typename UnderlyingContainer::const_iterator;
+    //using NonConstIterator = typename UnderlyingContainer::iterator;
     explicit ListSingleThreaded() = default;
     ListSingleThreaded(ListSingleThreaded const & old) = delete;
     ListSingleThreaded(ListSingleThreaded && old) = delete;

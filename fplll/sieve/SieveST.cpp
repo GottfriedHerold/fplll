@@ -16,7 +16,7 @@ void Sieve<ET,false>::run_2_sieve(ET target_norm)
 
     //for ( LatticePoint<ET> & x : main_list) cout << x.norm2 << endl;
 
-    //int i=0;
+    int i=0;
     //int MaxIteration = 8000;
 
     LatticePoint<ET> p;
@@ -123,7 +123,7 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p)
     {
         auto current_list_point = *it;
 		if (check2red(current_list_point, p)) //We can reduce *it
-    		{
+			{
 			//cout << "v was found" <<  endl;
 
             if (current_list_point.norm2 == 0)
