@@ -20,14 +20,9 @@ void Sieve<ET,false>::run_2_sieve(ET target_norm)
     //int MaxIteration = 8000;
 
     LatticePoint<ET> p;
-<<<<<<< HEAD
     NumVect<ET> sample;
     
     bool check = check_if_done();
-    
-=======
-
->>>>>>> 743f923fbe09dbec79650a2a6f5cbebb914d03a8
 
     //while(i < MaxIteration) // TerminationCondition Here
     while (main_list.cbegin()->norm2 > target_norm)

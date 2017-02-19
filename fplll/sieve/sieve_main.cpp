@@ -105,10 +105,6 @@ template<class ZT> void call_sieve (ZZ_mat<ZT> B, int sieve_verbosity, Z_NR<ZT> 
 
 	TerminationConditions< Z_NR<ZT> > term_cond;
 	Sieve<Z_NR< ZT > , false> Test_2Sieve (B);
-<<<<<<< HEAD
-    
-=======
->>>>>>> 743f923fbe09dbec79650a2a6f5cbebb914d03a8
     //bool testMink = Test_2Sieve.check_if_done();
 	Test_2Sieve.run_2_sieve(target_norm);
 
