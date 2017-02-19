@@ -1,3 +1,4 @@
+//#define USE_REGULAR_QUEUE
 /*
   This provides an implementation of Gauss sieving, including using
   tuples of vectors in fplll framework. The Gauss Sieve code is
@@ -98,12 +99,16 @@ for (int i=0; i <25; ++i)
 return;
 }
 
+
 template<class ZT> void call_sieve (ZZ_mat<ZT> B, int sieve_verbosity, Z_NR<ZT> target_norm)
 {
 
 	TerminationConditions< Z_NR<ZT> > term_cond;
 	Sieve<Z_NR< ZT > , false> Test_2Sieve (B);
+<<<<<<< HEAD
     
+=======
+>>>>>>> 743f923fbe09dbec79650a2a6f5cbebb914d03a8
     //bool testMink = Test_2Sieve.check_if_done();
 	Test_2Sieve.run_2_sieve(target_norm);
 

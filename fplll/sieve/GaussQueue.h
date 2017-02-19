@@ -23,7 +23,7 @@ template<class ET> class IsLongerVector_classPtr
 {
     public: bool operator() (LatticePoint<ET>* const &A, LatticePoint<ET>* const & B)
     {
-     return (A->get_norm2() > B->get_norm2() );
+        return (A->get_norm2() > B->get_norm2() );
     }
 };
 
@@ -35,7 +35,7 @@ public:
     #ifndef USE_REGULAR_QUEUE
     using QueueType =      std::priority_queue< LPType* , std::vector<LPType* >, IsLongerVector_classPtr<ET> >;
     #else
-    using QueueType =      std::queue<LPType*>
+    using QueueType =      std::queue<LPType*>;
     #endif
     using SamplerType =    KleinSampler<typename ET::underlying_data_type, FP_NR<double> > ;
     GaussQueue()=delete;
@@ -57,18 +57,18 @@ public:
 private:
     QueueType main_queue;
     Sieve<ET,false>* gauss_sieve; //caller object.
-    SamplerType *sampler; //controlled by the GaussSieve currently. TODO: Change that
+    //SamplerType *sampler; //controlled by the GaussSieve currently. TODO: Change that
 };
 
 template<class ET>
 GaussQueue<ET,false>::GaussQueue( Sieve<ET,false> *caller_sieve)  //constructor
 :
 main_queue(),
-gauss_sieve(caller_sieve),
-sampler(nullptr)
+gauss_sieve(caller_sieve)
+//sampler(nullptr)
 {
     assert(caller_sieve!=nullptr);
-    sampler=caller_sieve->sampler; //TODO: Remove sampler from SieveJoint.h and place it under control of the queue.
+    //sampler=caller_sieve->sampler; //TODO: Remove sampler from SieveJoint.h and place it under control of the queue.
 }
 
 template<class ET>
@@ -78,7 +78,7 @@ typename GaussQueue<ET,false>::LPType GaussQueue<ET,false>::true_pop()
     {
         ++ (gauss_sieve->number_of_points_sampled);
         ++ (gauss_sieve->number_of_points_constructed);
-        return sampler->sample();
+        return gauss_sieve->sampler->sample();
     }
     else
     {
@@ -101,7 +101,7 @@ typename GaussQueue<ET,false>::LPType* GaussQueue<ET,false>::pop_take_ownership(
     {
     ++ (gauss_sieve->number_of_points_sampled);
     ++ (gauss_sieve->number_of_points_constructed);
-    LPType *next_point_ptr = new LPType (sampler->sample());
+    LPType *next_point_ptr = new LPType (gauss_sieve->sampler->sample());
     return next_point_ptr;
     }
     else

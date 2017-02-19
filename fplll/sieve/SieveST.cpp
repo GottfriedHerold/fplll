@@ -10,21 +10,9 @@ void Sieve<ET,false>::run_2_sieve(ET target_norm)
 {
     //using SieveT = Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
 
-    //want to put my basis-vectors into the main_list --Make a separate function for that
+    //want to put my basis-vectors into the main_list
+    // -- This is now done by the constructor of Sieve -- Gotti
 
-    //TODO : Move this away.
-
-    unsigned int n = lattice_rank;
-    //auto it = main_list.before_begin();
-    assert(main_list.empty());
-    auto it = main_list.before_begin();
-    for (unsigned int i=0; i<n; i++) {
-        //LatticePoint<ET> p (  conv_matrixrow_to_lattice_point (original_basis[i]) );
-        it = main_list.emplace_after(it,  conv_matrixrow_to_lattice_point (original_basis[i])  );
-        //it = main_list.insert_after(it, p);
-    }
-    current_list_size+=n;
-    main_list.sort();
 
     //for ( LatticePoint<ET> & x : main_list) cout << x.norm2 << endl;
 
@@ -32,14 +20,21 @@ void Sieve<ET,false>::run_2_sieve(ET target_norm)
     //int MaxIteration = 8000;
 
     LatticePoint<ET> p;
+<<<<<<< HEAD
     NumVect<ET> sample;
     
     bool check = check_if_done();
     
+=======
+
+>>>>>>> 743f923fbe09dbec79650a2a6f5cbebb914d03a8
 
     //while(i < MaxIteration) // TerminationCondition Here
-    while (main_list.front().norm2 > target_norm)
+    while (main_list.cbegin()->norm2 > target_norm)
     {
+
+        /*
+        NumVect<ET> sample;
         if (main_queue.empty())
         {
             sample = sampler -> sample();
@@ -51,62 +46,68 @@ void Sieve<ET,false>::run_2_sieve(ET target_norm)
         }
         else
         {
-            //p = main_queue.top();
-            p=main_queue.top();
+            p=main_queue.front();
             main_queue.pop();
 //            cout << "popped p: ";
 //            p.printLatticePoint();
 //            cout<< endl;
         }
+        */
+    p=main_queue.true_pop();
 
-
-
-
-	SieveIteration(p);
+	SieveIteration2(p);
 
         ++i;
         if (i % 200 == 0) {
             //print_status();
             //cout << "# of collisions: " << number_of_collisions << endl;
-            cout << "norm2 of the so far shortest vector: " << main_list.front().norm2 << endl;
+            cout << "norm2 of the so far shortest vector: " << main_list.cbegin()->norm2 << endl;
 
         }
     }
 
     cout << "sv is " << endl;
-    main_list.front().printLatticePoint();
+    main_list.cbegin()->printLatticePoint();
     print_status();
 
 }
 
 
 template<class ET>
-void Sieve<ET,false>::SieveIteration (LatticePoint<ET> &p)
+void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p)
 {
-    auto it1= main_list.before_begin();
-    auto prev = main_list.before_begin();
+
+    //simplified the code, because main_list supports deleting AT pos and inserting BEFORE pos now. -- Gotti
+
+    //auto it1= main_list.before_begin();
+    //auto prev = main_list.before_begin();
     bool loop = true;
 
+    typename MainListType::Iterator it_comparison_flip=main_list.cend();
 
     while (loop) //while p keeps changing
     {
         loop = false;
-        prev = main_list.before_begin();
-        for (it1 = main_list.begin(); it1!=main_list.end(); ++it1)
+        //prev = main_list.before_begin();
+        for (auto it = main_list.cbegin(); it!=main_list.cend(); ++it)
         {
-            if (p.norm2 < (*it1).norm2)
+            if (p.norm2 < (*it).norm2)
             {
+                it_comparison_flip = it;
                 break;
             }
-            if(check2red(p, *it1)) //p was changed
+            if(check2red(p, *it)) //p was changed
             {
                 loop = true;
                 break;
             }
 
-            prev = it1;
+            //prev = it1;
         }
     }
+
+    //p no longer changes. it_comparison_flip is iterator to first (shortest) element in the list that is longer than p.
+    //If no such element exists, it_comparison_flip refers to after-the-end.
 
     if (p.norm2 == 0)
 	{
@@ -117,42 +118,36 @@ void Sieve<ET,false>::SieveIteration (LatticePoint<ET> &p)
 
 
     //insert p into main_list;
-//     cout << "----- before the insertion ---- " << endl;
-//     for (auto it2 = main_list.begin(); it2!=main_list.end(); ++it2) {
-//    	(*it2).printLatticePoint();
-//    }
-    it1 = main_list.emplace_after (prev, p);
+    //it1 = main_list.emplace_after (prev, p);
+    main_list.insert_before(it_comparison_flip,p);
     ++current_list_size;
-//
-//    cout << "----- after the insertion ---- " << endl;
-//     for (auto it2 = main_list.begin(); it2!=main_list.end(); ++it2) {
-//    	(*it2).printLatticePoint();
-//    }
 
+//    prev = it1;
+    //if(it1!=main_list.cend()) ++it1;
 
-    prev = it1;
-    if(it1!=main_list.end()) ++it1;
-
-    while (it1 !=main_list.end()) {
-		if (check2red(*it1, p)) //*it was changed, remove it from the list, put
-    		{
+    //while (it1 !=main_list.cend()) {
+    for(auto it = it_comparison_flip; it!=main_list.cend(); )
+    {
+        auto current_list_point = *it;
+		if (check2red(current_list_point, p)) //We can reduce *it
+			{
 			//cout << "v was found" <<  endl;
 
-            if ((*it1).norm2 == 0)
+            if (current_list_point.norm2 == 0)
             {
                 number_of_collisions++;
                 break;
             }
 
-			main_queue.emplace(*it1);
-			it1 = main_list.erase_after(prev); //+it1 is done
+			main_queue.push(current_list_point);
+			it = main_list.erase(it); //this also increases the iterator it
 			--current_list_size;
 
 		}
 		else
 		{
-			prev = it1;
-			++it1;
+		//	prev = it1;
+			++it;
 		}
 
     }
