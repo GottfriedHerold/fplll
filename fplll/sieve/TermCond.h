@@ -34,7 +34,7 @@ public:
         CheckListSize=3
     };
     bool do_we_check_collisions() const                     {return do_we_check_collisions_;};
-    bool do_we_check_lenght() const                         {return do_we_check_length_;};
+    bool do_we_check_length() const                         {return do_we_check_length_;};
     bool do_we_check_list_size() const                      {return do_we_check_list_size_;};
     bool do_we_use_default_condition() const                {return default_condition;};
     unsigned long int get_allowed_collisions() const        {return allowed_collisions_;};

@@ -211,15 +211,26 @@ bool Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::check_if_done()
 {
     if(term_cond.do_we_use_default_condition())
     {
-        //compute Minkwoski
-        //ET det;
+        //compute GSO for original_basis
+        ZZ_mat<mpz_t> Empty_mat;
+        MatGSO<ET, FP_NR<double>> BGSO(original_basis, Empty_mat, Empty_mat, 0);
+        bool upd = BGSO.update_gso();
         
-        //FT MatGSO< ZT, FT >::get_root_det in gso.cpp
-        //term_cond(set_target_length(Minkowski))
+        // returns det(B)^{2/dim}
+        FP_NR<double> det = BGSO.get_root_det (1, original_basis.get_rows());
+        
+        //lambda_1^2 = n * det(B)^{2/n}
+        FP_NR<double> MinkBound_double = original_basis.get_rows() * det;
+        ET Minkowski;
+        Minkowski.set_f(MinkBound_double);
+        
+        cout << "set Mink. bound to: " << Minkowski << endl;
+        
+        term_cond.set_target_length(Minkowski);
     }
     if(term_cond.do_we_check_length())
     {
-
+        
     }
     //...
     //return ...

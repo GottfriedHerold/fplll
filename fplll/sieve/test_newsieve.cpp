@@ -20,12 +20,32 @@ void test_run_sieve(int dim)
     ZZ_mat<ZT> B;
     B.resize(dim, dim);
     B.gen_trg(1.1);
+    
     lll_reduction(B, LLL_DEF_DELTA, LLL_DEF_ETA, LM_WRAPPER);
     Sieve<Z_NR<ZT>, false> Test_Queue (B);
+    
+    
+    //this is ugly
+    ZZ_mat<ZT> Empty_mat;
+    MatGSO<Z_NR<ZT>, FP_NR<double>> BGSO(B, Empty_mat, Empty_mat, 0);
+    bool upd = BGSO.update_gso();
+    
+    // returns det(B)^{2/dim}
+    FP_NR<double> det = BGSO.get_root_det (1, B.get_rows());
+    
+    //Z_NR<ZT> intdet;
+    ///intdet.set_f(det);
+    
+    cout << "det = " << det << endl;
+    //cout << "intdet = " << intdet << endl;
+    
+    FP_NR<double> MinkBound = sqrt(B.get_rows() * det); // \lambda_1(B) <= \sqrt(n * det(B)^{2/n} )
+    cout << "MindBound = " << MinkBound << endl;
+    
     //Test_Queue.run_2_sieve(term_cond); //file-name to output the results of tests
     {
-        std::ofstream ofs("FILENAME");
-        Test_Queue.print_status(-1,ofs);
+        //std::ofstream ofs("FILENAME");
+        //Test_Queue.print_status(-1,ofs);
     }
 }
 

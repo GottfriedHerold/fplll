@@ -33,6 +33,9 @@ void Sieve<ET,false>::run_2_sieve(ET target_norm)
 
     LatticePoint<ET> p;
     NumVect<ET> sample;
+    
+    bool check = check_if_done();
+    
 
     //while(i < MaxIteration) // TerminationCondition Here
     while (main_list.front().norm2 > target_norm)
