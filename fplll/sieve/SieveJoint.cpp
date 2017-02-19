@@ -250,10 +250,9 @@ bool Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::check_if_done()
     }
     if(term_cond.do_we_check_length())
     {
-        
+            if (main_list.cbegin()->norm2 <= term_cond.get_target_length()) return true;
     }
-    //...
-    //return ...
+    return false;
 }
 
 #define SIEVE_JOINT_CPP
