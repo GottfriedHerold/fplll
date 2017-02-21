@@ -11,6 +11,7 @@
 #include <thread>
 #include <chrono>
 #include "SieveGauss.h"
+#include "LatticePoint2.h"
 
 using namespace fplll;
 
@@ -157,6 +158,7 @@ int main(int argc, char **argv)
     LatticePoint<Z_NR <long> > p3 (9);
     Z_NR<long> res;
     sc_product(res,p1,p2);
+
     //Z_NR<long> X (0);
     //p1.printLatticePoint();
 //    LatticePoint<Z_NR <long> > sum = p1+p2;

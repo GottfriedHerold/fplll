@@ -13,6 +13,25 @@
 				<Option compiler="null" />
 			</Target>
 		</Build>
+		<Unit filename="GaussQueue.h" />
+		<Unit filename="LatticePoint.h" />
+		<Unit filename="LatticePoint2.h" />
+		<Unit filename="PointList.cpp" />
+		<Unit filename="PointList.h" />
+		<Unit filename="SieveGauss.h" />
+		<Unit filename="SieveJoint.cpp" />
+		<Unit filename="SieveJoint.h" />
+		<Unit filename="SieveMT.cpp" />
+		<Unit filename="SieveST.cpp" />
+		<Unit filename="TermCond.h" />
+		<Unit filename="sampler_basic.cpp" />
+		<Unit filename="sampler_basic.h" />
+		<Unit filename="sampler_main.cpp" />
+		<Unit filename="sieve_common.h" />
+		<Unit filename="sieve_main.cpp" />
+		<Unit filename="sieve_main.h" />
+		<Unit filename="test_newsieve.cpp" />
+		<Unit filename="test_newsieve.h" />
 		<Extensions>
 			<code_completion />
 			<debugger />
