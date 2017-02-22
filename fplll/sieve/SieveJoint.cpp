@@ -181,7 +181,7 @@ bool string_consume(istream &is, std::string const & str, bool elim_ws, bool ver
     return true;
 }
 
-#endif
+#endif // SIEVE_JOINT_CPP
 
 template<class ET> //ET : underlying entries of the vectors. Should be a Z_NR<foo> - type. Consider making argument template itself.
 Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int k, TerminationConditions<ET> termcond, unsigned int verbosity_, int seed_sampler):  //move to cpp //TODO:MT
@@ -230,17 +230,17 @@ bool Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::check_if_done()
         ZZ_mat<mpz_t> Empty_mat;
         MatGSO<ET, FP_NR<double>> BGSO(original_basis, Empty_mat, Empty_mat, 0);
         bool upd = BGSO.update_gso();
-        
+
         // returns det(B)^{2/dim}
         FP_NR<double> det = BGSO.get_root_det (1, original_basis.get_rows());
-        
+
         //lambda_1^2 = n * det(B)^{2/n}
         FP_NR<double> MinkBound_double = original_basis.get_rows() * det;
         ET Minkowski;
         Minkowski.set_f(MinkBound_double);
-        
+
         cout << "set Mink. bound to: " << Minkowski << endl;
-        
+
         term_cond.set_target_length(Minkowski);
         //compute Minkwoski
         //ET det;

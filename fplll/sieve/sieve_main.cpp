@@ -103,13 +103,10 @@ return;
 
 template<class ZT> void call_sieve (ZZ_mat<ZT> B, int sieve_verbosity, Z_NR<ZT> target_norm)
 {
-
 	TerminationConditions< Z_NR<ZT> > term_cond;
 	Sieve<Z_NR< ZT > , false> Test_2Sieve (B);
     //bool testMink = Test_2Sieve.check_if_done();
 	Test_2Sieve.run_2_sieve(target_norm);
-
-
 }
 
 
@@ -123,7 +120,7 @@ int main(int argc, char **argv)
 
     if (argc == 1)
     {
-        cout << " please, provide the dimension" << endl;
+        cout << "Please provide the dimension." << endl;
         return -1;
     }
 
@@ -156,6 +153,8 @@ int main(int argc, char **argv)
     LatticePoint<Z_NR <long> > p1 (10,3);
     LatticePoint<Z_NR <long> > p2 (10,1);
     LatticePoint<Z_NR <long> > p3 (9);
+    //ApproxLatticePoint<Z_NR <mpz_t> > X(10);
+    //ApproxLatticePoint<Z_NR <long> > Y (30);
     Z_NR<long> res;
     sc_product(res,p1,p2);
 
@@ -176,12 +175,15 @@ int main(int argc, char **argv)
     B.gen_trg(1.1);
 
     //KleinSampler<ZT, F> is templated by two classes; returns NumVect<Z_NR<ZT> of dim = B.NumCols()
-//    KleinSampler<mpz_t, FP_NR<double>> *Sampler = new KleinSampler<mpz_t, FP_NR<double>>(B, 0, 234234);
-//    NumVect<Z_NR<mpz_t> > sample(dim);
-//    sample = Sampler->sample();
-//    cout << sample << endl;
+    //    KleinSampler<mpz_t, FP_NR<double>> *Sampler = new KleinSampler<mpz_t, FP_NR<double>>(B, 0, 234234);
+    //    NumVect<Z_NR<mpz_t> > sample(dim);
+    //    sample = Sampler->sample();
+    //    cout << sample << endl;
 
     lll_reduction(B, LLL_DEF_DELTA, LLL_DEF_ETA, LM_WRAPPER);
+
+    ApproxLatticePoint<Z_NR<mpz_t>,false,-1> X ( conv_matrixrow_to_lattice_point(B[0]) );
+    cout << X;
 
     cout << "run sieve on B[0] = " << B[0] << endl;
     //cout << "B[1] = " << B[1] << endl;
