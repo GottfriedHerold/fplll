@@ -39,8 +39,8 @@ class ApproxLatticePoint<ET, false, -1>    //Approx. Lattice Point. Note that th
     unsigned int get_length_exponent()  const               {return length_exponent;};
     LatticePoint<ET> get_details_r()    const               {return *details;};
     LatticePoint<ET> & get_details_rw()                     {return *details;}; //technically, this is const, as it does not change the pointer.
-    LatticePoint<ET> const * get_details_ptr_r const        {return details;};
-    LatticePoint<ET> * get_details_ptr_rw                   {return details;};
+    LatticePoint<ET> const * get_details_ptr_r()const       {return details;};
+    LatticePoint<ET> * get_details_ptr_rw() const           {return details;};
 
     private: //internal member functions
     void update_approximation(); //computes approximation from *approx. Assumes memory is already allocated.
