@@ -6,7 +6,7 @@
 #endif
 
 template<class ET>
-void Sieve<ET,false>::run_2_sieve(ET target_norm)
+void Sieve<ET,false>::run_2_sieve()
 {
     //using SieveT = Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
 
@@ -20,37 +20,16 @@ void Sieve<ET,false>::run_2_sieve(ET target_norm)
     //int MaxIteration = 8000;
 
     LatticePoint<ET> p;
-    NumVect<ET> sample;
-    
-    bool check = check_if_done();
+    //NumVect<ET> sample;
+
+    check_if_done(); //sets up default conditions if not already set. We ignore the return value.
 
     //while(i < MaxIteration) // TerminationCondition Here
-    while (main_list.cbegin()->norm2 > target_norm)
+    while (!check_if_done() )
     {
+        p=main_queue.true_pop();
 
-        /*
-        NumVect<ET> sample;
-        if (main_queue.empty())
-        {
-            sample = sampler -> sample();
-            p = conv_sample_to_lattice_point(sample);
-            ++number_of_points_sampled;
-            //cout << "sampled p: ";
-            //p.printLatticePoint();
-            //cout<< endl;
-        }
-        else
-        {
-            p=main_queue.front();
-            main_queue.pop();
-//            cout << "popped p: ";
-//            p.printLatticePoint();
-//            cout<< endl;
-        }
-        */
-    p=main_queue.true_pop();
-
-	SieveIteration2(p);
+        SieveIteration2(p);
 
         ++i;
         if (i % 200 == 0) {
@@ -74,16 +53,13 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p)
 
     //simplified the code, because main_list supports deleting AT pos and inserting BEFORE pos now. -- Gotti
 
-    //auto it1= main_list.before_begin();
-    //auto prev = main_list.before_begin();
     bool loop = true;
 
-    typename MainListType::Iterator it_comparison_flip=main_list.cend();
+    typename MainListType::Iterator it_comparison_flip=main_list.cend(); //used to store the point where the list elements become larger than p.
 
     while (loop) //while p keeps changing
     {
         loop = false;
-        //prev = main_list.before_begin();
         for (auto it = main_list.cbegin(); it!=main_list.cend(); ++it)
         {
             if (p.norm2 < (*it).norm2)
@@ -91,13 +67,11 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p)
                 it_comparison_flip = it;
                 break;
             }
-            if(check2red(p, *it)) //p was changed
+            if(GaussSieve::check2red(p, *it)) //p was changed
             {
                 loop = true;
                 break;
             }
-
-            //prev = it1;
         }
     }
 
@@ -113,18 +87,14 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p)
 
 
     //insert p into main_list;
-    //it1 = main_list.emplace_after (prev, p);
     main_list.insert_before(it_comparison_flip,p);
     ++current_list_size;
 
-//    prev = it1;
-    //if(it1!=main_list.cend()) ++it1;
-
-    //while (it1 !=main_list.cend()) {
-    for(auto it = it_comparison_flip; it!=main_list.cend(); )
+    for(auto it = it_comparison_flip; it!=main_list.cend(); ) //go through rest of the list.
+                                                              //We know that every element current_list_point=*it is at least as long as p, so we reduce x using p.
     {
         auto current_list_point = *it;
-		if (check2red(current_list_point, p)) //We can reduce *it
+		if (GaussSieve::check2red(current_list_point, p)) //We can reduce *it.
 			{
 			//cout << "v was found" <<  endl;
 

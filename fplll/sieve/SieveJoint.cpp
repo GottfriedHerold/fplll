@@ -29,85 +29,12 @@
 #ifdef DO_INCLUDE_SIEVE_JOINT_CPP
 
 //actual code starts here.
-//Be aware that this code may be read twice.
+//Be aware that code may be read twice.
 
-//template<class ET, GAUSS_SIEVE_IS_MULTI_THREADED>
-//void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::SieveIteration (LatticePoint<ET> &p);
+#ifndef SIEVE_JOINT_CPP //code in this block only read once.
 
-//template<class ET>
-//void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::run_2_sieve()
-//{
-//    using SieveT = Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
-//
-//    //want to put my basis-vectors into the main_list --Make a separate function for that
-//
-//    unsigned int n = lattice_rank;
-//    auto it = main_list.before_begin();
-//    for (unsigned int i=0; i<n; i++) {
-//        LatticePoint<ET> p (  conv_matrixrow_to_lattice_point (original_basis[i]) );
-//        it = main_list.emplace_after(it, p);
-//        //it = main_list.insert_after(it, p);
-//    }
-//    for ( LatticePoint<ET> & x : main_list) cout << x << endl;
-//
-//    /* can do main_list.sort here, but I assume original_basis is preporcessed
-//
-//     */
-//
-//    int i=0;
-//    int MaxIteration = 10;
-//
-//    LatticePoint<ET> p;
-//    NumVect<ET> sample;
-//
-//    while(i < MaxIteration) // TerminationCondition Here
-//    {
-//        if (main_queue.empty())
-//        {
-//            sample = sampler -> sample();
-//            p = conv_sample_to_lattice_point(sample);
-//        }
-//        else
-//        {
-//            p = main_queue.top(); //why does this return contst?
-//            main_queue.pop();
-//        }
-//
-//        SieveIteration(p);
-//
-//        ++i;
-//    }
-//
-//
-//}
-
-#ifndef SIEVE_JOINT_CPP
-
-
-//template<class ET, GAUSS_SIEVE_IS_MULTI_THREADED>
-//void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::SieveIteration (LatticePoint<ET> &p)
-//{
-//    //auto it = main_list.before_begin();
-//
-//    bool loop = true;
-//
-//    while (loop) //while p keeps changing
-//    {
-//        loop = false;
-//        for (auto it1 = main_list.begin(); it1!=main_list.end(); ++it1) {
-//            if (p.norm2 < (*it1).norm2) {
-//                break;
-//            }
-//
-//
-//        }
-//    }
-//    //cout << "running SieveIteration " << endl;
-//};
-
-// p1 > p2; reduce p1
 template<class ET>
-bool check2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2)
+bool GaussSieve::check2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2)
 {
 
     //cout << "before the reduction: ";
@@ -146,7 +73,7 @@ bool check2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2)
 //If str is not on the stream, outputs an error.
 //Note that whitespace inside str is OK, as long as it is not at the beginning or end.
 
-bool string_consume(istream &is, std::string const & str, bool elim_ws, bool verbose)
+bool GaussSieve::string_consume(istream &is, std::string const & str, bool elim_ws, bool verbose)
 {
     unsigned int len = str.length();
     char *buf = new char[len+1];
@@ -181,6 +108,24 @@ bool string_consume(istream &is, std::string const & str, bool elim_ws, bool ver
     return true;
 }
 
+Z_NR<mpz_t> GaussSieve::compute_mink_bound(ZZ_mat<mpz_t> const & basis)
+{
+    assert(basis.get_rows() == basis.get_cols()); //Note : Alg might work even otherwise. This assertion failure is just a reminder that this needs to be checked.
+    ZZ_mat<mpz_t> Empty_mat;
+    ZZ_mat<mpz_t> basis2 = basis; //need to copy, as BGSO is not const-specified...
+    MatGSO<Z_NR<mpz_t>, FP_NR<double>> BGSO(basis2, Empty_mat, Empty_mat, 0);
+    //bool upd =
+    BGSO.update_gso();
+    // returns det(B)^{2/dim}
+    FP_NR<double> root_det2 = BGSO.get_root_det (1, basis.get_rows());
+    //lambda_1^2 = n * det(B)^{2/n}
+    FP_NR<double> MinkBound_double = root_det2 * static_cast<double> (basis.get_rows() ); //technically, we need to multiply by Hermite's constant in dim n here. We are at least missing a constant factor here.
+    Z_NR<mpz_t> Minkowski;
+    Minkowski.set_f(MinkBound_double);
+    return Minkowski;
+}
+
+//End of things included only once.
 #endif // SIEVE_JOINT_CPP
 
 template<class ET> //ET : underlying entries of the vectors. Should be a Z_NR<foo> - type. Consider making argument template itself.
@@ -227,20 +172,9 @@ bool Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::check_if_done()
     if(term_cond.do_we_use_default_condition())
     {
         //compute GSO for original_basis
-        ZZ_mat<mpz_t> Empty_mat;
-        MatGSO<ET, FP_NR<double>> BGSO(original_basis, Empty_mat, Empty_mat, 0);
-        bool upd = BGSO.update_gso();
 
-        // returns det(B)^{2/dim}
-        FP_NR<double> det = BGSO.get_root_det (1, original_basis.get_rows());
-
-        //lambda_1^2 = n * det(B)^{2/n}
-        FP_NR<double> MinkBound_double = original_basis.get_rows() * det;
-        ET Minkowski;
-        Minkowski.set_f(MinkBound_double);
-
-        cout << "set Mink. bound to: " << Minkowski << endl;
-
+        ET Minkowski = GaussSieve::compute_mink_bound(original_basis);
+        if (verbosity>=1) cout << "set Mink. bound to: " << Minkowski << endl;
         term_cond.set_target_length(Minkowski);
 
         //FT MatGSO< ZT, FT >::get_root_det in gso.cpp
@@ -248,7 +182,7 @@ bool Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::check_if_done()
     }
     if(term_cond.do_we_check_length())
     {
-            if (main_list.cbegin()->norm2 <= term_cond.get_target_length()) return true;
+            if (main_list.cbegin()->norm2 <= term_cond.get_target_length()) return true; //TODO : Use current_best or somesuch.
     }
     return false;
 }

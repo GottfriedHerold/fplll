@@ -106,7 +106,7 @@ template<class ZT> void call_sieve (ZZ_mat<ZT> B, int sieve_verbosity, Z_NR<ZT> 
 	TerminationConditions< Z_NR<ZT> > term_cond;
 	Sieve<Z_NR< ZT > , false> Test_2Sieve (B);
     //bool testMink = Test_2Sieve.check_if_done();
-	Test_2Sieve.run_2_sieve(target_norm);
+	Test_2Sieve.run_2_sieve();
 }
 
 
@@ -139,9 +139,10 @@ int main(int argc, char **argv)
     {
         target_norm.set_str(target_norm_string);
     }
-
-    cout << "target norm set: " << target_norm << endl;
-
+    if(target_norm > 0)
+    {
+        cout << "target norm set: " << target_norm << endl;
+    }
 
 
     //PointListSingleThreaded<long int> X;

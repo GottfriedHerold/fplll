@@ -54,8 +54,10 @@ class IsLongerVector_class; //class wrapper to compare vectors by length
 template<class ET, bool MultiThreaded>
 class Sieve;
 
-bool string_consume(istream &is, std::string const & str, bool elim_ws= true, bool verbose=true); //helper function for dumping/reading
-
+namespace GaussSieve //helper functions
+{
+    bool string_consume(istream &is, std::string const & str, bool elim_ws= true, bool verbose=true); //helper function for dumping/reading
+}
 
 /*INCLUDES */
 
@@ -69,6 +71,16 @@ bool string_consume(istream &is, std::string const & str, bool elim_ws= true, bo
 #include <exception>
 #include "TermCond.h"
 #include "GaussQueue.h"
+
+namespace GaussSieve
+{
+    Z_NR<mpz_t> compute_mink_bound(ZZ_mat<mpz_t> const & basis); //computes an value x s.t. lambda_1 <= x using Minkowski's Theorem.
+    template<class ET>
+    bool check2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2); //ASSUMPTION: p1 is longer than p2.
+                                                                       //2-reduces p1 with the help of p2.
+                                                                       //p1 is overwritten, whereas p2 is const. Returns true if p1 actually changed.
+
+}
 
 #endif //end of ONLY-ONCE part
 
@@ -116,7 +128,7 @@ public:
     static bool const class_multithreaded = true;
 #endif //class_multithreaded is for introspection, is_multithreaded is what the caller wants (may differ if we dump and re-read with different params)
     //void run_2_sieve();
-    void run_2_sieve(ET target_norm); //actually runs the Gauss Sieve.
+    void run_2_sieve(); //actually runs the Gauss Sieve.
     void SieveIteration2 (LatticePoint<ET> &p); //one run through the main_list (of 2-sieve)
     LPType get_SVP(); //obtains Shortest vector and it's length. If sieve has not yet run, start it.
     void run(); //runs the sieve specified by the parameters.
@@ -148,6 +160,7 @@ private:
 
 //Use termination Condition to check whether we are done, based on statistics so far.
     bool check_if_done();
+    ET ComputeMinkowski2Bound(); //computes Minkowski bound for the square(!) length. May need to round upwards.
 
 //Note: The member fields of Sieve denote the (global) "internal" status of the sieve during a run or execution.
 //It should be possible to dump the status to harddisk and resume from dump using that information.
@@ -194,12 +207,6 @@ private: //to avoid complicated (due to template hack) friend - declaration.
 
 //TODO: total time spent?
 };
-
-//MOVE TO CPP FROM HERE:
-
-template<class ET>
-bool check2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2);
-
 
 /*DUMPING / READING ROUTINES */
 

@@ -108,25 +108,25 @@ template<class ET> istream & operator>>(istream &is,TerminationConditions<ET> &t
     unsigned long int allowed_list_size_;
     ET target_length_;
 //We should probably throw an exception rather than return is.
-    if (!string_consume(is,"Default_Conditions=")) throw bad_dumpread_TermCond();
+    if (!GaussSieve::string_consume(is,"Default_Conditions=")) throw bad_dumpread_TermCond();
     is >> term_cond.default_condition;
     if(!term_cond.default_condition)
     {
-        if(!string_consume(is,"Check Collisions=")) throw bad_dumpread_TermCond();
+        if(!GaussSieve::string_consume(is,"Check Collisions=")) throw bad_dumpread_TermCond();
         is>> term_cond.do_we_check_collisions_;
         if(term_cond.do_we_check_collisions_)
         {
-            if(!string_consume(is,"Number=")) throw bad_dumpread_TermCond();
+            if(!GaussSieve::string_consume(is,"Number=")) throw bad_dumpread_TermCond();
             is >> term_cond.allowed_collisions;
         }
-        if(!string_consume(is,"Check List Size=")) throw bad_dumpread_TermCond();
+        if(!GaussSieve::string_consume(is,"Check List Size=")) throw bad_dumpread_TermCond();
         is>> term_cond.do_we_check_list_size_;
         if(term_cond.do_we_check_list_size_)
         {
-            if(!string_consume(is,"Number=")) throw bad_dumpread_TermCond();
+            if(!GaussSieve::string_consume(is,"Number=")) throw bad_dumpread_TermCond();
             is>> term_cond.allows_list_size_;
         }
-        if(!string_consume(is,"Check Target Length=")) throw bad_dumpread_TermCond();
+        if(!GaussSieve::string_consume(is,"Check Target Length=")) throw bad_dumpread_TermCond();
         is>>term_cond.do_we_check_length_;
         if(term_cond.do_we_check_length_)
         {
