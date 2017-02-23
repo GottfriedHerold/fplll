@@ -19,9 +19,9 @@ signed int get_exponent (Z_NR<long> const & val)       {return val.exponent();}
 signed int get_exponent (Z_NR<double> const & val)   {return val.exponent();}
 template<class ET> [[ deprecated ("Using badly supported type") ]] signed int get_exponent (ET const & val); //other cases. Note that non-templates take precedence.
 
-template<class ApproxType, class ET> ApproxType do_approximate( enable_if_t< is_same<ET, Z_NR<double> >::value , ET> const & val, signed int const delta);
-template<class ApproxType, class ET> ApproxType do_approximate( enable_if_t< is_same<ET, Z_NR<mpz_t> >::value , ET> const & val, signed int const delta);
-template<class ApproxType, class ET> ApproxType do_approximate( enable_if_t< is_same<ET, Z_NR<long> >::value , ET> const & val, signed int const delta);
+template<class ApproxType, class ET> ApproxType do_approximate( typename enable_if< is_same<ET, Z_NR<double> >::value, ET>::type const & val, signed int const delta);
+template<class ApproxType, class ET> ApproxType do_approximate( typename enable_if< is_same<ET, Z_NR<mpz_t> >::value , ET>::type const & val, signed int const delta);
+template<class ApproxType, class ET> ApproxType do_approximate( typename enable_if< is_same<ET, Z_NR<long> >::value , ET>::type const & val, signed int const delta);
 // "if constexpr" (from C++17), you are badly needed...
 
 //template<class ET,class ApproxType>
@@ -50,12 +50,13 @@ class ApproxLatticePoint<ET, false, -1>    //Approx. Lattice Point. Note that th
 {
     public:
 
-    using ApproxTypeNorm2 = uint32_t; //determines bit-length of approximation, by making sure that n* (MAXAPPROX^2) must fit into it.
-    using ApproxType = uint32_t; //at least half the size of the above. Same size might work better for vectorization.
+    using ApproxTypeNorm2 = int32_t; //determines bit-length of approximation, by making sure that n* (MAXAPPROX^2) must fit into it.
+    using ApproxType = int32_t; //at least half the size of the above. Same size might work better for vectorization.
 
     public: //consider making some constructors private and befriend the list class(es).
     ApproxLatticePoint() : length_exponent(0),approx(nullptr), approxn2(0), details(nullptr) {}; //should only ever be used in move semantics
-    explicit ApproxLatticePoint(int n) : length_exponent(0), approx(new ApproxType[n]),approxn2(0),details(new LatticePoint<ET> (n) ) {update_approximation();} ; //n=ambient dimension = length of vector
+    explicit ApproxLatticePoint(int n) : //n=ambient dimension = length of vector
+        length_exponent(0), approx(new ApproxType[n]),approxn2(0),details(new LatticePoint<ET> (n) ) {update_approximation();} ;
     explicit ApproxLatticePoint(LatticePoint<ET> const & LP): //creates an approx. LP structure holding a copy of LP.
         length_exponent(0),approx(new ApproxType[LP.size()] ),approxn2(0),details(new LatticePoint<ET> (LP)) {update_approximation();};
     explicit ApproxLatticePoint(LatticePoint<ET> const * const LPp): //creates an approx LP structure that gains ownership of *LPp. Use only on dynamically allocated LPs.
@@ -89,6 +90,7 @@ class ApproxLatticePoint<ET, false, -1>    //Approx. Lattice Point. Note that th
     LatticePoint<ET> *details; //actual lattice point structure.
 };
 
+//TODO: Change implementation will be changed
 template<class ET, bool insideMTList, int n_fixed>
 ostream & operator<< (ostream &os, ApproxLatticePoint<ET,insideMTList,n_fixed> const & appLP)
 {
@@ -104,9 +106,6 @@ ostream & operator<< (ostream &os, ApproxLatticePoint<ET,insideMTList,n_fixed> c
     return os;
 }
 
-
-
-//non-member function overloads
 
 template <class ET>
 void ApproxLatticePoint<ET,false, -1>::update_approximation()
@@ -125,7 +124,7 @@ void ApproxLatticePoint<ET,false, -1>::update_approximation()
     {
         number_length = std::max(number_length, get_exponent ( (*details)[i] ) );
     }
-    if(number_length == std::numeric_limits<signed int>::min()) // *details is all-zero vector. should never happen.
+    if(number_length == std::numeric_limits<signed int>::min()) // *details is all-zero vector. should never happen in the algorithm.
     {
         cerr << "Warning: approximating all-zero vector";
         length_exponent=0;
@@ -146,7 +145,7 @@ void ApproxLatticePoint<ET,false, -1>::update_approximation()
 }
 
 template<class ApproxType, class ET>
-ApproxType do_approximate( enable_if_t< is_same<ET, Z_NR<mpz_t> >::value , ET> const & val, signed int const delta)
+ApproxType do_approximate( typename enable_if< is_same<ET, Z_NR<mpz_t> >::value , ET>::type const & val, signed int const delta)
 //ApproxType do_approximate(Z_NR<mpz_t> const & val, signed int const delta )
 {
     assert(delta>=0);
@@ -161,7 +160,7 @@ ApproxType do_approximate( enable_if_t< is_same<ET, Z_NR<mpz_t> >::value , ET> c
 
 
 template<class ApproxType, class ET>
-ApproxType do_approximate( enable_if_t< is_same<ET, Z_NR<long> >::value , ET> const & val, signed int const delta)
+ApproxType do_approximate( typename enable_if< is_same<ET, Z_NR<long> >::value , ET>::type const & val, signed int const delta)
 //ApproxType do_approximate(Z_NR<long> const & val, signed int const delta)
 {
     assert(delta>=0);
@@ -169,7 +168,7 @@ ApproxType do_approximate( enable_if_t< is_same<ET, Z_NR<long> >::value , ET> co
 }
 
 template<class ApproxType, class ET>
-ApproxType do_approximate( enable_if_t< is_same<ET, Z_NR<double> >::value , ET> const & val, signed int const delta)
+ApproxType do_approximate( typename enable_if< is_same<ET, Z_NR<double> >::value , ET>::type const & val, signed int const delta)
 //Read : ApproxType do_approximate(Z_NR<double> const & val, signed int const delta)
 {
     return (std::ldexp(val.get_data(),-delta) ); //Note : Conversion from double to integral type rounds towards zero. This is needed to prevent overflows.
