@@ -23,9 +23,9 @@ void Sieve<ET,false>::run_2_sieve()
     //NumVect<ET> sample;
 
     check_if_done(); //sets up default conditions if not already set. We ignore the return value.
-
-    //while(i < MaxIteration) // TerminationCondition Here
+    //ET target_norm = term_cond.get_target_length();
     while (!check_if_done() )
+    //while(main_list.cbegin()->norm2 > target_norm)
     {
         p=main_queue.true_pop();
 
