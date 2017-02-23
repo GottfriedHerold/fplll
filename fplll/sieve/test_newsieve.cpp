@@ -33,16 +33,17 @@ void test_run_sieve(int dim)
     // returns det(B)^{2/dim}
     FP_NR<double> det = BGSO.get_root_det (1, B.get_rows());
     
-    //Z_NR<ZT> intdet;
-    ///intdet.set_f(det);
+    
     
     cout << "det = " << det << endl;
     //cout << "intdet = " << intdet << endl;
     
     FP_NR<double> MinkBound = sqrt(B.get_rows() * det); // \lambda_1(B) <= \sqrt(n * det(B)^{2/n} )
     cout << "MindBound = " << MinkBound << endl;
+    Z_NR<ZT> Minkowski;
+    Minkowski.set_f(MinkBound);
     
-    //Test_Queue.run_2_sieve(term_cond); //file-name to output the results of tests
+    //Test_Queue.run_2_sieve(Minkowski); //file-name to output the results of tests
     {
         //std::ofstream ofs("FILENAME");
         //Test_Queue.print_status(-1,ofs);

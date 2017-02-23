@@ -242,8 +242,6 @@ bool Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::check_if_done()
         cout << "set Mink. bound to: " << Minkowski << endl;
         
         term_cond.set_target_length(Minkowski);
-        //compute Minkwoski
-        //ET det;
 
         //FT MatGSO< ZT, FT >::get_root_det in gso.cpp
         //term_cond(set_target_length(Minkowski))

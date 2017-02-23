@@ -115,7 +115,7 @@ public:
 #else
     static bool const class_multithreaded = true;
 #endif //class_multithreaded is for introspection, is_multithreaded is what the caller wants (may differ if we dump and re-read with different params)
-
+    //void run_2_sieve();
     void run_2_sieve(ET target_norm); //actually runs the Gauss Sieve.
     void SieveIteration2 (LatticePoint<ET> &p); //one run through the main_list (of 2-sieve)
     LPType get_SVP(); //obtains Shortest vector and it's length. If sieve has not yet run, start it.
