@@ -111,6 +111,7 @@ bool GaussSieve::string_consume(istream &is, std::string const & str, bool elim_
 Z_NR<mpz_t> GaussSieve::compute_mink_bound(ZZ_mat<mpz_t> const & basis)
 {
     assert(basis.get_rows() == basis.get_cols()); //Note : Alg might work even otherwise. This assertion failure is just a reminder that this needs to be checked.
+    //compute Gram-Schmidt-Orthogonalization.
     ZZ_mat<mpz_t> Empty_mat;
     ZZ_mat<mpz_t> basis2 = basis; //need to copy, as BGSO is not const-specified...
     MatGSO<Z_NR<mpz_t>, FP_NR<double>> BGSO(basis2, Empty_mat, Empty_mat, 0);
@@ -171,8 +172,7 @@ bool Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::check_if_done()
 {
     if(term_cond.do_we_use_default_condition())
     {
-        //compute GSO for original_basis
-
+        assert(false); //DOES NOT WORK, since compute_mink_bound does not work.
         ET Minkowski = GaussSieve::compute_mink_bound(original_basis);
         if (verbosity>=1) cout << "set Mink. bound to: " << Minkowski << endl;
         term_cond.set_target_length(Minkowski);
