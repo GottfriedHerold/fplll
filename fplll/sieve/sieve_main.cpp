@@ -105,8 +105,11 @@ template<class ZT> void call_sieve (ZZ_mat<ZT> B, int sieve_verbosity, Z_NR<ZT> 
 {
 	TerminationConditions< Z_NR<ZT> > term_cond;
 	Sieve<Z_NR< ZT > , false> Test_2Sieve (B);
-    if(target_norm!=0)
-    Test_2Sieve.term_cond.set_target_length(target_norm);
+	if(target_norm!=0)
+    {
+        Test_2Sieve.term_cond.set_target_length(target_norm);
+        cout << "Setting target norm2 to" << target_norm << endl << flush;
+    }
     //bool testMink = Test_2Sieve.check_if_done();
 	Test_2Sieve.run_2_sieve();
 }

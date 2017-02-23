@@ -152,16 +152,16 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
     //unsigned int n = lattice_rank;
     //auto it = main_list.before_begin();
     //assert(main_list.empty()); We don't have a function to check that yet...
+    cout <<"Initializing list with original basis..." << endl << std::flush;
     auto it = main_list.cbegin();
     for (unsigned int i=0; i<lattice_rank; ++i)
     {
-        //LatticePoint<ET> p (  conv_matrixrow_to_lattice_point (original_basis[i]) );
         main_list.insert_before(it,  conv_matrixrow_to_lattice_point (original_basis[i])  );
-        //it = main_list.insert_after(it, p);
     }
     current_list_size+=lattice_rank;
+    cout << "Sorting ..." << std::flush;
     main_list.sort();
-
+    cout << "is finished." << endl << std::flush;
 
 
 //TODO : initialize term_condition to some meaningful default.
@@ -182,7 +182,7 @@ bool Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::check_if_done()
     }
     if(term_cond.do_we_check_length())
     {
-            if (main_list.cbegin()->norm2 <= term_cond.get_target_length()) return true; //TODO : Use current_best or somesuch.
+            if (get_best_length2() <= term_cond.get_target_length()) return true; //TODO : Use current_best or somesuch.
     }
     return false;
 }

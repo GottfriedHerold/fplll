@@ -74,35 +74,57 @@ class ApproxLatticePoint<ET, false, -1>     //Approx. Lattice Point. Stores appr
                             //Dealing with this may be cheaper than having memory fences at every read. Of course, reading from the "true" values requires some more care in that case.
 
 {
+    public:
     using ApproxType        = LatticeApproximations::ApproxType;
     using ApproxTypeNorm2   = LatticeApproximations::ApproxTypeNorm2;
+    using DetailType        = LatticePoint<ET>;
 
     public: //consider making some constructors private and befriend the list class(es).
     ApproxLatticePoint() : length_exponent(0),approx(nullptr), approxn2(0), details(nullptr) {}; //should only ever be used in move semantics
-    explicit ApproxLatticePoint(int n) : //n=ambient dimension = length of vector
-        length_exponent(0), approx(new ApproxType[n]),approxn2(0),details(new LatticePoint<ET> (n) ) {update_approximation();} ;
-    explicit ApproxLatticePoint(LatticePoint<ET> const & LP): //creates an approx. LP structure holding a copy of LP.
-        length_exponent(0),approx(new ApproxType[LP.size()] ),approxn2(0),details(new LatticePoint<ET> (LP)) {update_approximation();};
-    explicit ApproxLatticePoint(LatticePoint<ET> const * const LPp): //creates an approx LP structure that gains ownership of *LPp. Use only on dynamically allocated LPs.
-        length_exponent(0),approx(new ApproxType[LPp->size()]),approxn2(0),details(LPp) {update_approximation();};
+    //explicit ApproxLatticePoint(int n) : //n=ambient dimension = length of vector
+    //    length_exponent(0), approx(new ApproxType[n]),approxn2(0),details(new DetailType (n) ) {update_approximation();} ;
+    ApproxLatticePoint(DetailType const & LP): //creates an approx. LP structure holding a copy of LP.
+        length_exponent(0),approx(new ApproxType[LP.size()] ),approxn2(0),details(new DetailType (LP)) {update_approximation();};
+    //explicit ApproxLatticePoint(DetailType const * const LPp): //creates an approx LP structure that gains ownership of *LPp. Use only on dynamically allocated LPs.
+    //    length_exponent(0),approx(new ApproxType[LPp->size()]),approxn2(0),details(LPp) {update_approximation();};
 
-    ApproxLatticePoint(ApproxLatticePoint const &other)=delete;
-    ApproxLatticePoint(ApproxLatticePoint && other)=default;
-    ApproxLatticePoint & operator= (ApproxLatticePoint const & other) = delete;
-    ApproxLatticePoint & operator= (ApproxLatticePoint &&other) = default;
+    ApproxLatticePoint(ApproxLatticePoint const &other):
+        length_exponent(other.length_exponent),approx(nullptr),approxn2(other.approxn2),details(nullptr)
+    {
+        if (other.details!=nullptr)
+        {
+            int n = (other.details)->size();
+            approx= new ApproxType[n];
+            for(int i=0;i<n;++i) approx[i]=other.approx[i];
+            details = new DetailType (*other.details);
+        }
+    }
+    ApproxLatticePoint(ApproxLatticePoint && other) :
+        length_exponent(other.length_exponent), approx(other.approx), approxn2(other.approxn2),details(other.details)  {other.invalidate();}; //invalidation should not be neccessary.
+    //ApproxLatticePoint & operator= (ApproxLatticePoint const & other) = delete;
+    ApproxLatticePoint & operator= (ApproxLatticePoint other)
+    {
+        length_exponent = other.length_exponent;
+        swap(approx,other.approx);
+        approxn2=other.approxn2;
+        swap(details,other.details);
+    }
+
     ~ApproxLatticePoint(){delete details; delete approx;};
     ApproxType * get_approx()           const               {return approx;};
     ApproxType   get_approx_norm2()     const               {return approxn2;};
     signed int get_length_exponent()  const                 {return length_exponent;};
-    LatticePoint<ET> get_details()    const                 {return *details;};
+    DetailType get_details()    const                       {return *details;};
     //LatticePoint<ET> get_details()    const                 {return *details;};
-    LatticePoint<ET> & get_details_ref()                    {return *details;}; //technically, this is const, as it does not change the pointer.
-    LatticePoint<ET> const * get_details_ptr()  const       {return details;};
-    LatticePoint<ET> const * get_details_ptr_r()const       {return details;};
-    LatticePoint<ET> * get_details_ptr_rw() const           {return details;};
+    DetailType & get_details_ref()                          {return *details;}; //technically, this is const, as it does not change the pointer.
+    DetailType const * get_details_ptr()  const             {return details;};
+    DetailType const * get_details_ptr_r()const             {return details;};
+    DetailType * get_details_ptr_rw() const                 {return details;};
     unsigned int get_dim() const                            {return details->size();};
+    bool operator< (ApproxLatticePoint const &other ) const {return (this->details->norm2 < other.get_details_ptr()->norm2);};
     private: //internal member functions
     void update_approximation(); //computes approximation from *approx. Assumes memory is already allocated.
+    void invalidate(){approx= nullptr;details=nullptr;}
     //friend
     private: //internal data
     signed int length_exponent; //note : May be negative
@@ -111,7 +133,7 @@ class ApproxLatticePoint<ET, false, -1>     //Approx. Lattice Point. Stores appr
     //The approximation itself is given by 2^length_exponent * approx
     //The approximation to the norm^2 is given by 2^2length_exponent * approxn2
     //Note that we need to care about overflows here by truncating accordingly.
-    LatticePoint<ET> *details; //actual lattice point structure.
+    DetailType *details; //actual lattice point structure.
 };
 
 //TODO: Implementation will be changed

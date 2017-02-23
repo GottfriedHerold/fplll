@@ -35,13 +35,13 @@ void Sieve<ET,false>::run_2_sieve()
         if (i % 200 == 0) {
             //print_status();
             //cout << "# of collisions: " << number_of_collisions << endl;
-            cout << "norm2 of the so far shortest vector: " << main_list.cbegin()->norm2 << endl;
+            cout << "norm2 of the so far shortest vector: " << get_best_length2() << endl;
 
         }
     }
 
     cout << "sv is " << endl;
-    main_list.cbegin()->printLatticePoint();
+    main_list.cbegin().access_details()->printLatticePoint();
     print_status();
 
 }
@@ -62,12 +62,12 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p)
         loop = false;
         for (auto it = main_list.cbegin(); it!=main_list.cend(); ++it)
         {
-            if (p.norm2 < (*it).norm2)
+            if (p.norm2 < it.access_details()->norm2)
             {
                 it_comparison_flip = it;
                 break;
             }
-            if(GaussSieve::check2red(p, *it)) //p was changed
+            if(GaussSieve::check2red(p, *(it.access_details()) ) ) //p was changed
             {
                 loop = true;
                 break;
@@ -93,7 +93,7 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p)
     for(auto it = it_comparison_flip; it!=main_list.cend(); ) //go through rest of the list.
                                                               //We know that every element current_list_point=*it is at least as long as p, so we reduce x using p.
     {
-        auto current_list_point = *it;
+        auto current_list_point = *(it.access_details() );
 		if (GaussSieve::check2red(current_list_point, p)) //We can reduce *it.
 			{
 			//cout << "v was found" <<  endl;

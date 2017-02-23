@@ -12,25 +12,30 @@
 
 //forward declarations.
 
-template <class ET, bool MT>
-class GaussList;
+template <class ET, bool MT, int n_fixed = -1>
+class GaussList; //holds approximations
 
-template <class ET>
-using PointListSingleThreaded = std::forward_list<LatticePoint <ET> >; //list or forward_list?
+template <class ET, bool MT, int n_fixed = -1>
+class GaussIterator;
+//template<class ET>
+//using PointListSingleThreaded = GaussList<ET, false>;
 
+//template <class ET>
+//using PointListSingleThreaded = std::forward_list<LatticePoint <ET> >; //list or forward_list?
+//
 //Note: PointListMultiThreaded owns all its lattice vectors that are reachable by forward iteration.
 
 template <class DT> class ListMultiThreaded;
 template <class DT> class ListMTNode;
 template <class DT> class MTListIterator;
-
-template <class ET>
-using PointListMTNode = ListMTNode<LatticePoint<ET> >;
-template <class ET>
-using PointListIterator=MTListIterator< LatticePoint<ET> >;
-template <class ET>
-using PointListMultiThreaded=ListMultiThreaded< LatticePoint <ET> >;
-
+//
+//template <class ET>
+//using PointListMTNode = ListMTNode<LatticePoint<ET> >;
+//template <class ET>
+//using PointListIterator=MTListIterator< LatticePoint<ET> >;
+//template <class ET>
+//using PointListMultiThreaded=ListMultiThreaded< LatticePoint <ET> >;
+//
 template <class DT> class GarbageBin;
 
 
@@ -41,6 +46,7 @@ template <class DT> class GarbageBin;
 #include <forward_list>
 #include <queue>
 #include "assert.h"
+#include "LatticePoint2.h"
 
 //Class for (weakly?) sorted list of lattice points.
 //includes thread-safe variant(s). May need experiments which implementation is best. (mutex on whole structure on every write, lock-free,...)
@@ -51,32 +57,43 @@ template <class DT> class GarbageBin;
 //Note that we do NOT assume a sequentially constistent memory model here. Relaxing from that should gain a bit of performance:
 //Be aware that reading time from the lattice point list even asymptotically leading order.
 
-template <class DT>
-class ListSingleThreaded
+template <class ET>
+class GaussList<ET, false, -1>
 {
 public:
-    using DataType = DT;
-    using DataPointer=DT*;
-    using UnderlyingContainer = std::list<DT>;
-    using Iterator = typename UnderlyingContainer::const_iterator;
+    using EntryType= ET;
+    using DataType = ApproxLatticePoint<ET,false,-1>;
+    using DataPointer=DataType *;
+    using UnderlyingContainer = std::list<DataType>;
+    //using Iterator = typename UnderlyingContainer::const_iterator;
+    using Iterator = GaussIterator<ET,false,-1>;
+    using DetailType = typename DataType::DetailType;
     //using NonConstIterator = typename UnderlyingContainer::iterator;
-    explicit ListSingleThreaded() = default;
-    ListSingleThreaded(ListSingleThreaded const & old) = delete;
-    ListSingleThreaded(ListSingleThreaded && old) = delete;
-    ListSingleThreaded & operator= (ListSingleThreaded const &other) = delete;
-    ListSingleThreaded & operator= (ListSingleThreaded &&other) = delete;
-    ~ListSingleThreaded() = default; //just deletes the underlying container. Fine as long as we don't store pointers.
-    Iterator cbegin()  const                                    {return actual_list.cbegin();};
-    Iterator cend() const                                       {return actual_list.cend();};
-    //Iterator cbefore_begin() const                              {return actual_list.cbefore_begin();};
-    Iterator insert_before(Iterator pos, DT const & val)                {return actual_list.insert(pos, val);};
-    Iterator insert_before(Iterator pos, DT && val)                     {return actual_list.insert(pos,std::move(val));};
+    explicit GaussList() = default;
+    GaussList(GaussList const & old) = delete;
+    GaussList(GaussList && old) = delete;
+    GaussList & operator= (GaussList const &other) = delete;
+    GaussList & operator= (GaussList &&other) = delete;
+    ~GaussList() = default; //just deletes the underlying container. Fine as long as we don't store pointers.
+    Iterator cbegin()                                                   {return actual_list.begin() ;};
+    Iterator cend()                                                     {return actual_list.end();};
+    //Iterator cbefore_begin() const                                    {return actual_list.cbefore_begin();};
+    Iterator insert_before(Iterator pos, DetailType const & val)        {return actual_list.emplace(pos, val);};
+    //Iterator insert_before(Iterator pos, DetailType && val)           {return actual_list.insert(pos,std::move(val));};
     Iterator erase(Iterator pos)                                        {return actual_list.erase(pos);};
-    void unlink(Iterator pos)                                           {actual_list.erase(pos);}; //only for single-threaded
+    //void unlink(Iterator pos)                                           {actual_list.erase(pos);}; //only for single-threaded
     void sort()                                                         {actual_list.sort();};  //only for single-threaded (for now)
 
 private:
     UnderlyingContainer actual_list;
+};
+
+template <class ET>
+class GaussIterator<ET,false,-1> : public std::list<ApproxLatticePoint<ET,false, -1 > >::iterator
+{
+    public:
+    LatticePoint<ET> * access_details() { assert(  (*this)->get_details_ptr_rw()!=nullptr );  return (*this)-> get_details_ptr_rw() ;};
+    GaussIterator(typename std::list< ApproxLatticePoint<ET,false, -1 > >::iterator other) : std::list<ApproxLatticePoint<ET,false,-1> >::iterator(other) {};
 };
 
 

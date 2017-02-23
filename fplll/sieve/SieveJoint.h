@@ -102,7 +102,7 @@ class Sieve<ET, GAUSS_SIEVE_IS_MULTI_THREADED >
     using MainQueueType = GaussQueue<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
     //using MainListType     = PointListSingleThreaded<ET>;
     //using MainListType2    = PointListMultiThreaded<ET>;
-    using MainListType     = ListSingleThreaded<LPType>;
+    using MainListType     = GaussList<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
     //using MainListType     = std::list<LPType>;
     using LatticeBasisType = ZZ_mat<typename ET::underlying_data_type>;
     using SamplerType      = KleinSampler<typename ET::underlying_data_type, FP_NR<double>> *; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
@@ -147,7 +147,8 @@ public:
     void set_k(unsigned int new_k)                              {sieve_k=new_k;return;};
     bool is_multithreaded_wanted() const                        {return multi_threaded_wanted;}; //Note: No setter
     LPType get_shortest_vector_found() const                    {return shortest_vector_found;};
-    ET get_best_length2() const                                 {return get_shortest_vector_found().norm2;};
+//    ET get_best_length2() const                                 {return get_shortest_vector_found().norm2;};
+    ET get_best_length2()                                       {return (main_list.cbegin()).access_details()->norm2;}; //TODO: Change to above
     bool check_whether_sieve_is_running() const                 {return (sieve_status==SieveStatus::sieve_status_running);};
     unsigned long int get_number_of_collisions() const          {return number_of_collisions;};
     unsigned long int get_number_of_points_sampled() const      {return number_of_points_sampled;};
