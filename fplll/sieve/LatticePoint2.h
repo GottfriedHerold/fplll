@@ -11,36 +11,62 @@
 //forward declarations:
 
 template <class ET,bool insideMTList=false, int n_fixed=-1> //insideMTList: Is this point stored inside our Multithreaded list class? -> changes some data types, memory layout and ownership semantics.
-                                                      //n : compile-time fixed dimension with n=-1 meaning dynamic.
+                                                            //n : compile-time fixed dimension with n=-1 meaning dynamic.
 class ApproxLatticePoint;
 
-signed int get_exponent (Z_NR<mpz_t> const & val)     {return val.exponent();}
-signed int get_exponent (Z_NR<long> const & val)       {return val.exponent();}
-signed int get_exponent (Z_NR<double> const & val)   {return val.exponent();}
-template<class ET> [[ deprecated ("Using badly supported type") ]] signed int get_exponent (ET const & val); //other cases. Note that non-templates take precedence.
+template<class ET, bool insideMTList, int n_fixed>
+ostream & operator<< (ostream &os, ApproxLatticePoint<ET,insideMTList,n_fixed> const & appLP); //output.
+
+
+namespace LatticeApproximations //helper types etc. enclosed in namespace
+{
+
+inline signed int get_exponent (Z_NR<mpz_t> const & val)     {return val!=0 ?val.exponent() : std::numeric_limits<signed int>::min();}     //returns smallest t s.t. abs(val) < 2^t (i.e. the bit-length for integral types)
+inline signed int get_exponent (Z_NR<long> const & val)      {return val!=0 ?val.exponent() : std::numeric_limits<signed int>::min();}     //for val==0, we return the most negative value that fits into an int.
+inline signed int get_exponent (Z_NR<double> const & val)    {return val!=0 ?val.exponent() : std::numeric_limits<signed int>::min();}     //Note that the function is already implemented in Z_NR< > - types.
+template<class ET> [[ deprecated ("Using badly supported type") ]] signed int get_exponent (ET const & val);                               //Non-Z_NR< > - cases. Note that non-templates take precedence.
 
 template<class ApproxType, class ET> ApproxType do_approximate( typename enable_if< is_same<ET, Z_NR<double> >::value, ET>::type const & val, signed int const delta);
 template<class ApproxType, class ET> ApproxType do_approximate( typename enable_if< is_same<ET, Z_NR<mpz_t> >::value , ET>::type const & val, signed int const delta);
 template<class ApproxType, class ET> ApproxType do_approximate( typename enable_if< is_same<ET, Z_NR<long> >::value , ET>::type const & val, signed int const delta);
 // "if constexpr" (from C++17), you are badly needed...
 
+using ApproxTypeNorm2 = int32_t; //determines bit-length of approximation, by making sure that n* (MAXAPPROX^2) must fit into it.
+using ApproxType = int32_t; //at least half the size of the above. Same size might work better for vectorization.
+
+
+//The above should be read as specialisations of
 //template<class ET,class ApproxType>
 //ApproxType do_approximate(ET const & val, signed int const delta );
-
+//for E = Z_NR<...>
 
 template<class ET>
 class MaybeRational;
 
-template<class ET, bool insideMTList, int n_fixed>
-ostream & operator<< (ostream &os, ApproxLatticePoint<ET,insideMTList,n_fixed> const & appLP);
-
-template<class ET> class MaybeRational {public: static bool constexpr val=true;};
-template<> class MaybeRational<Z_NR<long > >{public: static bool constexpr val=false;};
-template<> class MaybeRational<Z_NR<mpz_t> >{public: static bool constexpr val=false;};
+template<class ET> class MaybeRational {public: static bool constexpr val=true;};       //helper template that selects whether the underlying type *might* be able to represent values strictly between 0 and 1.
+template<> class MaybeRational<Z_NR<long > >{public: static bool constexpr val=false;}; //this distinction just to serves to avoid correct, but needless approximations if the values are small enough to not need approximations in first place.
+template<> class MaybeRational<Z_NR<mpz_t> >{public: static bool constexpr val=false;}; //(otherwise, we would pad with zeros from the right(!), which is correct (but useless and hurts readability for debug outputs).
 template<> class MaybeRational<Z_NR<double> >{public: static bool constexpr val=true;};
+//template<class ET>
+
+inline ApproxTypeNorm2 compute_sc_prod(ApproxType const * const arg1, ApproxType const * const arg2, unsigned int len);
+}
+
+
+
+
+//end of forward declarations.
+
+//TODO: Consider Renaming AppproxLatticePoint -> LatticePoint and
+//                        LatticePoint        -> LatticePointDetails
+//to better match the semantics.
 
 template <class ET>
-class ApproxLatticePoint<ET, false, -1>    //Approx. Lattice Point. Note that the pointer/handle to the underlying LatticePoint is owning.
+class ApproxLatticePoint<ET, false, -1>     //Approx. Lattice Point. Stores approximations to a lattice point LP in the form LP = 2^length_exponent * (*approx).
+                                            //i.e. essentially like a floating-point type, but with an exponent that is shared between all coordinates.
+                                            //The underlying exact value can be obtained by get_details.
+
+                            //Note that the pointer/handle to the underlying LatticePoint is owning.
                             //The reasong for this strange design choice (rather doing it the other way round, i.e. attaching the approx. to the real thing)
                             //is that the memory layout of the approx. data is completly under our control, does not depend on <ET>, does not grow and
                             //every potential sequence of bytes represents at least some valid object.
@@ -48,10 +74,8 @@ class ApproxLatticePoint<ET, false, -1>    //Approx. Lattice Point. Note that th
                             //Dealing with this may be cheaper than having memory fences at every read. Of course, reading from the "true" values requires some more care in that case.
 
 {
-    public:
-
-    using ApproxTypeNorm2 = int32_t; //determines bit-length of approximation, by making sure that n* (MAXAPPROX^2) must fit into it.
-    using ApproxType = int32_t; //at least half the size of the above. Same size might work better for vectorization.
+    using ApproxType        = LatticeApproximations::ApproxType;
+    using ApproxTypeNorm2   = LatticeApproximations::ApproxTypeNorm2;
 
     public: //consider making some constructors private and befriend the list class(es).
     ApproxLatticePoint() : length_exponent(0),approx(nullptr), approxn2(0), details(nullptr) {}; //should only ever be used in move semantics
@@ -90,7 +114,7 @@ class ApproxLatticePoint<ET, false, -1>    //Approx. Lattice Point. Note that th
     LatticePoint<ET> *details; //actual lattice point structure.
 };
 
-//TODO: Change implementation will be changed
+//TODO: Implementation will be changed
 template<class ET, bool insideMTList, int n_fixed>
 ostream & operator<< (ostream &os, ApproxLatticePoint<ET,insideMTList,n_fixed> const & appLP)
 {
@@ -122,7 +146,7 @@ void ApproxLatticePoint<ET,false, -1>::update_approximation()
     signed int number_length = std::numeric_limits<signed int>::min();
     for(int i=0; i<n;++i)
     {
-        number_length = std::max(number_length, get_exponent ( (*details)[i] ) );
+        number_length = std::max(number_length, LatticeApproximations::get_exponent ( (*details)[i] ) );
     }
     if(number_length == std::numeric_limits<signed int>::min()) // *details is all-zero vector. should never happen in the algorithm.
     {
@@ -137,15 +161,15 @@ void ApproxLatticePoint<ET,false, -1>::update_approximation()
         for(int i=0;i<n;++i)
         {
             length_exponent = number_length - max_bits;
-            if(MaybeRational<ET>::val == false) {length_exponent = max(0,length_exponent);} //constexpr if, actually...
-            approx[i] = do_approximate<ApproxType,ET> ( (*details)[i], length_exponent );
+            if(LatticeApproximations::MaybeRational<ET>::val == false) {length_exponent = max(0,length_exponent);} //constexpr if, actually...
+            approx[i] = LatticeApproximations::do_approximate<ApproxType,ET> ( (*details)[i], length_exponent );
         }
-        approxn2 = do_approximate<ApproxTypeNorm2,ET> ( (*details).get_norm2(),2*length_exponent   );
+        approxn2 = LatticeApproximations::do_approximate<ApproxTypeNorm2,ET> ( (*details).get_norm2(),2*length_exponent   );
     }
 }
 
 template<class ApproxType, class ET>
-ApproxType do_approximate( typename enable_if< is_same<ET, Z_NR<mpz_t> >::value , ET>::type const & val, signed int const delta)
+ApproxType LatticeApproximations::do_approximate( typename enable_if< is_same<ET, Z_NR<mpz_t> >::value , ET>::type const & val, signed int const delta)
 //ApproxType do_approximate(Z_NR<mpz_t> const & val, signed int const delta )
 {
     assert(delta>=0);
@@ -160,7 +184,7 @@ ApproxType do_approximate( typename enable_if< is_same<ET, Z_NR<mpz_t> >::value 
 
 
 template<class ApproxType, class ET>
-ApproxType do_approximate( typename enable_if< is_same<ET, Z_NR<long> >::value , ET>::type const & val, signed int const delta)
+ApproxType LatticeApproximations::do_approximate( typename enable_if< is_same<ET, Z_NR<long> >::value , ET>::type const & val, signed int const delta)
 //ApproxType do_approximate(Z_NR<long> const & val, signed int const delta)
 {
     assert(delta>=0);
@@ -168,7 +192,7 @@ ApproxType do_approximate( typename enable_if< is_same<ET, Z_NR<long> >::value ,
 }
 
 template<class ApproxType, class ET>
-ApproxType do_approximate( typename enable_if< is_same<ET, Z_NR<double> >::value , ET>::type const & val, signed int const delta)
+ApproxType LatticeApproximations::do_approximate( typename enable_if< is_same<ET, Z_NR<double> >::value , ET>::type const & val, signed int const delta)
 //Read : ApproxType do_approximate(Z_NR<double> const & val, signed int const delta)
 {
     return (std::ldexp(val.get_data(),-delta) ); //Note : Conversion from double to integral type rounds towards zero. This is needed to prevent overflows.
@@ -180,7 +204,7 @@ returns minimal r, s.t. |val| < 2^r (or INTMIN, if val = 0)
 */
 
 template <class ET> //fallback version, should never be called anyway.
-[[ deprecated ("Using badly supported type") ]] signed int get_exponent(ET const & val)
+[[ deprecated ("Using badly supported type") ]] signed int LatticeApproximations::get_exponent(ET const & val)
 {
 
     if(val==0) return std::numeric_limits<signed int>::min();
@@ -205,6 +229,16 @@ template <class ET> //fallback version, should never be called anyway.
         }
         return res;
     }
+}
+
+inline LatticeApproximations::ApproxTypeNorm2 LatticeApproximations::compute_sc_prod(ApproxType const * const arg1, ApproxType const * const arg2, unsigned int len)
+{
+    ApproxTypeNorm2 res=0;
+    for(unsigned int i=0;i<len;++i)
+    {
+        res+=arg1[i]*arg2[i];
+    }
+    return res;
 }
 
 
