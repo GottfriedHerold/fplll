@@ -48,11 +48,12 @@ void Sieve<ET,false>::run_2_sieve()
 
 
 template<class ET>
-void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p)
+void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue will output Approx.
 {
-
+    if (p.norm2==0) return; //cerr << "Trying to reduce 0";
+    ApproxLatticePoint<ET,false> pApprox (p); //TODO : Change in caller.
     //simplified the code, because main_list supports deleting AT pos and inserting BEFORE pos now. -- Gotti
-
+    int n = get_ambient_dimension();
     bool loop = true;
 
     typename MainListType::Iterator it_comparison_flip=main_list.cend(); //used to store the point where the list elements become larger than p.
@@ -67,8 +68,10 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p)
                 it_comparison_flip = it;
                 break;
             }
+            if(!LatticeApproximations::Compare_Sc_Prod(pApprox,*it,pApprox.get_approx_norm2(),2*pApprox.get_length_exponent()-2,n   ) ) continue;
             if(GaussSieve::check2red(p, *(it.access_details()) ) ) //p was changed
             {
+                if(p.norm2!=0)  pApprox = static_cast< ApproxLatticePoint<ET,false> >(p);
                 loop = true;
                 break;
             }
@@ -94,8 +97,13 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p)
                                                               //We know that every element current_list_point=*it is at least as long as p, so we reduce x using p.
     {
         auto current_list_point = *(it.access_details() );
-		if (GaussSieve::check2red(current_list_point, p)) //We can reduce *it.
-			{
+        if(!LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2*it->get_length_exponent()-2,n   ) )
+        {
+            ++it;
+            continue;
+        }
+        if (GaussSieve::check2red(current_list_point, p)) //We can reduce *it.
+		{
 			//cout << "v was found" <<  endl;
 
             if (current_list_point.norm2 == 0)

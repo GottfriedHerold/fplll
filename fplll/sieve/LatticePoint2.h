@@ -50,6 +50,8 @@ template<> class MaybeRational<Z_NR<double> >{public: static bool constexpr val=
 //template<class ET>
 
 inline ApproxTypeNorm2 compute_sc_prod(ApproxType const * const arg1, ApproxType const * const arg2, unsigned int len);
+template<class ET>
+inline bool Compare_Sc_Prod(ApproxLatticePoint<ET,false,-1> const & arg1, ApproxLatticePoint<ET,false,-1> const & arg2, ApproxTypeNorm2 abslimit, int limit_exp, int dim);
 }
 
 
@@ -108,6 +110,7 @@ class ApproxLatticePoint<ET, false, -1>     //Approx. Lattice Point. Stores appr
         swap(approx,other.approx);
         approxn2=other.approxn2;
         swap(details,other.details);
+        return *this;
     }
 
     ~ApproxLatticePoint(){delete details; delete approx;};
@@ -261,6 +264,21 @@ inline LatticeApproximations::ApproxTypeNorm2 LatticeApproximations::compute_sc_
         res+=arg1[i]*arg2[i];
     }
     return res;
+}
+
+template<class ET>
+inline bool LatticeApproximations::Compare_Sc_Prod(ApproxLatticePoint<ET,false,-1> const & arg1, ApproxLatticePoint<ET,false,-1> const & arg2, ApproxTypeNorm2 abslimit, int limit_exp, int dim)
+{
+    int rel = arg1.get_length_exponent() + arg2.get_length_exponent() - limit_exp;
+    ApproxTypeNorm2 sc = abs(compute_sc_prod(arg1.get_approx(),arg2.get_approx(),dim));
+    if(rel > 0)
+    {
+        return sc > (abslimit >> rel);
+    }
+    else
+    {
+        return (sc >> -rel) > abslimit;
+    }
 }
 
 
