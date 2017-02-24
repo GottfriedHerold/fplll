@@ -8,6 +8,8 @@
 #include "LatticePoint.h"
 #include <type_traits>
 
+#define SCALENORMS 0.995
+
 //forward declarations:
 
 template <class ET,bool insideMTList=false, int n_fixed=-1> //insideMTList: Is this point stored inside our Multithreaded list class? -> changes some data types, memory layout and ownership semantics.
@@ -175,7 +177,7 @@ void ApproxLatticePoint<ET,false, -1>::update_approximation()
     }
     if(number_length == std::numeric_limits<signed int>::min()) // *details is all-zero vector. should never happen in the algorithm.
     {
-        cerr << "Warning: approximating all-zero vector";
+        cerr << "Warning: approximating all-zero vector.";
         length_exponent=0;
         for(int i=0;i<n;++i){approx[i]=0;}
         approxn2=0;
@@ -190,6 +192,9 @@ void ApproxLatticePoint<ET,false, -1>::update_approximation()
             approx[i] = LatticeApproximations::do_approximate<ApproxType,ET> ( (*details)[i], length_exponent );
         }
         approxn2 = LatticeApproximations::do_approximate<ApproxTypeNorm2,ET> ( (*details).get_norm2(),2*length_exponent   );
+	#ifdef SCALENORMS
+	approxn2 = approxn2 * SCALENORMS;
+	#endif
     }
 }
 

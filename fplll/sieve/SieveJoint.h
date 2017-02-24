@@ -157,6 +157,10 @@ public:
     unsigned long int get_current_queue_size()const             {return main_queue.size();};
     unsigned long long get_number_of_scprods() const            {return number_of_scprods;};
 
+/* temporary diagnostic functions
+ */
+//    unsigned long D1,D2,D3,D4,D5,D6,D7,D8,D9,D10;
+//    void print_diag() {cerr << D1 << D2 << D3 << D4 << endl;};
 private:
 
 //Use termination Condition to check whether we are done, based on statistics so far.

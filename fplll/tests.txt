@@ -21,3 +21,4 @@ OLD : 160.411s until coll
 PRQUEUE: 89.2289s
 QUEUE: 144.381s
 
+On my Laptop (with shortcuts) 43s

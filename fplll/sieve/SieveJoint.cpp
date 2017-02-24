@@ -147,6 +147,7 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
     number_of_points_sampled(0),
     number_of_points_constructed(0),
     current_list_size(0)
+    //D1(0),D2(0),D3(0),D4(0),D5(0),D6(0),D7(0),D8(0),D9(0),D10(0)
 {
     sampler = new KleinSampler<typename ET::underlying_data_type, FP_NR<double>>(B, verbosity, seed_sampler);
     //unsigned int n = lattice_rank;
