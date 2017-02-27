@@ -115,14 +115,34 @@ Z_NR<mpz_t> GaussSieve::compute_mink_bound(ZZ_mat<mpz_t> const & basis)
     ZZ_mat<mpz_t> Empty_mat;
     ZZ_mat<mpz_t> basis2 = basis; //need to copy, as BGSO is not const-specified...
     MatGSO<Z_NR<mpz_t>, FP_NR<double>> BGSO(basis2, Empty_mat, Empty_mat, 0);
-    //bool upd =
+    //cout << "before the update... " << endl;
     BGSO.update_gso();
+    //cout << "after the update... " << endl;
+	
+    FP_NR<double> entry;
+    
+    //for (int i=0; i<basis.get_rows(); i++)
+    //{
+ 	for (int j=0; j<basis.get_rows(); j++)
+        	//cout << BGSO.get_gram(entry, j, j) << endl;
+		cout << (BGSO.get_r(entry, j, j)) << "  " << log(BGSO.get_r(entry, j, j)) << endl;
+        cout << endl;
+//   }
+    
     // returns det(B)^{2/dim}
+   
     FP_NR<double> root_det2 = BGSO.get_root_det (1, basis.get_rows());
+    FP_NR<double> log_det2 = BGSO.get_log_det (1, basis.get_rows());
+    //cout << "root_det2: " << root_det2 << endl;
+    //cout << "log_det2: " << log_det2 << endl;
+
     //lambda_1^2 = n * det(B)^{2/n}
     FP_NR<double> MinkBound_double = root_det2 * static_cast<double> (basis.get_rows() ); //technically, we need to multiply by Hermite's constant in dim n here. We are at least missing a constant factor here.
+    //cout << "after MinkBound_double is assigned... " << endl;
     Z_NR<mpz_t> Minkowski;
-    Minkowski.set_f(MinkBound_double);
+    cout << "MinkBound_double: " << MinkBound_double << endl;
+    Minkowski.set_f(MinkBound_double); // the problem is here
+cout << "after MinkBound is set... " << endl;
     return Minkowski;
 }
 
@@ -173,7 +193,7 @@ bool Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::check_if_done()
 {
     if(term_cond.do_we_use_default_condition())
     {
-        assert(false); //DOES NOT WORK, since compute_mink_bound does not work.
+        //assert(false); //DOES NOT WORK, since compute_mink_bound does not work.
         ET Minkowski = GaussSieve::compute_mink_bound(original_basis);
         if (verbosity>=1) cout << "set Mink. bound to: " << Minkowski << endl;
         term_cond.set_target_length(Minkowski);
