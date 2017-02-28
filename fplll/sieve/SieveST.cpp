@@ -28,9 +28,8 @@ void Sieve<ET,false>::run_2_sieve()
     //while(main_list.cbegin()->norm2 > target_norm)
     {
         p=main_queue.true_pop();
-
         SieveIteration2(p);
-
+        cout << i <<  " list size" << current_list_size << " Queue: " << main_queue.size() << endl << flush;
         ++i;
         if (i % 200 == 0) {
             //print_status();
@@ -46,19 +45,18 @@ void Sieve<ET,false>::run_2_sieve()
 
 }
 
+//currently unused diagnostic code.
 template<class ET>
-void PredictionDiagnosis (Sieve<ET,false> * gs, ApproxLatticePoint<ET,false> const & v1, LatticePoint<ET> const &d1, ApproxLatticePoint<ET,false> const &v2, LatticePoint<ET> const &d2, int dim);  
-
-
+void PredictionDiagnosis (Sieve<ET,false> * gs, ApproxLatticePoint<ET,false> const & v1, LatticePoint<ET> const &d1, ApproxLatticePoint<ET,false> const &v2, LatticePoint<ET> const &d2, int dim);
 template<class ET>
-void PredictionDiagnosis (Sieve<ET,false> * gs, ApproxLatticePoint<ET,false> const & v1, LatticePoint<ET> const &d1, ApproxLatticePoint<ET,false> const &v2, LatticePoint<ET> const &d2, int dim)  
-{	
+void PredictionDiagnosis (Sieve<ET,false> * gs, ApproxLatticePoint<ET,false> const & v1, LatticePoint<ET> const &d1, ApproxLatticePoint<ET,false> const &v2, LatticePoint<ET> const &d2, int dim)
+{
 	static int count =0;
 	LatticePoint<ET> c1 = d1;
 	LatticePoint<ET> c2 = d2;
 	bool actual_red = GaussSieve::check2red(c1,c2);
 	//cout << (actual_red?"Red:yes" : "Red:no");
-	bool predict_red = LatticeApproximations::Compare_Sc_Prod(v1,v2,v2.get_approx_norm2(),2*v2.get_length_exponent() -2,dim);	
+	bool predict_red = LatticeApproximations::Compare_Sc_Prod(v1,v2,v2.get_approx_norm2(),2*v2.get_length_exponent() -2,dim);
 	//cout << (predict_red?"Predict:yes" : "Predict:no");
 
 	ET sc_prod, abs_scprod, scalar;
@@ -72,8 +70,8 @@ void PredictionDiagnosis (Sieve<ET,false> * gs, ApproxLatticePoint<ET,false> con
 	int approxExp2 = v2.get_length_exponent();
 	int approxExpScP = approxExp1 + approxExp2;
 	int32_t n1approx = v1.get_approx_norm2();
-	int n1exp = 2*v1.get_length_exponent();	
-	
+	int n1exp = 2*v1.get_length_exponent();
+
 	ET approxSP_real;
 	ET n1_real;
 	LatticePoint<ET> approxv1_real(dim);
@@ -81,7 +79,7 @@ void PredictionDiagnosis (Sieve<ET,false> * gs, ApproxLatticePoint<ET,false> con
 	approxSP_real = static_cast<long>(approxSP);
 	n1_real = static_cast<long>(n1approx);
 	for(int i=0;i<dim;++i) approxv1_real[i] = static_cast<long>( (v1.get_approx()) [i]);
-	for(int i=0;i<dim;++i) approxv2_real[i] = static_cast<long>( (v2.get_approx()) [i]);	
+	for(int i=0;i<dim;++i) approxv2_real[i] = static_cast<long>( (v2.get_approx()) [i]);
 	//stupid:
 	for(int i=0;i < approxExp1 ;    ++i) approxv1_real = approxv1_real + approxv1_real;
 	for(int i=0;i < approxExp2 ;    ++i) approxv2_real = approxv2_real + approxv2_real;
@@ -106,7 +104,7 @@ void PredictionDiagnosis (Sieve<ET,false> * gs, ApproxLatticePoint<ET,false> con
 }
 else if(count % 100 == 80)
 	{
-	cout <<"Prediction: "; 
+	cout <<"Prediction: ";
 	cout << (actual_red?"Red:yes" : "Red: no") << " , ";
 	cout << (predict_red?"Predict:yes" : "Predict: no") << endl;
 	cout << "v1 =" << v1 << endl;
@@ -121,8 +119,8 @@ else if(count % 100 == 80)
 	cout << "meaning " << n1_real << endl;
 	}
 	++count;
-	
-	//cout << endl; 
+
+	//cout << endl;
 }
 
 
@@ -147,14 +145,13 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might
                 it_comparison_flip = it;
                 break;
             }
-	    //Diagnosis(this, pApprox, p, *it, *(it.access_details()) ,n); 
+	    //Diagnosis(this, pApprox, p, *it, *(it.access_details()) ,n);
             //if(!LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-2,n   ) ) continue;
 	    bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n   );
 	    if(!predict) continue;
             if(GaussSieve::check2red(p, *(it.access_details()) ) ) //p was changed
             {
-		if (!predict) cerr << "Misprediction 1" << endl;
-                if(p.norm2!=0)  pApprox = static_cast< ApproxLatticePoint<ET,false> >(p);
+		        if(p.norm2!=0)  pApprox = static_cast< ApproxLatticePoint<ET,false> >(p);
                 loop = true;
                 break;
             }
@@ -175,18 +172,18 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might
     //insert p into main_list;
     main_list.insert_before(it_comparison_flip,p);
     ++current_list_size;
-
     for(auto it = it_comparison_flip; it!=main_list.cend(); ) //go through rest of the list.
                                                               //We know that every element current_list_point=*it is at least as long as p, so we reduce x using p.
     {
-        auto current_list_point = *(it.access_details() );
-	bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,pApprox.get_approx_norm2(),2* pApprox.get_length_exponent()-1,n   );
+
+        bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,pApprox.get_approx_norm2(),2* pApprox.get_length_exponent()-1,n   );
         //if(!LatticeApproximations::Compare_Sc_Prod(pApprox,*it,pApprox.get_approx_norm2(),2* pApprox.get_length_exponent()-1,n   ) )
         //{
         //    ++it;
         //    continue;
         //}
-	if(!predict){++it;continue;}
+        if(!predict){++it;continue;}
+        LatticePoint<ET> current_list_point = *(it.access_details() );
         if (GaussSieve::check2red(current_list_point, p)) //We can reduce *it.
 		{
 			//if (!predict) cerr << "Misprediction 2" << endl;

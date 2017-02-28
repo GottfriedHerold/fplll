@@ -79,18 +79,18 @@ public:
     Iterator cbegin()                                                   {return actual_list.begin() ;};
     Iterator cend()                                                     {return actual_list.end();};
     //Iterator cbefore_begin() const                                    {return actual_list.cbefore_begin();};
-    
+
     //These functions insert (possibly a copy of val) into the list. TODO: include ownership transfer semantics to avoid some copying, possibly include refcounts in LatticePoints. This becomes really tricky if overwrite is allowed in multithreaded case.
-    Iterator insert_before(Iterator pos, DetailType const & val)        {return actual_list.emplace(pos.it, val);};    
+    Iterator insert_before(Iterator pos, DetailType const & val)        {return actual_list.emplace(pos.it, val);};
     /*
     Iterator insert_before_give_ownership(Iterator pos, DetailType * const val) = delete;  //TODO
-    Iterator insert_before(Iterator pos, DataType const & val) =  delete; //TODO                                                                         
+    Iterator insert_before(Iterator pos, DataType const & val) =  delete; //TODO
     Iterator insert_before_give_ownership(Iterator pos, DataType const & val) = delete;                          //TODO
     */
-    
+
     //Iterator insert_before(Iterator pos, DetailType && val)           {return actual_list.insert(pos,std::move(val));};
     Iterator erase(Iterator pos)                                        {return actual_list.erase(pos.it);}; //only for single-threaded
-    //void unlink(Iterator pos)                                           {actual_list.erase(pos);}; 
+    //void unlink(Iterator pos)                                           {actual_list.erase(pos);};
     void sort()                                                         {actual_list.sort();};  //only for single-threaded (for now)
 
 private:
@@ -127,7 +127,7 @@ class GaussIterator<ET,false,-1> //: public std::list<ApproxLatticePoint<ET,fals
     GaussIterator&  operator++() {++it; return *this;}; //prefix version
     GaussIterator  operator++(int){return it++;}; //postfix version
     bool operator==( GaussIterator const & other) const {return it==(other.it);};
-    bool operator!=( GaussIterator const & other) const {return it==(other.it);};
+    bool operator!=( GaussIterator const & other) const {return it!=(other.it);};
     bool is_end() const = delete; //not implemented for single-threaded yet.
     //intrinsic check for end, validity etc?
     //operator DerefType const *();
