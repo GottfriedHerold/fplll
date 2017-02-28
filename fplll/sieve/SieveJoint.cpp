@@ -33,6 +33,7 @@
 
 #ifndef SIEVE_JOINT_CPP //code in this block only read once.
 
+
 template<class ET>
 bool GaussSieve::check2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2)
 {
@@ -137,7 +138,7 @@ Z_NR<mpz_t> GaussSieve::compute_mink_bound(ZZ_mat<mpz_t> const & basis)
     //cout << "log_det2: " << log_det2 << endl;
 
     //lambda_1^2 = n * det(B)^{2/n}
-    FP_NR<double> MinkBound_double = 0.111 * root_det2 * static_cast<double> (basis.get_rows() ); //technically, we need to multiply by Hermite's constant in dim n here. We are at least missing a constant factor here. That is why we mult by (0.0017) = (pi * e)^(-1)
+    FP_NR<double> MinkBound_double = 0.114 * root_det2 * static_cast<double> (basis.get_rows() ); //technically, we need to multiply by Hermite's constant in dim n here. We are at least missing a constant factor here. That is why we mult by (0.0017) = (pi * e)^(-1)
     
     //cout << "after MinkBound_double is assigned... " << endl;
     Z_NR<mpz_t> Minkowski;
@@ -169,6 +170,7 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
     number_of_points_constructed(0),
     current_list_size(0)
     //D1(0),D2(0),D3(0),D4(0),D5(0),D6(0),D7(0),D8(0),D9(0),D10(0)
+
 {
     sampler = new KleinSampler<typename ET::underlying_data_type, FP_NR<double>>(B, verbosity, seed_sampler);
     //unsigned int n = lattice_rank;

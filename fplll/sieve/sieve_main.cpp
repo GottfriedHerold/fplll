@@ -199,6 +199,11 @@ int main(int argc, char **argv)
     ApproxLatticePoint<Z_NR<mpz_t>,false,-1> X ( conv_matrixrow_to_lattice_point(B[0]) );
     cout << X;
 
+    #ifdef USE_REGULAR_QUEUE
+   	cout << "Use PQ" << endl;		
+    #else
+        cout << "Use SQ" << endl;	
+    #endif
     cout << "run sieve on B[0] = " << B[0] << endl;
     //cout << "B[1] = " << B[1] << endl;
     auto start = std::chrono::high_resolution_clock::now();

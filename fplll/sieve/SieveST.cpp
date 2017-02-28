@@ -27,7 +27,7 @@ void Sieve<ET,false>::run_2_sieve()
         SieveIteration2(p);
         //cout << i <<  " list size" << current_list_size << " Queue: " << main_queue.size() << endl << flush;
         ++i;
-        if (i % 200 == 0) {
+        if (i % 500 == 0) {
             //print_status();
             //cout << "# of collisions: " << number_of_collisions << endl;
             cout << "norm2 of the so far shortest vector: " << get_best_length2() << endl;

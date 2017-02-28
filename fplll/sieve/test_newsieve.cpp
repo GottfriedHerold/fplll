@@ -1,3 +1,5 @@
+#define USE_REGULAR_QUEUE //comment out if you use priority-queue
+
 
 #include "sieve_main.h"
 #include "fplll.h"
@@ -38,33 +40,30 @@ template <class ZT> void test_run_sieve(int dim, std::ofstream &ofs)
     Test_Queue.print_status(-1,ofs);
     
     
-    cout << " Time taken: " << microseconds.count()/1000000.0 << "sec" << endl;
+    ofs << " Time taken: " << microseconds.count()/1000000.0 << "sec" << endl;
 }
 
 int main(int argc, char **argv)
 {
-    bool longflag = false; //to be read_in as input
-    int dim[] = {60, 62};
-    int length = 2;
+        int dim[] = {52, 54, 56, 58, 60, 62, 64};
+	int length = 7;
 
-    if (longflag)
-    {
-        //for (int i=0; i<length; i++)
-        //    test_run_sieve<long>(dim[i]);
-    }
+    	#ifdef USE_REGULAR_QUEUE 
+		std::ofstream ofs("test_sieve_PQ.txt");
+		ofs << "WITH PRIORITY QUEUE" << endl;
+	#else 
+		std::ofstream ofs("test_sieve.txt");
+		ofs << "WITH STANDARD QUEUE" << endl;
+	#endif
+	for (int i=0; i<length; i++) {
+        	
+       		
+		ofs << "start sieve on lattice of dim = " << dim[i] << endl;
+        	test_run_sieve<mpz_t>(dim[i], ofs); 
+		ofs << "----------------------------------------" << endl;
+	}
+    
 
-    else
-    {
-        std::ofstream ofs("test_sive.txt");
-        ZZ_mat<mpz_t> B;
-        B.resize(dim[0], dim[0]);
-        B.gen_trg(1.1);
-        test_run_sieve<mpz_t>(dim[0], ofs);
-    }
-
-    //auto start = std::chrono::high_resolution_clock::now();
-//    auto finish = std::chrono::high_resolution_clock::now();
-//    auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(finish-start);
-//    cout << " Time taken: " << microseconds.count()/1000000.0 << "sec" << endl;
+   ofs.close();
   return 1;
 }
