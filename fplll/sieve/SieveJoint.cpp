@@ -137,7 +137,8 @@ Z_NR<mpz_t> GaussSieve::compute_mink_bound(ZZ_mat<mpz_t> const & basis)
     //cout << "log_det2: " << log_det2 << endl;
 
     //lambda_1^2 = n * det(B)^{2/n}
-    FP_NR<double> MinkBound_double = root_det2 * static_cast<double> (basis.get_rows() ); //technically, we need to multiply by Hermite's constant in dim n here. We are at least missing a constant factor here.
+    FP_NR<double> MinkBound_double = 0.111 * root_det2 * static_cast<double> (basis.get_rows() ); //technically, we need to multiply by Hermite's constant in dim n here. We are at least missing a constant factor here. That is why we mult by (0.0017) = (pi * e)^(-1)
+    
     //cout << "after MinkBound_double is assigned... " << endl;
     Z_NR<mpz_t> Minkowski;
     cout << "MinkBound_double: " << MinkBound_double << endl;
