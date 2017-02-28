@@ -66,20 +66,16 @@ public:
     using DataType = ApproxLatticePoint<ET,false,-1>;
     using DataPointer=DataType *;
     using UnderlyingContainer = std::list<DataType>;
-    //using Iterator = typename UnderlyingContainer::const_iterator;
     using Iterator = GaussIterator<ET,false,-1>;
     using DetailType = typename DataType::DetailType;
-    //using NonConstIterator = typename UnderlyingContainer::iterator;
     explicit GaussList() = default;
     GaussList(GaussList const & old) = delete;
     GaussList(GaussList && old) = delete;
     GaussList & operator= (GaussList const &other) = delete;
     GaussList & operator= (GaussList &&other) = delete;
-    ~GaussList() = default; //just deletes the underlying container. Fine as long as we don't store pointers.
+    ~GaussList() = default; //just deletes the underlying container. Note that the corresponding details are deleted as well via the destructors of ApproxLatticePoint
     Iterator cbegin()                                                   {return actual_list.begin() ;};
     Iterator cend()                                                     {return actual_list.end();};
-    //Iterator cbefore_begin() const                                    {return actual_list.cbefore_begin();};
-
     //These functions insert (possibly a copy of val) into the list. TODO: include ownership transfer semantics to avoid some copying, possibly include refcounts in LatticePoints. This becomes really tricky if overwrite is allowed in multithreaded case.
     Iterator insert_before(Iterator pos, DetailType const & val)        {return actual_list.emplace(pos.it, val);};
     /*
@@ -87,25 +83,15 @@ public:
     Iterator insert_before(Iterator pos, DataType const & val) =  delete; //TODO
     Iterator insert_before_give_ownership(Iterator pos, DataType const & val) = delete;                          //TODO
     */
-
     //Iterator insert_before(Iterator pos, DetailType && val)           {return actual_list.insert(pos,std::move(val));};
     Iterator erase(Iterator pos)                                        {return actual_list.erase(pos.it);}; //only for single-threaded
     //void unlink(Iterator pos)                                           {actual_list.erase(pos);};
-    void sort()                                                         {actual_list.sort();};  //only for single-threaded (for now)
+
+    void sort()                                                         {actual_list.sort();};  //only for single-threaded (for now). Uses exact length.
 
 private:
     UnderlyingContainer actual_list;
 };
-
-/*
-template <class ET>
-class GaussIterator<ET,false,-1> : public std::list<ApproxLatticePoint<ET,false, -1 > >::iterator
-{
-    public:
-    LatticePoint<ET> * access_details() { assert(  (*this)->get_details_ptr_rw()!=nullptr );  return (*this)-> get_details_ptr_rw() ;};
-    GaussIterator(typename std::list< ApproxLatticePoint<ET,false, -1 > >::iterator other) : std::list<ApproxLatticePoint<ET,false,-1> >::iterator(other) {};
-};
-*/
 
 template <class ET>
 class GaussIterator<ET,false,-1> //: public std::list<ApproxLatticePoint<ET,false, -1 > >::iterator
@@ -116,6 +102,7 @@ class GaussIterator<ET,false,-1> //: public std::list<ApproxLatticePoint<ET,fals
     using CUnderlyingIterator= typename GaussList<ET,false,-1>::UnderlyingContainer::const_iterator;
     using DerefType = ApproxLatticePoint<ET,false,-1>; //without cv - spec.
     using DetailType = LatticePoint<ET>;
+    using ExactType  = LatticePoint<ET>; //need not be the same!
     GaussIterator () = delete; // ???
     GaussIterator (GaussIterator const & other) = default;
     GaussIterator (GaussIterator && other) = default;
@@ -133,13 +120,87 @@ class GaussIterator<ET,false,-1> //: public std::list<ApproxLatticePoint<ET,fals
     //operator DerefType const *();
     DerefType const & operator*() const {return *it;};
     CUnderlyingIterator const operator->() const {return static_cast<CUnderlyingIterator>(it);};
-    DetailType * access_details() {return it->get_details_ptr_rw();};
-    DerefType & deref_rw() {return *it;};
+
+    //Note : access_details may become deprecated at some point, if details only store difference to approximation or coefficients wrt other vectors.
+    //(i.e. we might store the details in a compressed fashion to reduce memory complexity)
+
+    DetailType * access_details() {return it->get_details_ptr_rw();}; //Note: In multithreaded environment, there is no write access.
+    ExactType get_exact_point() const {return *(it->get_details_ptr());}; //retrieves a copy of the details. preferably use this one.
+    ET get_true_norm2() const {return (it->get_details_ptr())->get_norm2();}; // Use this function to get the true norm2 value.
+    //DerefType & deref_rw() {return *it;};
     private:
     UnderlyingIterator it;
     //may require handle to container object.
 };
 
+
+template <class ET>
+class GaussList<ET, true, -1>
+{
+public:
+    friend GaussIterator<ET,true,-1>;
+    using EntryType= ET;
+    using DataType = ApproxLatticePoint<ET,true,-1>;
+    using DataPointer=DataType *;
+    using AtomicDataPointer = std::atomic<DataType *>;
+    using Node=ListMTNode<DataType>; //will change
+    using NodePointer = ListMTNode<DataType> *;
+    using AtomicNodePointer = std::atomic<ListMTNode<DataType> *>;
+    using UnderlyingContainer = std::list<DataType>;
+    //using Iterator = GaussIterator<ET,true,-1>;
+    using Iterator=MTListIterator<DataType>;
+    using DetailType = typename DataType::DetailType;
+    using ExactType = LatticePoint<ET>;
+    explicit GaussList(); //creates empty list. Details in cpp.
+    GaussList(GaussList const & old) = delete; //no moving / copying due to mutex.
+    GaussList(GaussList && old) = delete;
+    GaussList & operator= (GaussList const &other) = delete;
+    GaussList & operator= (GaussList &&other) = delete;
+    //TODO: Create from single-threaded list.
+    ~GaussList();   //Deletes the underlying container. Not thread-safe
+
+
+    Iterator cbegin()                                                   {return start_sentinel_node->next_node.load(std::memory_order_acquire);};
+    Iterator cend()                                                     {return end_sentinel_node;};
+
+    Iterator insert_before(Iterator pos, DataType const & val) = delete; //TODO
+
+    //inserts a copy of val before pos. The iterator pos remains valid.
+    //NOTE: If *pos is marked-for-deletion, val will be inserted before
+    //the next non-marked position pos' that is reachable by increasing pos.
+    //Even in this case, incrementing pos will eventually reach pos' *WITHOUT* seeing the newly inserted value.
+    /*
+
+    Iterator insert_before_give_ownership(Iterator pos, DetailType * const val) = delete;  //TODO
+    Iterator insert_before(Iterator pos, DataType const & val) =  delete; //TODO
+    Iterator insert_before_give_ownership(Iterator pos, DataType const & val) = delete;                          //TODO
+    */
+    //Iterator insert_before(Iterator pos, DetailType && val)           {return actual_list.insert(pos,std::move(val));};
+    Iterator erase(Iterator pos) =delete; //single-threaded only.
+    //void unlink(Iterator pos)                                           {actual_list.erase(pos);};
+    void unlink(Iterator const &pos, GarbageBin<DataType> &gb); //marks the element pointed at by pos as deleted. Such elements will (eventually)
+                                                          //become unreachable by traversing the list. Any Iterators to *pos (including pos)
+                                                          //remain valid. *pos is put onto gb, whose job is eventually freeing memory.
+                                                          //TODO : Include mechanism to forwarding arguments to gb.
+
+    void sort() = delete; //single-threaded only for now
+
+
+
+    //TODO: Constructor from SingleThreaded variant and vice versa?
+
+private:
+    std::mutex mutex_currently_writing;
+    NodePointer const start_sentinel_node; //node before the start of the list. This is never modified, so no atomic here.
+    NodePointer const end_sentinel_node; //node after the end of the list, could probably do with a single sentinel.
+};
+
+
+
+
+
+
+//This should work, but doesn't. Might be a namespace issue. Can work around...
 
 /*
 template<class ET, bool MT, int n_fixed>
@@ -153,6 +214,13 @@ struct std::iterator_traits<GaussIterator<ET,MT,n_fixed> >
 	using difference_type	= void; //will create errors if used (as it should)
 };
 */
+
+
+
+
+/*
+ *  Old version below, does not use memory layout optimization.
+ */
 
 
 

@@ -77,6 +77,7 @@ class ApproxLatticePoint<ET, false, -1>     //Approx. Lattice Point. Stores appr
                             //every potential sequence of bytes represents at least some valid object.
                             //In a multi-threaded environment, the latter allows us to forego some locking / relax memory order requirements at the expense of having approximations that actually are wrong.
                             //Dealing with this may be cheaper than having memory fences at every read. Of course, reading from the "true" values requires some more care in that case.
+                            //Even in single-threaded environment, this potentially allows better custom allocation.
 
 {
     public:

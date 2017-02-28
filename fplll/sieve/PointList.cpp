@@ -1,6 +1,91 @@
 //continuation from PointList.h
 //no include guards or anything needed.
 
+template<class ET>
+GaussList<ET,true,-1>::GaussList() :
+    mutex_currently_writing(),
+    start_sentinel_node (new Node),
+    end_sentinel_node   (new Node)
+{
+        start_sentinel_node->next_node=end_sentinel_node;
+        end_sentinel_node->prev_node=start_sentinel_node;
+        start_sentinel_node->nodestatus=static_cast<int>(Node::StatusBit::is_first_node);
+        end_sentinel_node->nodestatus  =static_cast<int>(Node::StatusBit::is_last_node);
+}
+
+
+
+template<class ET>
+GaussList<ET,true,-1>::~GaussList() //called when only one thread is running
+{
+    //atomic_thread_fence(std::memory_order_acquire);   begin() already does that.
+    Iterator next=cbegin();
+    Iterator cur (start_sentinel_node);
+    while(!next.is_end())
+    {
+        delete cur.p;
+        cur=next;
+        ++next;
+    }
+    delete cur.p;
+    delete next.p;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//old implementation:
+
+
 template<class DT>
 MTListIterator<DT> MTListIterator<DT>::operator++(int) //postfix version
 {

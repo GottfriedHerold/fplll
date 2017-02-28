@@ -41,6 +41,92 @@ void Sieve<ET,false>::run_2_sieve()
 
 }
 
+template<class ET>
+void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might output Approx ?
+{
+    if (p.norm2==0) return; //cerr << "Trying to reduce 0"; //TODO: Ensure sampler does not output 0 (currently, it happens).
+    ApproxLatticePoint<ET,false> pApprox (p);
+    //simplified the code, because main_list supports deleting AT pos and inserting BEFORE pos now. -- Gotti
+    int const n = get_ambient_dimension();
+    bool loop = true;
+
+    typename MainListType::Iterator it_comparison_flip=main_list.cend(); //used to store the point where the list elements become larger than p.
+
+    while (loop) //while p keeps changing
+    {
+        loop = false;
+        for (auto it = main_list.cbegin(); it!=main_list.cend(); ++it)
+        {
+            if (p.norm2 < it.get_true_norm2())
+            {
+                it_comparison_flip = it;
+                break;
+            }
+	    //Diagnosis(this, pApprox, p, *it, *(it.access_details()) ,n);
+            //if(!LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-2,n   ) ) continue;
+	    bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n   );
+	    if(!predict) continue;
+            if(GaussSieve::check2red(p, *(it.access_details()) ) ) //p was changed
+            {
+		        if(p.norm2!=0)  pApprox = static_cast< ApproxLatticePoint<ET,false> >(p);
+                loop = true;
+                break;
+            }
+        }
+    }
+
+    //p no longer changes. it_comparison_flip is iterator to first (shortest) element in the list that is longer than p.
+    //If no such element exists, it_comparison_flip refers to after-the-end.
+
+    if (p.norm2 == 0)
+	{
+		//increase the number of collisions
+		number_of_collisions++;
+		return;
+	}
+
+
+    //insert p into main_list;
+    main_list.insert_before(it_comparison_flip,p);
+    ++current_list_size;
+    for(auto it = it_comparison_flip; it!=main_list.cend(); ) //go through rest of the list.
+                                                              //We know that every element current_list_point=*it is at least as long as p, so we reduce x using p.
+    {
+
+        bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,pApprox.get_approx_norm2(),2* pApprox.get_length_exponent()-1,n   );
+        if(!predict){++it;continue;} //if prediction is bad, don't even bother to reduce.
+        LatticePoint<ET> current_list_point = it.get_exact_point();
+        if (GaussSieve::check2red(current_list_point, p)) //We can reduce *it.
+		{
+			//if (!predict) cerr << "Misprediction 2" << endl;
+			//cout << "v was found" <<  endl;
+
+            if (current_list_point.norm2 == 0)
+            {
+                number_of_collisions++;
+                break;
+            }
+
+			main_queue.push(current_list_point);
+			it = main_list.erase(it); //this also moves it forward
+			--current_list_size;
+
+		}
+		else
+		{
+		//	prev = it1;
+			++it;
+		}
+
+    }
+
+    /* print for debugging */
+    //for (it1 = main_list.begin(); it1!=main_list.end(); ++it1) {
+    //	(*it1).printLatticePoint();
+    //}
+
+};
+
 //currently unused diagnostic code.
 template<class ET>
 void PredictionDiagnosis (Sieve<ET,false> * gs, ApproxLatticePoint<ET,false> const & v1, LatticePoint<ET> const &d1, ApproxLatticePoint<ET,false> const &v2, LatticePoint<ET> const &d2, int dim);
@@ -120,95 +206,5 @@ else if(count % 100 == 80)
 }
 
 
-template<class ET>
-void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might output Approx ?
-{
-    if (p.norm2==0) return; //cerr << "Trying to reduce 0";
-    ApproxLatticePoint<ET,false> pApprox (p); //TODO : Change in caller.
-    //simplified the code, because main_list supports deleting AT pos and inserting BEFORE pos now. -- Gotti
-    int const n = get_ambient_dimension();
-    bool loop = true;
-
-    typename MainListType::Iterator it_comparison_flip=main_list.cend(); //used to store the point where the list elements become larger than p.
-
-    while (loop) //while p keeps changing
-    {
-        loop = false;
-        for (auto it = main_list.cbegin(); it!=main_list.cend(); ++it)
-        {
-            if (p.norm2 < it.access_details()->norm2)
-            {
-                it_comparison_flip = it;
-                break;
-            }
-	    //Diagnosis(this, pApprox, p, *it, *(it.access_details()) ,n);
-            //if(!LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-2,n   ) ) continue;
-	    bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n   );
-	    if(!predict) continue;
-            if(GaussSieve::check2red(p, *(it.access_details()) ) ) //p was changed
-            {
-		        if(p.norm2!=0)  pApprox = static_cast< ApproxLatticePoint<ET,false> >(p);
-                loop = true;
-                break;
-            }
-        }
-    }
-
-    //p no longer changes. it_comparison_flip is iterator to first (shortest) element in the list that is longer than p.
-    //If no such element exists, it_comparison_flip refers to after-the-end.
-
-    if (p.norm2 == 0)
-	{
-		//increase the number of collisions
-		number_of_collisions++;
-		return;
-	}
-
-
-    //insert p into main_list;
-    main_list.insert_before(it_comparison_flip,p);
-    ++current_list_size;
-    for(auto it = it_comparison_flip; it!=main_list.cend(); ) //go through rest of the list.
-                                                              //We know that every element current_list_point=*it is at least as long as p, so we reduce x using p.
-    {
-
-        bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,pApprox.get_approx_norm2(),2* pApprox.get_length_exponent()-1,n   );
-        //if(!LatticeApproximations::Compare_Sc_Prod(pApprox,*it,pApprox.get_approx_norm2(),2* pApprox.get_length_exponent()-1,n   ) )
-        //{
-        //    ++it;
-        //    continue;
-        //}
-        if(!predict){++it;continue;}
-        LatticePoint<ET> current_list_point = *(it.access_details() );
-        if (GaussSieve::check2red(current_list_point, p)) //We can reduce *it.
-		{
-			//if (!predict) cerr << "Misprediction 2" << endl;
-			//cout << "v was found" <<  endl;
-
-            if (current_list_point.norm2 == 0)
-            {
-                number_of_collisions++;
-                break;
-            }
-
-			main_queue.push(current_list_point);
-			it = main_list.erase(it); //this also moves it forward
-			--current_list_size;
-
-		}
-		else
-		{
-		//	prev = it1;
-			++it;
-		}
-
-    }
-
-    /* print for debugging */
-    //for (it1 = main_list.begin(); it1!=main_list.end(); ++it1) {
-    //	(*it1).printLatticePoint();
-    //}
-
-};
 
 #endif
