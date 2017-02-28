@@ -123,10 +123,10 @@ Z_NR<mpz_t> GaussSieve::compute_mink_bound(ZZ_mat<mpz_t> const & basis)
     
     //for (int i=0; i<basis.get_rows(); i++)
     //{
- 	for (int j=0; j<basis.get_rows(); j++)
-        	//cout << BGSO.get_gram(entry, j, j) << endl;
-		cout << (BGSO.get_r(entry, j, j)) << "  " << log(BGSO.get_r(entry, j, j)) << endl;
-        cout << endl;
+// 	for (int j=0; j<basis.get_rows(); j++)
+//        	//cout << BGSO.get_gram(entry, j, j) << endl;
+//		cout << (BGSO.get_r(entry, j, j)) << "  " << log(BGSO.get_r(entry, j, j)) << endl;
+//        cout << endl;
 //   }
     
     // returns det(B)^{2/dim}
@@ -194,6 +194,7 @@ bool Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::check_if_done()
     if(term_cond.do_we_use_default_condition())
     {
         //assert(false); //DOES NOT WORK, since compute_mink_bound does not work.
+        cout << original_basis.get_cols();
         ET Minkowski = GaussSieve::compute_mink_bound(original_basis);
         if (verbosity>=1) cout << "set Mink. bound to: " << Minkowski << endl;
         term_cond.set_target_length(Minkowski);

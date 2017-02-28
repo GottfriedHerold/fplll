@@ -10,10 +10,6 @@ void Sieve<ET,false>::run_2_sieve()
 {
     //using SieveT = Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
 
-    //want to put my basis-vectors into the main_list
-    // -- This is now done by the constructor of Sieve -- Gotti
-
-
     //for ( LatticePoint<ET> & x : main_list) cout << x.norm2 << endl;
 
     int i=0;
