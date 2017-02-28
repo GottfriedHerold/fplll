@@ -194,7 +194,7 @@ int main(int argc, char **argv)
     //    sample = Sampler->sample();
     //    cout << sample << endl;
 
-    //lll_reduction(B, LLL_DEF_DELTA, LLL_DEF_ETA, LM_WRAPPER);
+    lll_reduction(B, LLL_DEF_DELTA, LLL_DEF_ETA, LM_WRAPPER);
 
     ApproxLatticePoint<Z_NR<mpz_t>,false,-1> X ( conv_matrixrow_to_lattice_point(B[0]) );
     cout << X;

@@ -29,7 +29,7 @@ void Sieve<ET,false>::run_2_sieve()
     {
         p=main_queue.true_pop();
         SieveIteration2(p);
-        cout << i <<  " list size" << current_list_size << " Queue: " << main_queue.size() << endl << flush;
+        //cout << i <<  " list size" << current_list_size << " Queue: " << main_queue.size() << endl << flush;
         ++i;
         if (i % 200 == 0) {
             //print_status();
