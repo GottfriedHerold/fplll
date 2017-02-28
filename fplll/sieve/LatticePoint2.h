@@ -7,6 +7,7 @@
 #include "sieve_common.h" //needed (at least for convertions from MatrixRow (the header has to be revised);
 #include "LatticePoint.h"
 #include <type_traits>
+#include <numeric>
 
 #define SCALENORMS 0.995
 
@@ -127,7 +128,7 @@ class ApproxLatticePoint<ET, false, -1>     //Approx. Lattice Point. Stores appr
     DetailType * get_details_ptr_rw() const                 {return details;};
     unsigned int get_dim() const                            {return details->size();};
     bool operator< (ApproxLatticePoint const &other ) const {return (this->details->norm2 < other.get_details_ptr()->norm2);};
-    private: //internal member functions
+    //private: //internal member functions
     void update_approximation(); //computes approximation from *approx. Assumes memory is already allocated.
     void invalidate(){approx= nullptr;details=nullptr;}
     //friend
@@ -263,12 +264,15 @@ template <class ET> //fallback version, should never be called anyway.
 
 inline LatticeApproximations::ApproxTypeNorm2 LatticeApproximations::compute_sc_prod(ApproxType const * const arg1, ApproxType const * const arg2, unsigned int len)
 {
+    return std::inner_product(arg1, arg1+len, arg2,0);
+    /*
     ApproxTypeNorm2 res=0;
     for(unsigned int i=0;i<len;++i)
     {
         res+=arg1[i]*arg2[i];
     }
     return res;
+    */
 }
 
 template<class ET>

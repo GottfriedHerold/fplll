@@ -6,7 +6,7 @@
 #define lattice_point_list_class_h
 
 
-//ET : Entry tpe : type of entries of vectors we are dealing with. Usually an integral type like ET = Z_NR<long> or Z_NR<mpz_t>
+//ET : Entry type : type of entries of vectors we are dealing with. Usually an integral type like ET = Z_NR<long> or Z_NR<mpz_t>
 //DT : (fundamental) Data type : entries in our custom containers, i.e. lattice points, usually  DT = LatticePoint<ET>
 
 
@@ -61,6 +61,7 @@ template <class ET>
 class GaussList<ET, false, -1>
 {
 public:
+    friend GaussIterator<ET,false,-1>;
     using EntryType= ET;
     using DataType = ApproxLatticePoint<ET,false,-1>;
     using DataPointer=DataType *;
@@ -78,16 +79,25 @@ public:
     Iterator cbegin()                                                   {return actual_list.begin() ;};
     Iterator cend()                                                     {return actual_list.end();};
     //Iterator cbefore_begin() const                                    {return actual_list.cbefore_begin();};
-    Iterator insert_before(Iterator pos, DetailType const & val)        {return actual_list.emplace(pos, val);};
+    
+    //These functions insert (possibly a copy of val) into the list. TODO: include ownership transfer semantics to avoid some copying, possibly include refcounts in LatticePoints. This becomes really tricky if overwrite is allowed in multithreaded case.
+    Iterator insert_before(Iterator pos, DetailType const & val)        {return actual_list.emplace(pos.it, val);};    
+    /*
+    Iterator insert_before_give_ownership(Iterator pos, DetailType * const val) = delete;  //TODO
+    Iterator insert_before(Iterator pos, DataType const & val) =  delete; //TODO                                                                         
+    Iterator insert_before_give_ownership(Iterator pos, DataType const & val) = delete;                          //TODO
+    */
+    
     //Iterator insert_before(Iterator pos, DetailType && val)           {return actual_list.insert(pos,std::move(val));};
-    Iterator erase(Iterator pos)                                        {return actual_list.erase(pos);};
-    //void unlink(Iterator pos)                                           {actual_list.erase(pos);}; //only for single-threaded
+    Iterator erase(Iterator pos)                                        {return actual_list.erase(pos.it);}; //only for single-threaded
+    //void unlink(Iterator pos)                                           {actual_list.erase(pos);}; 
     void sort()                                                         {actual_list.sort();};  //only for single-threaded (for now)
 
 private:
     UnderlyingContainer actual_list;
 };
 
+/*
 template <class ET>
 class GaussIterator<ET,false,-1> : public std::list<ApproxLatticePoint<ET,false, -1 > >::iterator
 {
@@ -95,6 +105,54 @@ class GaussIterator<ET,false,-1> : public std::list<ApproxLatticePoint<ET,false,
     LatticePoint<ET> * access_details() { assert(  (*this)->get_details_ptr_rw()!=nullptr );  return (*this)-> get_details_ptr_rw() ;};
     GaussIterator(typename std::list< ApproxLatticePoint<ET,false, -1 > >::iterator other) : std::list<ApproxLatticePoint<ET,false,-1> >::iterator(other) {};
 };
+*/
+
+template <class ET>
+class GaussIterator<ET,false,-1> //: public std::list<ApproxLatticePoint<ET,false, -1 > >::iterator
+{
+    friend GaussList<ET,false,-1>;
+    public:
+    using UnderlyingIterator = typename GaussList<ET,false,-1>::UnderlyingContainer::iterator; //non-const
+    using CUnderlyingIterator= typename GaussList<ET,false,-1>::UnderlyingContainer::const_iterator;
+    using DerefType = ApproxLatticePoint<ET,false,-1>; //without cv - spec.
+    using DetailType = LatticePoint<ET>;
+    GaussIterator () = delete; // ???
+    GaussIterator (GaussIterator const & other) = default;
+    GaussIterator (GaussIterator && other) = default;
+    GaussIterator & operator= (GaussIterator const & other) = default;
+    GaussIterator & operator= (GaussIterator && other) = default;
+    ~GaussIterator() = default;
+    //LatticePoint<ET> * access_details() { assert(  (*this)->get_details_ptr_rw()!=nullptr );  return (*this)-> get_details_ptr_rw() ;};
+    GaussIterator(UnderlyingIterator const & other) : it(other) {};
+    GaussIterator&  operator++() {++it; return *this;}; //prefix version
+    GaussIterator  operator++(int){return it++;}; //postfix version
+    bool operator==( GaussIterator const & other) const {return it==(other.it);};
+    bool operator!=( GaussIterator const & other) const {return it==(other.it);};
+    bool is_end() const = delete; //not implemented for single-threaded yet.
+    //intrinsic check for end, validity etc?
+    //operator DerefType const *();
+    DerefType const & operator*() const {return *it;};
+    CUnderlyingIterator const operator->() const {return static_cast<CUnderlyingIterator>(it);};
+    DetailType * access_details() {return it->get_details_ptr_rw();};
+    DerefType & deref_rw() {return *it;};
+    private:
+    UnderlyingIterator it;
+    //may require handle to container object.
+};
+
+
+/*
+template<class ET, bool MT, int n_fixed>
+struct std::iterator_traits<GaussIterator<ET,MT,n_fixed> >
+{
+    public:
+	using iterator_category = std::input_iterator_tag;
+	using value_type        = ApproxLatticePoint<ET,MT,n_fixed> const;
+	using pointer		= ApproxLatticePoint<ET,MT,n_fixed> const * ;
+	using reference		= ApproxLatticePoint<ET,MT,n_fixed> const &;
+	using difference_type	= void; //will create errors if used (as it should)
+};
+*/
 
 
 
@@ -177,7 +235,6 @@ class MTListIterator
 public:
     friend ListMultiThreaded<DT>;
     friend void swap(MTListIterator &A, MTListIterator &B)      {std::swap(A.p,B.p);};
-    using iterator_category = std::forward_iterator_tag;
     using Node=ListMTNode<DT>;
     using DataType    = DT;
     using DataPointer = DT*;

@@ -100,6 +100,23 @@ for (int i=0; i <25; ++i)
 return;
 }
 
+template<class X>
+class foo
+{
+  public:
+  int f1(X val);
+  int f2();
+  X t;
+};
+
+template<>
+int foo<int>::f1(int val)
+{return 1+val;}
+
+template<>
+int foo<int>::f2(){return 2;}
+template<>
+int foo<bool>::f2(){return 3;}
 
 template<class ZT> void call_sieve (ZZ_mat<ZT> B, int sieve_verbosity, Z_NR<ZT> target_norm)
 {
@@ -163,6 +180,12 @@ int main(int argc, char **argv)
     //ApproxLatticePoint<Z_NR <long> > Y (30);
     Z_NR<long> res;
     sc_product(res,p1,p2);
+    foo<int> A1;
+    A1.t = 5;
+    //cout << A1.f1(7);
+    foo<bool> A2;
+    A2.t = false;
+    cout << "blub" << A2.f2() << A1.f2() << "blah";
 
     //Z_NR<long> X (0);
     //p1.printLatticePoint();

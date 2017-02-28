@@ -47,11 +47,11 @@ void Sieve<ET,false>::run_2_sieve()
 }
 
 template<class ET>
-void Diagnosis (Sieve<ET,false> * gs, ApproxLatticePoint<ET,false> const & v1, LatticePoint<ET> const &d1, ApproxLatticePoint<ET,false> const &v2, LatticePoint<ET> const &d2, int dim);  
+void PredictionDiagnosis (Sieve<ET,false> * gs, ApproxLatticePoint<ET,false> const & v1, LatticePoint<ET> const &d1, ApproxLatticePoint<ET,false> const &v2, LatticePoint<ET> const &d2, int dim);  
 
 
 template<class ET>
-void Diagnosis (Sieve<ET,false> * gs, ApproxLatticePoint<ET,false> const & v1, LatticePoint<ET> const &d1, ApproxLatticePoint<ET,false> const &v2, LatticePoint<ET> const &d2, int dim)  
+void PredictionDiagnosis (Sieve<ET,false> * gs, ApproxLatticePoint<ET,false> const & v1, LatticePoint<ET> const &d1, ApproxLatticePoint<ET,false> const &v2, LatticePoint<ET> const &d2, int dim)  
 {	
 	static int count =0;
 	LatticePoint<ET> c1 = d1;
@@ -91,7 +91,7 @@ void Diagnosis (Sieve<ET,false> * gs, ApproxLatticePoint<ET,false> const & v1, L
 	if(actual_red == true && predict_red ==false)
 {
 	//misprediction.
-	cout <<"Misprediction" << endl;
+	cout << "Misprediction" << endl;
 	cout << "v1 =" << v1 << endl;
 	cout << "meaning of approx1 = " << approxv1_real << endl;
 	cout << "v2 =" << v2 << endl;
@@ -124,6 +124,7 @@ else if(count % 100 == 80)
 	
 	//cout << endl; 
 }
+
 
 template<class ET>
 void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might output Approx ?
