@@ -35,10 +35,13 @@ void Sieve<ET,false>::run_2_sieve()
         }
     }
 
+    //Diagnostic and use of the information moved up to the caller.
+
+    /*
     cout << "sv is " << endl;
     main_list.cbegin().access_details()->printLatticePoint();
     print_status();
-
+    */
 }
 
 template<class ET>

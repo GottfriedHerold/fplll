@@ -119,10 +119,9 @@ public:
     };
     static bool constexpr class_multithreaded =  GAUSS_SIEVE_IS_MULTI_THREADED;
     //class_multithreaded is for introspection, is_multithreaded is what the caller wants (may differ if we dump and re-read with different params)
-    //void run_2_sieve();
     void run_2_sieve(); //actually runs the Gauss Sieve.
     void SieveIteration2 (LatticePoint<ET> &p); //one run through the main_list (of 2-sieve)
-    LPType get_SVP(); //obtains Shortest vector and it's length. If sieve has not yet run, start it.
+    LPType get_SVP() = delete; //obtains Shortest vector and it's length. If sieve has not yet run, start it. Not yet implemented.
     void run(); //runs the sieve specified by the parameters.
     void print_status(int verb = -1, std::ostream &out = cout) {dump_status_to_stream(out,false,verb);};
     //prints status to out. verb overrides the verbosity unless set to -1.
@@ -138,8 +137,13 @@ public:
     unsigned int get_k() const                                  {return sieve_k;};                  //non-thread-safe
     void set_k(unsigned int new_k)                              {sieve_k=new_k;return;};            //non-thread-safe
     bool is_multithreaded_wanted() const                        {return multi_threaded_wanted;}; //Note: No setter
-    LPType get_shortest_vector_found() const                    {return shortest_vector_found;}; //TODO: Thread-safety
-//    ET get_best_length2() const                                 {return get_shortest_vector_found().norm2;};
+    #if GAUSS_SIEVE_IS_MULTI_THREADED == true
+    void set_num_threads(unsigned int t)                        {num_threads_wanted = t;};
+    unsigned int get_num_threads() const                        {return num_threads_wanted;};
+    #endif // GAUSS_SIEVE_IS_MULTI_THREADED
+//  LPType get_shortest_vector_found() const                    {return shortest_vector_found;}; //TODO: Thread-safety
+    LPType get_shortest_vector_found()                          {return (main_list.cbegin()).get_exact_point();}; //TODO: Thread-safety.
+//  ET get_best_length2() const                                 {return get_shortest_vector_found().norm2;};
     ET get_best_length2()                                       {return (main_list.cbegin()).access_details()->norm2;}; //TODO: Change to above
     bool check_whether_sieve_is_running() const                 {return (sieve_status==SieveStatus::sieve_status_running);};
     unsigned long int get_number_of_collisions() const          {return number_of_collisions;};
@@ -171,7 +175,9 @@ private:
     unsigned int lattice_rank;
     unsigned int ambient_dimension; //consider merging these into a latticespec struct.
     bool multi_threaded_wanted;
-//unsigned int num_threads_wanted;
+    #if GAUSS_SIEVE_IS_MULTI_THREADED == true
+    unsigned int num_threads_wanted;
+    #endif // GAUSS_SIEVE_IS_MULTI_THREADED
     unsigned int sieve_k; //parameter k of the sieve currently running.
     SamplerType sampler; //TODO: Thread-safety
     int verbosity;
@@ -228,14 +234,6 @@ private: //to avoid complicated (due to template hack) friend - declaration.
 /*
 Reads length(str) chars from stream is, expecting them to equal str. If what is read differs we output false. If verbose, we also display an error.
 */
-
-#ifndef SIEVE_JOINT_H
-
-
-
-
-#endif // SIEVE_JOINT_H
-
 
 #define SIEVE_FILE_ID "kTuple-Sieve dump file"
 //version string for dump file

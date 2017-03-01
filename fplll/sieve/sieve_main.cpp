@@ -103,7 +103,9 @@ return;
 
 */
 
-template<class ZT> void call_sieve (ZZ_mat<ZT> B, int sieve_verbosity, Z_NR<ZT> target_norm)
+template<class ZT>
+[[deprecated("Use the run - routine of the sieve.")]]
+void call_sieve (ZZ_mat<ZT> B, int sieve_verbosity, Z_NR<ZT> target_norm)
 {
 	TerminationConditions< Z_NR<ZT> > term_cond;
 	Sieve<Z_NR< ZT > , false> Test_2Sieve (B);
@@ -112,7 +114,6 @@ template<class ZT> void call_sieve (ZZ_mat<ZT> B, int sieve_verbosity, Z_NR<ZT> 
         Test_2Sieve.term_cond.set_target_length(target_norm);
         cout << "Setting target norm2 to" << target_norm << endl << flush;
     }
-    //bool testMink = Test_2Sieve.check_if_done();
 	Test_2Sieve.run_2_sieve();
 }
 
@@ -151,35 +152,6 @@ int main(int argc, char **argv)
         cout << "target norm set: " << target_norm << endl;
     }
 
-
-    //PointListSingleThreaded<long int> X;
-//    PointListMultiThreaded<long int> Y;
-    //printLatticePoint(p);
-    //ListMTNode<int> Z;
-
-    //LatticePoint<long int> p = LatticePoint<long int> (10, 2);
-    //LatticePoint<Z_NR <long> > p1 (10,3);
-    //LatticePoint<Z_NR <long> > p2 (10,1);
-    //LatticePoint<Z_NR <long> > p3 (9);
-    //ApproxLatticePoint<Z_NR <mpz_t> > X(10);
-    //ApproxLatticePoint<Z_NR <long> > Y (30);
-    //Z_NR<long> res;
-    //sc_product(res,p1,p2);
-    //foo<int> A1;
-    //A1.t = 5;
-    //cout << A1.f1(7);
-    //foo<bool> A2;
-    //A2.t = false;
-    //cout << "blub" << A2.f2() << A1.f2() << "blah";
-
-    //Z_NR<long> X (0);
-    //p1.printLatticePoint();
-//    LatticePoint<Z_NR <long> > sum = p1+p2;
-//    sum.printLatticePoint();
-//    LatticePoint<Z_NR <long> > sub = sum - p2;
-//    sub.printLatticePoint();
-//    cout << res << endl;
-
     // ZZ_mat is an integer row-oriented matrix. See /nr/matrix.h
     ZZ_mat<mpz_t> B;
 
@@ -207,7 +179,19 @@ int main(int argc, char **argv)
     cout << "run sieve on B[0] = " << B[0] << endl;
     //cout << "B[1] = " << B[1] << endl;
     auto start = std::chrono::high_resolution_clock::now();
-    call_sieve(B, 1, target_norm);
+	Sieve<Z_NR< mpz_t > , false> Test_2Sieve (B);
+	if(target_norm!=0)
+    {
+        Test_2Sieve.term_cond.set_target_length(target_norm);
+        cout << "Setting target norm2 to" << target_norm << endl << flush;
+    }
+	Test_2Sieve.run();
+	/*
+	cout << "sv is " << endl;
+    Test_2Sieve.get_shortest_vector_found().printLatticePoint();
+    Test_2Sieve.print_status();
+    */
+    //call_sieve(B, 1, target_norm);
     auto finish = std::chrono::high_resolution_clock::now();
     auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(finish-start);
     cout << " Time taken: " << microseconds.count()/1000000.0 << "sec" << endl;

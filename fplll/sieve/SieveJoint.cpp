@@ -119,9 +119,9 @@ Z_NR<mpz_t> GaussSieve::compute_mink_bound(ZZ_mat<mpz_t> const & basis)
     //cout << "before the update... " << endl;
     BGSO.update_gso();
     //cout << "after the update... " << endl;
-	
+
     FP_NR<double> entry;
-    
+
     //for (int i=0; i<basis.get_rows(); i++)
     //{
 // 	for (int j=0; j<basis.get_rows(); j++)
@@ -129,9 +129,9 @@ Z_NR<mpz_t> GaussSieve::compute_mink_bound(ZZ_mat<mpz_t> const & basis)
 //		cout << (BGSO.get_r(entry, j, j)) << "  " << log(BGSO.get_r(entry, j, j)) << endl;
 //        cout << endl;
 //   }
-    
+
     // returns det(B)^{2/dim}
-   
+
     FP_NR<double> root_det2 = BGSO.get_root_det (1, basis.get_rows());
     FP_NR<double> log_det2 = BGSO.get_log_det (1, basis.get_rows());
     //cout << "root_det2: " << root_det2 << endl;
@@ -139,7 +139,7 @@ Z_NR<mpz_t> GaussSieve::compute_mink_bound(ZZ_mat<mpz_t> const & basis)
 
     //lambda_1^2 = n * det(B)^{2/n}
     FP_NR<double> MinkBound_double = 0.114 * root_det2 * static_cast<double> (basis.get_rows() ); //technically, we need to multiply by Hermite's constant in dim n here. We are at least missing a constant factor here. That is why we mult by (0.0017) = (pi * e)^(-1)
-    
+
     //cout << "after MinkBound_double is assigned... " << endl;
     Z_NR<mpz_t> Minkowski;
     cout << "MinkBound_double: " << MinkBound_double << endl;
@@ -159,6 +159,9 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
     lattice_rank(B.get_rows()),
     ambient_dimension(B.get_cols()), //Note : this means that rows of B form the basis.
     multi_threaded_wanted(GAUSS_SIEVE_IS_MULTI_THREADED),
+    #if GAUSS_SIEVE_IS_MULTI_THREADED == true
+    num_threads_wanted(1),
+    #endif // GAUSS_SIEVE_IS_MULTI_THREADED
     sieve_k(k),
     sampler(nullptr),
     verbosity(verbosity_),
@@ -211,6 +214,17 @@ bool Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::check_if_done()
     }
     return false;
 }
+
+template<class ET>
+void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::run() //runs the sieve specified by the parameters.
+{
+    assert(sieve_k == 2); //for now
+    sieve_status =SieveStatus::sieve_status_running;
+    run_2_sieve();
+    sieve_status = SieveStatus::sieve_status_finished;
+}
+
+
 
 #define SIEVE_JOINT_CPP
 #endif
