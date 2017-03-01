@@ -303,7 +303,7 @@ void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_stream(ostream &of,
     if(howverb>=1) of << "Best vector found so far=" << shortest_vector_found << endl; //TODO : Display length seperately
     if(howverb>=1) of << "Current List Size=" << get_current_list_size() << endl;
     if(howverb>=1) of << "Current Queue Size="<< get_current_queue_size()<< endl;
-    if(howverb>=1) of << "sv is: "; main_list.cbegin().access_details()->printLatticePoint();
+    if(howverb>=1) {of << "sv is: "; main_list.cbegin().get_exact_point().printLatticePoint();} //TODO: Remove (shortest_vector_found above should rather do this).
     if(howverb>=1) of << "--End of Statistics--" << endl << endl;
     if(howverb>=3)
     {

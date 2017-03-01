@@ -73,14 +73,15 @@ bool GaussSieve::check2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2)
 // separate chec2Red and perform2Red
 
 //if true, sclara is the multiple s.t. we reduce p1 = p1-sclar * p2;
+/*
 template<class ET>
 bool GaussSieve::check2red_new (const LatticePoint<ET> &p1, const LatticePoint<ET> &p2, ET scalar)
 {
     return false;
 }
+*/ //Did not compile, so I commented out. -- Gotti
 
-
-//helper function for reading in from streams. Gobbles up str from the stream (and whitespace before/after).
+//helper function for reading in from streams. Gobbles up str from the stream (and optionally whitespace before/after).
 //If str is not on the stream, outputs an error.
 //Note that whitespace inside str is OK, as long as it is not at the beginning or end.
 
