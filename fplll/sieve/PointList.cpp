@@ -102,32 +102,39 @@ MTListIterator<DT>& MTListIterator<DT>::operator++()
     return *this;
 }; //prefix version
 
+/*
 template<class DT>
 typename ListMultiThreaded<DT>::Iterator ListMultiThreaded<DT>::cbefore_begin() const
 {
     return start_sentinel_node; //no atomic load, because
-}
+}*/
 
+/*
 template<class DT>
 typename ListMultiThreaded<DT>::Iterator ListMultiThreaded<DT>::cbegin() const
 {
     return start_sentinel_node->next_node.load(std::memory_order_acquire);
 };
+*/
 
+/*
 template<class DT>
 typename ListMultiThreaded<DT>::Iterator ListMultiThreaded<DT>::cend() const
 {
     return end_sentinel_node;
 };
+*/
 
-
+/*
 template<class DT>
 typename ListMultiThreaded<DT>::Iterator ListMultiThreaded<DT>::insert_before(Iterator const &pos, DT const &val)
 {
     DT * const tmp = new DT(val);
     return enlist(pos,tmp);
 };
+*/
 
+/*
 template<class DT>
 ListMultiThreaded<DT>::~ListMultiThreaded() //called when only one thread is running
 {
@@ -143,7 +150,9 @@ ListMultiThreaded<DT>::~ListMultiThreaded() //called when only one thread is run
     delete cur.p;
     delete next.p;
 }
+*/
 
+/*
 template<class DT>
 ListMultiThreaded<DT>::ListMultiThreaded() : //called when only one thread is running
         mutex_currently_writing(),
@@ -155,21 +164,9 @@ ListMultiThreaded<DT>::ListMultiThreaded() : //called when only one thread is ru
         start_sentinel_node->nodestatus=static_cast<int>(Node::StatusBit::is_first_node);
         end_sentinel_node->nodestatus  =static_cast<int>(Node::StatusBit::is_last_node);
     };
+*/
 
-
-template<class DT>
-void GarbageBin<DT>::empty_trash()
-{
-    while(!this->empty())
-    {
-        delete this->front();
-        this->pop();
-    }
-};
-
-
-
-
+/*
 template <class DT>
 typename ListMultiThreaded<DT>::Iterator ListMultiThreaded<DT>::enlist_before(MTListIterator<DT> const &pos, DT * const valref)
 {
@@ -192,7 +189,9 @@ typename ListMultiThreaded<DT>::Iterator ListMultiThreaded<DT>::enlist_before(MT
     mutex_currently_writing.unlock();
     return static_cast<Iterator> (newnode);
 }
+*/
 
+/*
 template <class DT>
 void ListMultiThreaded<DT>::unlink(Iterator const & pos, GarbageBin<DT> &gb)
 {
@@ -218,3 +217,15 @@ void ListMultiThreaded<DT>::unlink(Iterator const & pos, GarbageBin<DT> &gb)
     }//end of locked part
     return;
 }
+*/
+
+template<class DT>
+void GarbageBin<DT>::empty_trash()
+{
+    while(!this->empty())
+    {
+        delete this->front();
+        this->pop();
+    }
+};
+

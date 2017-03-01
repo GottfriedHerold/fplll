@@ -84,6 +84,8 @@ class ApproxLatticePoint<ET, false, -1>     //Approx. Lattice Point. Stores appr
     using ApproxType        = LatticeApproximations::ApproxType;
     using ApproxTypeNorm2   = LatticeApproximations::ApproxTypeNorm2;
     using DetailType        = LatticePoint<ET>;
+    using EntryType         = ET;
+    using ExactType         = LatticePoint<ET>;
 
     public: //consider making some constructors private and befriend the list class(es).
     ApproxLatticePoint() : length_exponent(0),approx(nullptr), approxn2(0), details(nullptr) {}; //should only ever be used in move semantics
@@ -230,7 +232,6 @@ ApproxType LatticeApproximations::do_approximate( typename enable_if< is_same<ET
     return (std::ldexp(val.get_data(),-delta) ); //Note : Conversion from double to integral type rounds towards zero. This is needed to prevent overflows.
 }
 
-
 /*get_exponent :
 returns minimal r, s.t. |val| < 2^r (or INTMIN, if val = 0)
 */
@@ -290,6 +291,5 @@ inline bool LatticeApproximations::Compare_Sc_Prod(ApproxLatticePoint<ET,false,-
         return (sc >> -rel) > abslimit;
     }
 }
-
 
 #endif // LATTICE_VECTOR_CLASS_2H

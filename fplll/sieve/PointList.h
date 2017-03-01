@@ -125,7 +125,7 @@ class GaussIterator<ET,false,-1> //: public std::list<ApproxLatticePoint<ET,fals
     //(i.e. we might store the details in a compressed fashion to reduce memory complexity)
 
     DetailType * access_details() {return it->get_details_ptr_rw();}; //Note: In multithreaded environment, there is no write access.
-    ExactType get_exact_point() const {return *(it->get_details_ptr());}; //retrieves a copy of the details. preferably use this one.
+    ExactType get_exact_point() const {return *(it->get_details_ptr());}; //retrieves a copy of the exact value. preferably use this one.
     ET get_true_norm2() const {return (it->get_details_ptr())->get_norm2();}; // Use this function to get the true norm2 value.
     //DerefType & deref_rw() {return *it;};
     private:
@@ -133,18 +133,19 @@ class GaussIterator<ET,false,-1> //: public std::list<ApproxLatticePoint<ET,fals
     //may require handle to container object.
 };
 
+//Multithreaded:
 
 template <class ET>
 class GaussList<ET, true, -1>
 {
 public:
-    friend GaussIterator<ET,true,-1>;
+    //friend GaussIterator<ET,true,-1>;
     using EntryType= ET;
-    using DataType = ApproxLatticePoint<ET,true,-1>;
+    using DataType = ApproxLatticePoint<ET,false,-1>; //TODO: enable MT
     using DataPointer=DataType *;
     using AtomicDataPointer = std::atomic<DataType *>;
     using Node=ListMTNode<DataType>; //will change
-    using NodePointer = ListMTNode<DataType> *;
+    using NodePointer = Node *;
     using AtomicNodePointer = std::atomic<ListMTNode<DataType> *>;
     using UnderlyingContainer = std::list<DataType>;
     //using Iterator = GaussIterator<ET,true,-1>;
@@ -157,7 +158,7 @@ public:
     GaussList & operator= (GaussList const &other) = delete;
     GaussList & operator= (GaussList &&other) = delete;
     //TODO: Create from single-threaded list.
-    ~GaussList();   //Deletes the underlying container. Not thread-safe
+    ~GaussList();   //Deletes the underlying container. Details in cpp. Not thread-safe
 
 
     Iterator cbegin()                                                   {return start_sentinel_node->next_node.load(std::memory_order_acquire);};
@@ -190,9 +191,9 @@ public:
     //TODO: Constructor from SingleThreaded variant and vice versa?
 
 private:
-    std::mutex mutex_currently_writing;
+    std::mutex mutex_currently_writing;    //global lock for writing threads.
     NodePointer const start_sentinel_node; //node before the start of the list. This is never modified, so no atomic here.
-    NodePointer const end_sentinel_node; //node after the end of the list, could probably do with a single sentinel.
+    NodePointer const end_sentinel_node;   //node after the end of the list, could probably do with a single sentinel.
 };
 
 
@@ -234,6 +235,7 @@ struct std::iterator_traits<GaussIterator<ET,MT,n_fixed> >
 //Iterators are forward iterators (i.e. can only be increased)
 //All iterators are const_iterators (i.e. trying to edit *it will give a compile-time error).
 
+/*
 
 template <class DT>
 class ListMultiThreaded
@@ -256,7 +258,7 @@ public:
     ~ListMultiThreaded();
     Iterator cbegin() const; //returns iterator to first element. On empty list, returns valid past-the-end iterator.
     Iterator cend() const;   //returns past-the-end iterator. Must not be dereferenced. (same behaviour as stl::list)
-    Iterator cbefore_begin() const; //returns iterator before the first element. May not be dereferenced. Included for completeness.
+    //Iterator cbefore_begin() const; //returns iterator before the first element. May not be dereferenced. Included for completeness.
     void unlink(Iterator const &pos, GarbageBin<DT> &gb); //marks the element pointed at by pos as deleted. Such elements will (eventually)
                                                           //become unreachable by traversing the list. Any Iterators to *pos (including pos)
                                                           //remain valid. *pos is put onto gb, whose job is eventually freeing memory.
@@ -281,6 +283,8 @@ private:
     NodePointer const end_sentinel_node; //node after the end of the list, could probably do with a single sentinel.
 };
 
+*/
+
 //restriction: Iterator itself is thread-local.
 
 template <class DT> //need to redo. //TODO: Thou shalt not inherit from STL containers (no virtual destructors).
@@ -301,6 +305,7 @@ template<class DT>
 class MTListIterator
 {
 public:
+    friend GaussList<typename DT::EntryType,true,-1>;
     friend ListMultiThreaded<DT>;
     friend void swap(MTListIterator &A, MTListIterator &B)      {std::swap(A.p,B.p);};
     using Node=ListMTNode<DT>;
@@ -334,6 +339,7 @@ private:
 template <class DT>
 class ListMTNode
 {
+    friend GaussList<typename DT::EntryType,true,-1>;
     friend ListMultiThreaded<DT>;
     friend MTListIterator<DT>;
     using DataType    = DT;
