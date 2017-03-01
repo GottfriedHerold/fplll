@@ -25,12 +25,15 @@ template <class ZT> void test_run_sieve(int dim, std::ofstream &ofs)
     //Sieve<Z_NR<ZT>, false> Test_Queue (B);
     //Test_Queue.run_2_sieve();
     
-    
+    srand(time(0));
+
     ZZ_mat<ZT> BTest;
     BTest.resize(dim, dim);
     BTest.gen_trg(1.1);
     lll_reduction(BTest, LLL_DEF_DELTA, LLL_DEF_ETA, LM_WRAPPER);
     Sieve<Z_NR<ZT>, false> Test_Queue (BTest);
+    
+    ofs << "sieve is run on B[0]" << BTest[0] << endl;
     
     auto start = std::chrono::high_resolution_clock::now();
     Test_Queue.run_2_sieve();
@@ -46,22 +49,29 @@ template <class ZT> void test_run_sieve(int dim, std::ofstream &ofs)
 int main(int argc, char **argv)
 {
         int dim[] = {52, 54, 56, 58, 60, 62, 64};
-	int length = 7;
+        int length = 7;
 
     	#ifdef USE_REGULAR_QUEUE 
-		std::ofstream ofs("test_sieve_PQ.txt");
+		std::ofstream ofs("test_sieve_PQ_dim68.txt");
 		ofs << "WITH PRIORITY QUEUE" << endl;
 	#else 
-		std::ofstream ofs("test_sieve.txt");
+		std::ofstream ofs("test_sieve_dim68.txt");
 		ofs << "WITH STANDARD QUEUE" << endl;
 	#endif
-	for (int i=0; i<length; i++) {
-        	
-       		
-		ofs << "start sieve on lattice of dim = " << dim[i] << endl;
-        	test_run_sieve<mpz_t>(dim[i], ofs); 
-		ofs << "----------------------------------------" << endl;
-	}
+//	for (int i=0; i<length; i++) {
+//        	
+//       		
+//		ofs << "start sieve on lattice of dim = " << dim[i] << endl;
+//        	test_run_sieve<mpz_t>(dim[i], ofs); 
+//		ofs << "----------------------------------------" << endl;
+//	}
+    
+    for (int i=0; i<3; i++)
+    {
+        ofs << "start sieve on lattice of dim = 68 " << endl;
+        test_run_sieve<mpz_t>(68, ofs);
+        ofs << "----------------------------------------" << endl;
+    }
     
 
    ofs.close();

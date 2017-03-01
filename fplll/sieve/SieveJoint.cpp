@@ -70,6 +70,16 @@ bool GaussSieve::check2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2)
     return true;
 }
 
+// separate chec2Red and perform2Red
+
+//if true, sclara is the multiple s.t. we reduce p1 = p1-sclar * p2;
+template<class ET>
+bool GaussSieve::check2red_new (const LatticePoint<ET> &p1, const LatticePoint<ET> &p2, ET scalar)
+{
+    return false;
+}
+
+
 //helper function for reading in from streams. Gobbles up str from the stream (and whitespace before/after).
 //If str is not on the stream, outputs an error.
 //Note that whitespace inside str is OK, as long as it is not at the beginning or end.
@@ -138,8 +148,8 @@ Z_NR<mpz_t> GaussSieve::compute_mink_bound(ZZ_mat<mpz_t> const & basis)
     //cout << "log_det2: " << log_det2 << endl;
 
     //lambda_1^2 = n * det(B)^{2/n}
-    FP_NR<double> MinkBound_double = 0.114 * root_det2 * static_cast<double> (basis.get_rows() ); //technically, we need to multiply by Hermite's constant in dim n here. We are at least missing a constant factor here. That is why we mult by (0.0017) = (pi * e)^(-1)
-    
+    FP_NR<double> MinkBound_double = 0.114 * root_det2 * static_cast<double> (basis.get_rows() ); //technically, we need to multiply by Hermite's constant in dim n here. We are at least missing a constant factor here.
+    //DUE TO [KL79], the best know multiple (for the squared norm) whould be (pi* exp(1)*2^{2*0.099} ~ 0.102).
     //cout << "after MinkBound_double is assigned... " << endl;
     Z_NR<mpz_t> Minkowski;
     cout << "MinkBound_double: " << MinkBound_double << endl;
