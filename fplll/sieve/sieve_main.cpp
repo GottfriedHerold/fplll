@@ -199,10 +199,10 @@ int main(int argc, char **argv)
     ApproxLatticePoint<Z_NR<mpz_t>,false,-1> X ( conv_matrixrow_to_lattice_point(B[0]) );
     cout << X;
 
-    #ifdef USE_REGULAR_QUEUE
-   	cout << "Use PQ" << endl;		
+    #ifndef USE_REGULAR_QUEUE
+        cout << "Use Priority Queue" << endl;
     #else
-        cout << "Use SQ" << endl;	
+        cout << "Use Standard Queue" << endl;
     #endif
     cout << "run sieve on B[0] = " << B[0] << endl;
     //cout << "B[1] = " << B[1] << endl;

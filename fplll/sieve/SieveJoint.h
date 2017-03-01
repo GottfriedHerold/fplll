@@ -97,13 +97,8 @@ class Sieve<ET, GAUSS_SIEVE_IS_MULTI_THREADED >
 {
     /*DATA TYPES*/
     using LPType           = LatticePoint<ET>;
-    //using MainQueueType    = std::priority_queue< LPType, std::vector<LPType>, IsLongerVector_class<ET> >;
-    //using MainQueueType =std::queue<LPType>;
-    using MainQueueType = GaussQueue<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
-    //using MainListType     = PointListSingleThreaded<ET>;
-    //using MainListType2    = PointListMultiThreaded<ET>;
+    using MainQueueType    = GaussQueue<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
     using MainListType     = GaussList<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
-    //using MainListType     = std::list<LPType>;
     using LatticeBasisType = ZZ_mat<typename ET::underlying_data_type>;
     using SamplerType      = KleinSampler<typename ET::underlying_data_type, FP_NR<double>> *; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
 
@@ -122,11 +117,8 @@ public:
     {
         delete sampler;
     };
-#ifdef GAUSS_SIEVE_SINGLE_THREADED
-    static bool const class_multithreaded = false;
-#else
-    static bool const class_multithreaded = true;
-#endif //class_multithreaded is for introspection, is_multithreaded is what the caller wants (may differ if we dump and re-read with different params)
+    static bool constexpr class_multithreaded =  GAUSS_SIEVE_IS_MULTI_THREADED;
+    //class_multithreaded is for introspection, is_multithreaded is what the caller wants (may differ if we dump and re-read with different params)
     //void run_2_sieve();
     void run_2_sieve(); //actually runs the Gauss Sieve.
     void SieveIteration2 (LatticePoint<ET> &p); //one run through the main_list (of 2-sieve)
@@ -139,14 +131,14 @@ public:
 
 //getter / setter functions
 
-    int get_verbosity() const                                   {return verbosity;};
-    void set_verbosity(int new_verbosity)                       {verbosity=new_verbosity;return;};
-    unsigned int get_lattice_rank() const                       {return lattice_rank;};
-    unsigned int get_ambient_dimension() const                  {return ambient_dimension;};
-    unsigned int get_k() const                                  {return sieve_k;};
-    void set_k(unsigned int new_k)                              {sieve_k=new_k;return;};
+    int get_verbosity() const                                   {return verbosity;};                //non-thread-safe
+    void set_verbosity(int new_verbosity)                       {verbosity=new_verbosity;return;};  //non-thread-safe
+    unsigned int get_lattice_rank() const                       {return lattice_rank;};             //non-thread-safe
+    unsigned int get_ambient_dimension() const                  {return ambient_dimension;};        //non-thread-safe
+    unsigned int get_k() const                                  {return sieve_k;};                  //non-thread-safe
+    void set_k(unsigned int new_k)                              {sieve_k=new_k;return;};            //non-thread-safe
     bool is_multithreaded_wanted() const                        {return multi_threaded_wanted;}; //Note: No setter
-    LPType get_shortest_vector_found() const                    {return shortest_vector_found;};
+    LPType get_shortest_vector_found() const                    {return shortest_vector_found;}; //TODO: Thread-safety
 //    ET get_best_length2() const                                 {return get_shortest_vector_found().norm2;};
     ET get_best_length2()                                       {return (main_list.cbegin()).access_details()->norm2;}; //TODO: Change to above
     bool check_whether_sieve_is_running() const                 {return (sieve_status==SieveStatus::sieve_status_running);};
@@ -157,10 +149,6 @@ public:
     unsigned long int get_current_queue_size()const             {return main_queue.size();};
     unsigned long long get_number_of_scprods() const            {return number_of_scprods;};
 
-/* temporary diagnostic functions
- */
-//    unsigned long D1,D2,D3,D4,D5,D6,D7,D8,D9,D10;
-//    void print_diag() {cerr << D1 << D2 << D3 << D4 << endl;};
 private:
 
 //Use termination Condition to check whether we are done, based on statistics so far.
@@ -185,7 +173,7 @@ private:
     bool multi_threaded_wanted;
 //unsigned int num_threads_wanted;
     unsigned int sieve_k; //parameter k of the sieve currently running.
-    SamplerType sampler;
+    SamplerType sampler; //TODO: Thread-safety
     int verbosity;
 
 public:
@@ -198,16 +186,24 @@ private: //to avoid complicated (due to template hack) friend - declaration.
         sieve_status_init   =  1, //we have initialized data (and may yet initialize some more, but sieve has not started
         sieve_status_running=  2, //sieve is currently running
         sieve_status_finished=100 //sieve has finished
-    } sieve_status;
-    LPType shortest_vector_found; //including its length
+    } sieve_status; //thread safety?
+    LPType shortest_vector_found; //including its length //TODO: Thread-safety
 
 //statistics
-
+#if GAUSS_SIEVE_IS_MULTI_THREADED == false
     unsigned long int number_of_collisions;
     unsigned long int number_of_points_sampled;
     unsigned long long int number_of_points_constructed; //sampling  + succesful pairs
     unsigned long int current_list_size;
     unsigned long long int number_of_scprods;
+#else //note: we might collect statistics per-thread and merge occasionally. This means these statistics might be inaccurate.
+    atomic_ulong number_of_collisions;
+    atomic_ulong number_of_points_sampled;
+    atomic_ullong number_of_points_constructed; //sampling  + succesful pairs
+    atomic_ulong current_list_size;
+    atomic_ullong number_of_scprods;
+#endif // GAUSS_SIEVE_IS_MULTI_THREADED
+
 //length of shortest vector contained in shortest_vector_found
 
 //TODO: total time spent?
