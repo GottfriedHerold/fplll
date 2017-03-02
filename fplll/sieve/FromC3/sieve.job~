@@ -1,0 +1,23 @@
+#PBS -N a3_r64_b20
+#PBS -S /bin/sh
+#PBS -l walltime=700:05:00
+#PBS -l nodes=1:ppn=1
+#PBS -m abe
+#PBS -j oe
+#PBS -M elena.kirshanova@rub.de
+
+# shell commands to execute
+a=3
+r=64
+b=20
+e=0.04
+
+#DIRNAME=reduced_n${N}_m${M}_s${S}_b${B}.$PBS_JOBID
+#mkdir ${DIRNAME}
+#cd ${DIRNAME}
+echo
+echo "-------- OLD SIEVING --------- "
+time /home/kirshanova_cits/sieve/test_sieve -a${a} -r${r} -b${b}
+#echo "-------- NEW SIEVING --------- "
+#time /home/kirshanova_cits/sieve/test_sieve -a${a} -r${r} -b${b} -s -e${e}
+

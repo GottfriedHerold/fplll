@@ -157,9 +157,7 @@ Z_NR<mpz_t> GaussSieve::compute_mink_bound(ZZ_mat<mpz_t> const & basis)
     ZZ_mat<mpz_t> Empty_mat;
     ZZ_mat<mpz_t> basis2 = basis; //need to copy, as BGSO is not const-specified...
     MatGSO<Z_NR<mpz_t>, FP_NR<double>> BGSO(basis2, Empty_mat, Empty_mat, 0);
-    //cout << "before the update... " << endl;
     BGSO.update_gso();
-    //cout << "after the update... " << endl;
 
     FP_NR<double> entry;
 
@@ -180,14 +178,13 @@ Z_NR<mpz_t> GaussSieve::compute_mink_bound(ZZ_mat<mpz_t> const & basis)
 
     //lambda_1^2 = n * det(B)^{2/n}
 
-    FP_NR<double> MinkBound_double = 0.102 * root_det2 * static_cast<double> (basis.get_rows() ); //technically, we need to multiply by Hermite's constant in dim n here. We are at least missing a constant factor here.
-    //DUE TO [KL79], the best know multiple (for the squared norm) whould be (pi* exp(1)*2^{2*0.099} ~ 0.102) for n->infinity. We use Blichfeldt's bound (pi*exp(1))=0.117.
+    FP_NR<double> MinkBound_double = 0.0068 * root_det2 * static_cast<double> (basis.get_rows() ); //technically, we need to multiply by Hermite's constant in dim n here. We are at least missing a constant factor here.
+    //DUE TO [KL79], the best know multiple (for the squared norm) whould be 1/(pi* exp(1)*2^{2*0.099} ~ 0.102) for n->infinity. Blichfeldt's bound: 1 / (pi*exp(1))=0.117.
+    // Darmstadt's challenge suggests: 1.10 / (2*pi*exp(1)) = 0.0644;
 
     //cout << "after MinkBound_double is assigned... " << endl;
     Z_NR<mpz_t> Minkowski;
-    cout << "MinkBound_double: " << MinkBound_double << endl;
     Minkowski.set_f(MinkBound_double); // the problem is here
-cout << "after MinkBound is set... " << endl;
     return Minkowski;
 }
 
