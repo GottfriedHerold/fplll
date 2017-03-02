@@ -186,11 +186,9 @@ int main(int argc, char **argv)
         cout << "Setting target norm2 to" << target_norm << endl << flush;
     }
 	Test_2Sieve.run();
-	/*
 	cout << "sv is " << endl;
     Test_2Sieve.get_shortest_vector_found().printLatticePoint();
     Test_2Sieve.print_status();
-    */
     //call_sieve(B, 1, target_norm);
     auto finish = std::chrono::high_resolution_clock::now();
     auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(finish-start);

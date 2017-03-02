@@ -40,7 +40,7 @@ bool GaussSieve::check2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2)
 
     //cout << "before the reduction: ";
     //p1.printLatticePoint();
-    assert(p1.norm2 >= p2.norm2);
+    //assert(p1.norm2 >= p2.norm2);     Not neccessarily true in multi-threaded case. -- Gotti
     ET sc_prod, abs_2scprod, scalar;
     sc_product(sc_prod, p1, p2);
     abs_2scprod.mul_ui(sc_prod,2);
@@ -77,24 +77,24 @@ bool GaussSieve::check2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2)
 template<class ET>
 bool GaussSieve::check2red_new (const LatticePoint<ET> &p1, const LatticePoint<ET> &p2, ET scalar)
 {
-    
-    assert(p1.norm2 >= p2.norm2);
+
+    //assert(p1.norm2 >= p2.norm2); Not neccessarily true in multi-threaded case. -- Gotti
     ET sc_prod, abs_2scprod;
     scalar = 0;
     sc_product(sc_prod, p1, p2);
     abs_2scprod.mul_ui(sc_prod,2);
     abs_2scprod.abs(abs_2scprod);
-    
+
     // check if |2 * <p1, p2>| <= |p2|^2. If yes, no reduction
     if (abs_2scprod <= p2.norm2)
         return false;
-    
+
     // compute the (integer) multiple for p1: mult = round(<p1, p2> / |p2|^2)
     FP_NR<double> mult, tmp; //may be can use another type
     mult.set_z(sc_prod); //conversions
     tmp.set_z(p2.norm2);
-    
-    
+
+
     mult.div(mult, tmp);
     mult.rnd(mult);
     scalar.set_f(mult); //converts mult to the type suitable for mult_const;
@@ -103,12 +103,12 @@ bool GaussSieve::check2red_new (const LatticePoint<ET> &p1, const LatticePoint<E
 
 // return res = p1 - scalar*p2;
 template<class ET>
-LatticePoint<ET> perform2Red (const LatticePoint<ET> &p1, const LatticePoint<ET> &p2, ET scalar)
+LatticePoint<ET> perform2Red (const LatticePoint<ET> &p1, const LatticePoint<ET> &p2, ET const & scalar)
 {
     LatticePoint<ET> res(p2);
     scalar_mult(res, scalar);
     return (p1 - res);
-    
+
 }
 
 //helper function for reading in from streams. Gobbles up str from the stream (and optionally whitespace before/after).
@@ -216,6 +216,9 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
     number_of_points_constructed(0),
     current_list_size(0)
     //D1(0),D2(0),D3(0),D4(0),D5(0),D6(0),D7(0),D8(0),D9(0),D10(0)
+    #if GAUSS_SIEVE_IS_MULTI_THREADED==true
+    ,garbage_bins(nullptr)
+    #endif // GAUSS_SIEVE_IS_MULTI_THREADED
 
 {
     sampler = new KleinSampler<typename ET::underlying_data_type, FP_NR<double>>(B, verbosity, seed_sampler);
@@ -229,12 +232,25 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
         main_list.insert_before(it,  conv_matrixrow_to_lattice_point (original_basis[i])  );
     }
     current_list_size+=lattice_rank;
+    #if GAUSS_SIEVE_IS_MULTI_THREADED == false
     cout << "Sorting ..." << std::flush;
     main_list.sort();
     cout << "is finished." << endl << std::flush;
+    #endif // GAUSS_SIEVE_IS_MULTI_THREADED
+    //TODO : enable sorting for multithreaded case.
 
+    #if GAUSS_SIEVE_IS_MULTI_THREADED==true
+    garbage_bins = new GarbageBin<typename MainListType::DataType>[num_threads_wanted]; //maybe init later.
+    #endif
+};
 
-//TODO : initialize term_condition to some meaningful default.
+template<class ET>
+Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::~Sieve()
+{
+    delete sampler;
+    #if GAUSS_SIEVE_IS_MULTI_THREADED==true
+    delete[] garbage_bins;
+    #endif
 };
 
 template<class ET>
@@ -263,6 +279,7 @@ void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::run() //runs the sieve specified b
 {
     assert(sieve_k == 2); //for now
     sieve_status =SieveStatus::sieve_status_running;
+    check_if_done(); //this updates the Minkowski condition, if needed.
     run_2_sieve();
     sieve_status = SieveStatus::sieve_status_finished;
 }

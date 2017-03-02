@@ -9,8 +9,8 @@ GaussList<ET,true,-1>::GaussList() :
 {
         start_sentinel_node->next_node=end_sentinel_node;
         end_sentinel_node->prev_node=start_sentinel_node;
-        start_sentinel_node->nodestatus=static_cast<int>(Node::StatusBit::is_first_node);
-        end_sentinel_node->nodestatus  =static_cast<int>(Node::StatusBit::is_last_node);
+        start_sentinel_node->nodestatus=static_cast<int>(Node::NodeStatus::is_first_node);
+        end_sentinel_node->nodestatus  =static_cast<int>(Node::NodeStatus::is_last_node);
 }
 
 
@@ -32,15 +32,74 @@ GaussList<ET,true,-1>::~GaussList() //called when only one thread is running
 }
 
 
+template<class ET>
+typename GaussList<ET,true,-1>::Iterator GaussList<ET,true,-1>::insert_before(Iterator pos, ExactType const & val) //TODO, type of val might change. Uses emplacement.
+{
+    Node* newnode = new Node;
+    newnode->datum_ptr = new DataType (val);
+    Node* nextgood =pos.p; //we work directly with the underlying pointer, not using the iterator, since we do not need atomic loads to traverse here.
+    assert(nextgood!=nullptr);
+    mutex_currently_writing.lock();
+    while(nextgood->is_marked_for_deletion())
+    {
+        nextgood=nextgood->next_node;
+    } //.load(memory_order_relaxed);}
+    Node* preced=nextgood->prev_node;
+    newnode->next_node=nextgood;
+    newnode->prev_node=preced;
+    nextgood->prev_node=newnode;
+//until here, no other thread can observe our writes, since we did not publish the pointer.
+    preced->next_node.store(newnode,memory_order_release);
+//this one can be observed (even prior to releasing the lock), and we have to make sure that other non-mutex-protected threads that see this write also see the (non-atomic) writes to newnode.
+    mutex_currently_writing.unlock();
+    return static_cast<Iterator> (newnode);
+}
+
+template <class ET>
+void GaussList<ET,true,-1>::unlink(Iterator const & pos, GarbageBin<DataType> &gb)
+{
+    assert(pos.p!=nullptr);
+    {//locked part
+        assert(!(pos.p->is_sentinel_node()));
+        //std::lock_guard<std::mutex> writelock(mutex_currently_writing);
+        mutex_currently_writing.lock();
+        if(pos.p->is_plain_node()) //otherwise, already deleted.
+        {
+            pos.p->nodestatus=static_cast<int>(Node::NodeStatus::is_to_be_deleted);
+            NodePointer nextpos=pos.p->next_node; //.load(memory_order_relaxed); //All writes are within locks anyway.
+            nextpos->prev_node=pos.p->prev_node;
+            pos.p->prev_node->next_node.store(nextpos,memory_order_relaxed); //relaxed should be fine!!!
+            mutex_currently_writing.unlock();
+            //Put in garbage bin. //TODO: More clever garbage bin, requires changing structs and global counters.
+            gb.push(pos.p);
+        }
+        else
+        {
+            mutex_currently_writing.unlock();
+        }
+    }//end of locked part
+    return;
+}
 
 
 
+//iterators:
 
+template<class ET>
+GaussIterator<ET,true,-1> GaussIterator<ET,true,-1>::operator++(int) //postfix version
+{
+    auto tmp=p;
+    ++(*this);
+    return tmp;
+};
 
-
-
-
-
+template<class ET>
+GaussIterator<ET,true,-1>& GaussIterator<ET,true,-1>::operator++() //prefix version
+{
+    p=p->next_node.load(memory_order_acquire);
+    assert(p!=nullptr);
+    return *this;
+};
 
 
 
@@ -85,22 +144,22 @@ GaussList<ET,true,-1>::~GaussList() //called when only one thread is running
 
 //old implementation:
 
-
-template<class DT>
-MTListIterator<DT> MTListIterator<DT>::operator++(int) //postfix version
-{
-    auto tmp=p;
-    ++(*this);
-    return tmp;
-};
-
-template<class DT>
-MTListIterator<DT>& MTListIterator<DT>::operator++()
-{
-    p=p->next_node.load(memory_order_acquire);
-    assert(p!=nullptr);
-    return *this;
-}; //prefix version
+//
+//template<class DT>
+//MTListIterator<DT> MTListIterator<DT>::operator++(int) //postfix version
+//{
+//    auto tmp=p;
+//    ++(*this);
+//    return tmp;
+//};
+//
+//template<class DT>
+//MTListIterator<DT>& MTListIterator<DT>::operator++()
+//{
+//    p=p->next_node.load(memory_order_acquire);
+//    assert(p!=nullptr);
+//    return *this;
+//}; //prefix version
 
 /*
 template<class DT>
@@ -161,8 +220,8 @@ ListMultiThreaded<DT>::ListMultiThreaded() : //called when only one thread is ru
     {
         start_sentinel_node->next_node=end_sentinel_node;
         end_sentinel_node->prev_node=start_sentinel_node;
-        start_sentinel_node->nodestatus=static_cast<int>(Node::StatusBit::is_first_node);
-        end_sentinel_node->nodestatus  =static_cast<int>(Node::StatusBit::is_last_node);
+        start_sentinel_node->nodestatus=static_cast<int>(Node::NodeStatus::is_first_node);
+        end_sentinel_node->nodestatus  =static_cast<int>(Node::NodeStatus::is_last_node);
     };
 */
 
@@ -171,7 +230,7 @@ template <class DT>
 typename ListMultiThreaded<DT>::Iterator ListMultiThreaded<DT>::enlist_before(MTListIterator<DT> const &pos, DT * const valref)
 {
     Node* newnode = new Node;
-    newnode->latpoint = valref;
+    newnode->datum_ptr = valref;
     Node* nextgood =pos.p; //we work directly with the underlying pointer, not using the iterator, since we do not need atomic loads to traverse here.
     assert(nextgood!=nullptr);
     mutex_currently_writing.lock();
@@ -202,7 +261,7 @@ void ListMultiThreaded<DT>::unlink(Iterator const & pos, GarbageBin<DT> &gb)
         mutex_currently_writing.lock();
         if(pos.p->is_plain_node()) //otherwise, already deleted.
         {
-            pos.p->nodestatus=static_cast<int>(Node::StatusBit::is_to_be_deleted);
+            pos.p->nodestatus=static_cast<int>(Node::NodeStatus::is_to_be_deleted);
             NodePointer nextpos=pos.p->next_node; //.load(memory_order_relaxed); //All writes are within locks anyway.
             nextpos->prev_node=pos.p->prev_node;
             pos.p->prev_node->next_node.store(nextpos,memory_order_relaxed); //relaxed should be fine!!!

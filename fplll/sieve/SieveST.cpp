@@ -18,7 +18,7 @@ void Sieve<ET,false>::run_2_sieve()
     LatticePoint<ET> p;
     //NumVect<ET> sample;
 
-    check_if_done(); //sets up default conditions if not already set. We ignore the return value.
+    //check_if_done(); //sets up default conditions if not already set. We ignore the return value. -- Moved to run(), Gotti
     //ET target_norm = term_cond.get_target_length();
     while (!check_if_done() )
     //while(main_list.cbegin()->norm2 > target_norm)
@@ -131,6 +131,7 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might
 };
 
 //currently unused diagnostic code.
+/*
 template<class ET>
 void PredictionDiagnosis (Sieve<ET,false> * gs, ApproxLatticePoint<ET,false> const & v1, LatticePoint<ET> const &d1, ApproxLatticePoint<ET,false> const &v2, LatticePoint<ET> const &d2, int dim);
 template<class ET>
@@ -207,7 +208,7 @@ else if(count % 100 == 80)
 
 	//cout << endl;
 }
-
+*/
 
 
 #endif

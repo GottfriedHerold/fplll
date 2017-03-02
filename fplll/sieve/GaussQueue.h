@@ -59,6 +59,7 @@ public:
     size_type size() const          {return main_queue.size();};   //returns size of queue (used for diagnostics and statistics only)
     void push(LPType const &val); //puts a copy of val in the queue
     void push(LPType && val);     //uses move semantics for that.
+    [[deprecated("Ownership transfer clashes with compressed storage.")]]
     void give_ownership(LPType * const valptr); //takes a pointer to a list point and puts the point into the queue, moves ownership (avoids copying)
     RetType  true_pop(); //removes front element from queue *and returns it*.
     [[deprecated("Use copy elison rather than ownership transfer.")]]
@@ -87,18 +88,22 @@ public:
     #endif
     using size_type = typename QueueType::size_type;
     using SamplerType =    KleinSampler<typename ET::underlying_data_type, FP_NR<double> > ;
+
     GaussQueue()=delete;
-    GaussQueue(Sieve<ET,true> *caller_sieve); //only constructor non-thread-safe
+    GaussQueue(Sieve<ET,true> *caller_sieve); //only constructor, not thread-safe
     GaussQueue(GaussQueue const &old) = delete;
     GaussQueue(GaussQueue &&old) = delete;
     GaussQueue& operator= (GaussQueue const &old)=delete;
     GaussQueue& operator= (GaussQueue &&old) = delete;
-    ~GaussQueue(); //non-thread - safe
+    ~GaussQueue(); //not thread-safe
 
-    bool empty() const              {mutex_guard lock(queue_mutex); return main_queue.empty();}; //checks whether the queue is currently empty. Blocks
-    size_type size() const          {mutex_guard lock(queue_mutex); return main_queue.size();};  //returns size of queue (used for diagnostics and statistics only). Blocks
+    //TODO: Fix const - correctness
+
+    bool empty()                      {mutex_guard lock(queue_mutex); return main_queue.empty();}; //checks whether the queue is currently empty. Blocks
+    size_type size()                  {mutex_guard lock(queue_mutex); return main_queue.size();};  //returns size of queue (used for diagnostics and statistics only). Blocks
     void push(LPType const &val); //puts a copy of val in the queue
     void push(LPType && val);     //uses move semantics for that.
+    [[deprecated("Ownership transfer clashes with compressed storage.")]]
     void give_ownership(LPType * const valptr); //takes a pointer to a list point and puts the point into the queue, moves ownership (avoids copying)
     RetType  true_pop(); //removes front element from queue *and returns it*.
     [[deprecated("Use copy elison rather than ownership transfer.")]]
@@ -108,7 +113,7 @@ public:
 
 private:
     QueueType main_queue;
-    Sieve<ET,false>* gauss_sieve; //caller object.
+    Sieve<ET,true>* gauss_sieve; //caller object.
     std::mutex queue_mutex; //global lock. We do not differentiate reads and writes.
     //SamplerType *sampler; //controlled by the GaussSieve currently. TODO: Change that
 };
@@ -134,7 +139,6 @@ queue_mutex()
 //sampler(nullptr)
 {
     assert(caller_sieve!=nullptr);
-    //sampler=caller_sieve->sampler; //TODO: Remove sampler from SieveJoint.h and place it under control of the queue.
 }
 
 
@@ -167,8 +171,8 @@ typename GaussQueue<ET,true>::RetType GaussQueue<ET,true>::true_pop()
     mutex_guard lock(queue_mutex); //global lock. TODO : Enable concurrent sampling.
     if(main_queue.empty())
     {
-        ++ (gauss_sieve->number_of_points_sampled);
-        ++ (gauss_sieve->number_of_points_constructed);
+        ++ (gauss_sieve->number_of_points_sampled); //atomic
+        ++ (gauss_sieve->number_of_points_constructed); //atomic
         return gauss_sieve->sampler->sample();
     }
     else
@@ -211,7 +215,7 @@ typename GaussQueue<ET,false>::RetType* GaussQueue<ET,false>::pop_take_ownership
 template<class ET>
 typename GaussQueue<ET,true>::RetType* GaussQueue<ET,true>::pop_take_ownership()
 {
-    assert(false); //disabled
+    assert(false); //currently disabled
 }
 
 template<class ET>

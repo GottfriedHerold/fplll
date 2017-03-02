@@ -115,14 +115,14 @@ public:
     Sieve & operator=(Sieve &&old) = default; //movable, but not copyable.
     explicit Sieve(LatticeBasisType B, unsigned int k=2, TerminationConditions<ET> termcond = {}, unsigned int verbosity_=1, int seed_sampler = 0);
     //explicit Sieve(std::string const &infilename); //read from dump file.
-    ~Sieve()
-    {
-        delete sampler;
-    };
+    ~Sieve();
     static bool constexpr class_multithreaded =  GAUSS_SIEVE_IS_MULTI_THREADED;
     //class_multithreaded is for introspection, is_multithreaded is what the caller wants (may differ if we dump and re-read with different params)
-    void run_2_sieve(); //actually runs the Gauss Sieve.
+    void run_2_sieve(); //actually runs the Gauss Sieve with k=2
     void SieveIteration2 (LatticePoint<ET> &p); //one run through the main_list (of 2-sieve)
+    #if GAUSS_SIEVE_IS_MULTI_THREADED == true
+    void sieve_2_thread(int const thread_id);
+    #endif
     LPType get_SVP() = delete; //obtains Shortest vector and it's length. If sieve has not yet run, start it. Not yet implemented.
     void run(); //runs the sieve specified by the parameters.
     void print_status(int verb = -1, std::ostream &out = cout) {dump_status_to_stream(out,false,verb);};
@@ -144,15 +144,15 @@ public:
     unsigned int get_num_threads() const                        {return num_threads_wanted;};
     #endif // GAUSS_SIEVE_IS_MULTI_THREADED
 //  LPType get_shortest_vector_found() const                    {return shortest_vector_found;}; //TODO: Thread-safety
-    LPType get_shortest_vector_found()                          {return (main_list.cbegin()).get_exact_point();}; //TODO: Thread-safety.
+    LPType get_shortest_vector_found()                          {return (main_list.cbegin())->get_details();}; //TODO: Thread-safety.
 //  ET get_best_length2() const                                 {return get_shortest_vector_found().norm2;};
-    ET get_best_length2()                                       {return (main_list.cbegin()).access_details()->norm2;}; //TODO: Change to above
+    ET get_best_length2()                                       {return (main_list.cbegin())->get_details().norm2;}; //TODO: Change to above
     bool check_whether_sieve_is_running() const                 {return (sieve_status==SieveStatus::sieve_status_running);};
     unsigned long int get_number_of_collisions() const          {return number_of_collisions;};
     unsigned long int get_number_of_points_sampled() const      {return number_of_points_sampled;};
     unsigned long long get_number_of_points_constructed() const {return number_of_points_constructed;};
     unsigned long int get_current_list_size() const             {return current_list_size;};
-    unsigned long int get_current_queue_size()const             {return main_queue.size();};
+    unsigned long int get_current_queue_size()                  {return main_queue.size();}; //TODO : fix const-correctness
     unsigned long long get_number_of_scprods() const            {return number_of_scprods;};
 
 private:
@@ -178,15 +178,15 @@ private:
     unsigned int ambient_dimension; //consider merging these into a latticespec struct.
     bool multi_threaded_wanted;
     #if GAUSS_SIEVE_IS_MULTI_THREADED == true
-    unsigned int num_threads_wanted;
+    unsigned int num_threads_wanted;        //number of threads that we spawn
     #endif // GAUSS_SIEVE_IS_MULTI_THREADED
     unsigned int sieve_k; //parameter k of the sieve currently running.
-    SamplerType sampler; //TODO: Thread-safety
+    SamplerType sampler; //TODO: Thread-safety. Move control to queue.
     int verbosity;
 
-public:
+public:  //made public to avoid complicated (due to template hack) friend - declaration.
     TerminationConditions<ET> term_cond;
-private: //to avoid complicated (due to template hack) friend - declaration.
+private:
 
     enum class SieveStatus
     {
@@ -210,6 +210,10 @@ private: //to avoid complicated (due to template hack) friend - declaration.
     atomic_ullong number_of_points_constructed; //sampling  + succesful pairs
     atomic_ulong current_list_size;
     atomic_ullong number_of_scprods;
+#endif // GAUSS_SIEVE_IS_MULTI_THREADED
+
+#if GAUSS_SIEVE_IS_MULTI_THREADED==true
+    GarbageBin<typename MainListType::DataType> * garbage_bins; //dynamically allocated array of garbage bins.
 #endif // GAUSS_SIEVE_IS_MULTI_THREADED
 
 //length of shortest vector contained in shortest_vector_found

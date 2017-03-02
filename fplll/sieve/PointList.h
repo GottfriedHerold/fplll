@@ -63,11 +63,13 @@ class GaussList<ET, false, -1>
 public:
     friend GaussIterator<ET,false,-1>;
     using EntryType= ET;
-    using DataType = ApproxLatticePoint<ET,false,-1>;
+    using DataType = ApproxLatticePoint<ET,false,-1>; //Type of data stored in the list (from caller's POV)
     using DataPointer=DataType *;
     using UnderlyingContainer = std::list<DataType>;
     using Iterator = GaussIterator<ET,false,-1>;
     using DetailType = typename DataType::DetailType;
+    using ExactType = LatticePoint<ET>;
+
     explicit GaussList() = default;
     GaussList(GaussList const & old) = delete;
     GaussList(GaussList && old) = delete;
@@ -77,7 +79,7 @@ public:
     Iterator cbegin()                                                   {return actual_list.begin() ;};
     Iterator cend()                                                     {return actual_list.end();};
     //These functions insert (possibly a copy of val) into the list. TODO: include ownership transfer semantics to avoid some copying, possibly include refcounts in LatticePoints. This becomes really tricky if overwrite is allowed in multithreaded case.
-    Iterator insert_before(Iterator pos, DetailType const & val)        {return actual_list.emplace(pos.it, val);};
+    Iterator insert_before(Iterator pos, ExactType const & val)         {return actual_list.emplace(pos.it, val);};
     /*
     Iterator insert_before_give_ownership(Iterator pos, DetailType * const val) = delete;  //TODO
     Iterator insert_before(Iterator pos, DataType const & val) =  delete; //TODO
@@ -85,7 +87,7 @@ public:
     */
     //Iterator insert_before(Iterator pos, DetailType && val)           {return actual_list.insert(pos,std::move(val));};
     Iterator erase(Iterator pos)                                        {return actual_list.erase(pos.it);}; //only for single-threaded
-    //void unlink(Iterator pos)                                           {actual_list.erase(pos);};
+    void unlink(Iterator pos)=delete;     //MT only                              //{actual_list.erase(pos);};
 
     void sort()                                                         {actual_list.sort();};  //only for single-threaded (for now). Uses exact length.
 
@@ -100,7 +102,7 @@ class GaussIterator<ET,false,-1> //: public std::list<ApproxLatticePoint<ET,fals
     public:
     using UnderlyingIterator = typename GaussList<ET,false,-1>::UnderlyingContainer::iterator; //non-const
     using CUnderlyingIterator= typename GaussList<ET,false,-1>::UnderlyingContainer::const_iterator;
-    using DerefType = ApproxLatticePoint<ET,false,-1>; //without cv - spec.
+    using DerefType  = ApproxLatticePoint<ET,false,-1>; //without cv - spec.
     using DetailType = LatticePoint<ET>;
     using ExactType  = LatticePoint<ET>; //need not be the same!
     GaussIterator () = delete; // ???
@@ -141,7 +143,7 @@ class GaussList<ET, true, -1>
 public:
     //friend GaussIterator<ET,true,-1>;
     using EntryType= ET;
-    using DataType = ApproxLatticePoint<ET,false,-1>; //TODO: enable MT
+    using DataType = ApproxLatticePoint<ET,false,-1>; //Type of data stored in the list (from caller's POV) //TODO: distinguish MT case in data type.
     using DataPointer=DataType *;
     using AtomicDataPointer = std::atomic<DataType *>;
     using Node=ListMTNode<DataType>; //will change
@@ -149,7 +151,7 @@ public:
     using AtomicNodePointer = std::atomic<ListMTNode<DataType> *>;
     using UnderlyingContainer = std::list<DataType>;
     //using Iterator = GaussIterator<ET,true,-1>;
-    using Iterator=MTListIterator<DataType>;
+    using Iterator=GaussIterator<ET,true,-1>;
     using DetailType = typename DataType::DetailType;
     using ExactType = LatticePoint<ET>;
     explicit GaussList(); //creates empty list. Details in cpp.
@@ -164,21 +166,14 @@ public:
     Iterator cbegin()                                                   {return start_sentinel_node->next_node.load(std::memory_order_acquire);};
     Iterator cend()                                                     {return end_sentinel_node;};
 
-    Iterator insert_before(Iterator pos, DataType const & val) = delete; //TODO
+    Iterator insert_before(Iterator pos, ExactType const & val); //TODO, type of val might change. Uses emplacement.
 
     //inserts a copy of val before pos. The iterator pos remains valid.
     //NOTE: If *pos is marked-for-deletion, val will be inserted before
     //the next non-marked position pos' that is reachable by increasing pos.
     //Even in this case, incrementing pos will eventually reach pos' *WITHOUT* seeing the newly inserted value.
-    /*
 
-    Iterator insert_before_give_ownership(Iterator pos, DetailType * const val) = delete;  //TODO
-    Iterator insert_before(Iterator pos, DataType const & val) =  delete; //TODO
-    Iterator insert_before_give_ownership(Iterator pos, DataType const & val) = delete;                          //TODO
-    */
-    //Iterator insert_before(Iterator pos, DetailType && val)           {return actual_list.insert(pos,std::move(val));};
     Iterator erase(Iterator pos) =delete; //single-threaded only.
-    //void unlink(Iterator pos)                                           {actual_list.erase(pos);};
     void unlink(Iterator const &pos, GarbageBin<DataType> &gb); //marks the element pointed at by pos as deleted. Such elements will (eventually)
                                                           //become unreachable by traversing the list. Any Iterators to *pos (including pos)
                                                           //remain valid. *pos is put onto gb, whose job is eventually freeing memory.
@@ -195,6 +190,77 @@ private:
     NodePointer const start_sentinel_node; //node before the start of the list. This is never modified, so no atomic here.
     NodePointer const end_sentinel_node;   //node after the end of the list, could probably do with a single sentinel.
 };
+
+template<class ET>
+class GaussIterator<ET,true,-1>
+{
+public:
+    friend GaussList<ET,true,-1>;
+    friend void swap(GaussIterator &A, GaussIterator &B)              {std::swap(A.p,B.p);};
+    using DataType    = typename GaussList<ET,true,-1>::DataType;
+    using Node=ListMTNode< DataType >; //data representation
+    using Nodeptr = Node *;
+    using DataPointer = DataType*;
+    using CDataPointer= DataType const *;
+    using DerefType  = DataType; //without cv - spec.
+    using DetailType = LatticePoint<ET>;
+    using ExactType  = LatticePoint<ET>; //need not be the same!
+
+    GaussIterator() = delete; //should always init with valid object.
+    GaussIterator(Nodeptr const & _p)                                   : p(_p)         {assert(_p!=nullptr);};
+    GaussIterator(GaussIterator<ET,true,-1> const &old)                 : p(old.p)      {};
+    GaussIterator(GaussIterator<ET,true,-1> && old)=default;
+    GaussIterator& operator=(GaussIterator const &other) = default;
+    GaussIterator& operator=(GaussIterator &&other) = default;
+    ~GaussIterator() {};
+
+    GaussIterator& operator++();    //prefix version
+    GaussIterator  operator++(int); //postfix version
+    DataPointer const operator->() const                                {return p->datum_ptr;}; //Note weird semantics of -> overload cause datum_ptr (which is a pointer) to get dereferenced as well.
+    DerefType const & operator*()   const                               {return *(p->datum_ptr);};
+    //operator DataPointer() const                                        {return p->datum_ptr;}; //converts from Iterator to pointer to lattice point.
+    bool operator==(GaussIterator<ET,true,-1> const & other) const      {return p==other.p;};  //test for equality of iterators.
+    bool operator!=(GaussIterator<ET,true,-1> const & other) const      {return p!=other.p;};  //test for inequality of iterators. Note: Even if it1 != it2, it may still be the case that *it1 == *it2.
+    bool is_end() const                                                 {return p->check_for_end_node();};
+    bool is_good() const                                                {return !(p->is_marked_for_deletion());}; //Not: Note reliable if caller did not lock mutex. May be made private.
+
+//  DetailType*  access_details() {return it->get_details_ptr_rw();}; //Note: In multithreaded environment, there is no write access.
+    ExactType get_exact_point() const {return p->datum_ptr->get_details();}; //retrieves a copy of the exact value. preferably use this one.
+    ET get_true_norm2() const {return p->datum_ptr->get_details_ptr_r()->get_norm2();}; // Use this function to get the true norm2 value.
+
+
+private:
+    Nodeptr p; //does not own. Need not be atomic. Is NOT a const - pointer!
+};
+
+
+template <class DT> //need to redo. //TODO: Thou shalt not inherit from STL containers (no virtual destructors).
+class GarbageBin : public std::queue< ListMTNode<DT> * >
+{
+public:
+    GarbageBin() = default;
+    GarbageBin(GarbageBin const &old) = delete;
+    GarbageBin(GarbageBin &&old) = default;
+    GarbageBin& operator=(GarbageBin const &old) = delete;
+    GarbageBin& operator=(GarbageBin &&old) = default;
+    ~GarbageBin()   {empty_trash();}
+    void empty_trash();
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -287,84 +353,72 @@ private:
 
 //restriction: Iterator itself is thread-local.
 
-template <class DT> //need to redo. //TODO: Thou shalt not inherit from STL containers (no virtual destructors).
-class GarbageBin : public std::queue< ListMTNode<DT> * >
-{
-public:
-    GarbageBin() = default;
-    GarbageBin(GarbageBin const &old) = delete;
-    GarbageBin(GarbageBin &&old) = default;
-    GarbageBin& operator=(GarbageBin const &old) = delete;
-    GarbageBin& operator=(GarbageBin &&old) = default;
-    ~GarbageBin()   {empty_trash();}
-    void empty_trash();
-};
 
+//template<class DT>
+//class MTListIterator
+//{
+//public:
+//    friend GaussList<typename DT::EntryType,true,-1>;
+//    friend ListMultiThreaded<DT>;
+//    friend void swap(MTListIterator &A, MTListIterator &B)      {std::swap(A.p,B.p);};
+//    using Node=ListMTNode<DT>;
+//    using DataType    = DT;
+//    using DataPointer = DT*;
+//    using CDataPointer= DT const *;
+//    MTListIterator() = delete; //should always init with valid object.
+//    MTListIterator(Node * const & _p): p(_p)                    {assert(_p!=nullptr);};
+//    MTListIterator(MTListIterator<DT> const &old): p(old.p)     {};
+//    MTListIterator(MTListIterator<DT> && old)=default;
+//    ~MTListIterator() {};
+//    MTListIterator<DT>& operator=(MTListIterator<DT> const &other) = default;
+//    MTListIterator<DT>& operator=(MTListIterator<DT> &&other) = default;
+//    MTListIterator<DT>& operator++(); //prefix version
+//    MTListIterator<DT>  operator++(int); //postfix version
+//    DataPointer operator->() const                              {return p->datum_ptr;}; //Note weird semantics of -> overload cause datum_ptr (which is a pointer) to get dereferenced as well.
+//    DataType & operator*()   const                              {return *(p->datum_ptr);};
+//    operator DataPointer() const                                {return p->datum_ptr;}; //converts from Iterator to pointer to lattice point.
+//    bool operator==(MTListIterator<DT> const & other) const     {return p==other.p;};  //test for equality of iterators.
+//    bool operator!=(MTListIterator<DT> const & other) const     {return p!=other.p;};  //test for inequality of iterators. Note: Even if it1 != it2, it may still be the case that *it1 == *it2.
+//    bool is_end() const                                         {return p->check_for_end_node();};
+//    bool is_good() const                                        {return !(p->is_marked_for_deletion() ); //Not: Note reliable if caller did not lock mutex. May be made private.
+//    };
+//private:
+//    Node * p; //does not own. Need not be atomic. Is NOT a const - pointer!
+//};
+////TODO: define iterator_traits specialisation (or derive from std::iterator)
+//
 
-template<class DT>
-class MTListIterator
-{
-public:
-    friend GaussList<typename DT::EntryType,true,-1>;
-    friend ListMultiThreaded<DT>;
-    friend void swap(MTListIterator &A, MTListIterator &B)      {std::swap(A.p,B.p);};
-    using Node=ListMTNode<DT>;
-    using DataType    = DT;
-    using DataPointer = DT*;
-    using CDataPointer= DT const *;
-    MTListIterator() = delete; //should always init with valid object.
-    MTListIterator(Node * const & _p): p(_p)                    {assert(_p!=nullptr);};
-    MTListIterator(MTListIterator<DT> const &old): p(old.p)     {};
-    MTListIterator(MTListIterator<DT> && old)=default;
-    ~MTListIterator() {};
-    MTListIterator<DT>& operator=(MTListIterator<DT> const &other) = default;
-    MTListIterator<DT>& operator=(MTListIterator<DT> &&other) = default;
-    MTListIterator<DT>& operator++(); //prefix version
-    MTListIterator<DT>  operator++(int); //postfix version
-    DataPointer operator->() const                              {return p->latpoint;}; //Note weird semantics of -> overload cause latpoint (which is a pointer) to get dereferenced as well.
-    DataType & operator*()   const                              {return *(p->latpoint);};
-    operator DataPointer() const                                {return p->latpoint;}; //converts from Iterator to pointer to lattice point.
-    bool operator==(MTListIterator<DT> const & other) const     {return p==other.p;};  //test for equality of iterators.
-    bool operator!=(MTListIterator<DT> const & other) const     {return p!=other.p;};  //test for inequality of iterators. Note: Even if it1 != it2, it may still be the case that *it1 == *it2.
-    bool is_end() const                                         {return p->check_for_end_node();};
-    bool is_good() const                                        {return !(p->is_marked_for_deletion() ); //Not: Note reliable if caller did not lock mutex. May be made private.
-    };
-private:
-    Node * p; //does not own. Need not be atomic. Is NOT a const - pointer!
-};
-//TODO: define iterator_traits specialisation (or derive from std::iterator)
-
-
-//owns the lattice point. For internal use only.
+//custom linked list node. For internal use only. Owns an object of type DT
 template <class DT>
 class ListMTNode
 {
-    friend GaussList<typename DT::EntryType,true,-1>;
-    friend ListMultiThreaded<DT>;
-    friend MTListIterator<DT>;
+//    friend GaussList<typename DT::EntryType,true,-1>;
+//    friend ListMultiThreaded<DT>;
+//    friend MTListIterator<DT>;
     using DataType    = DT;
     using DataPointer = DT*;
     using AtomicDataPointer = std::atomic<DT *>;
     using NodePointer = ListMTNode<DT> *;
     using AtomicNodePointer = std::atomic<ListMTNode<DT> *>;
 public:
-    ListMTNode() : next_node(nullptr),prev_node(nullptr), latpoint(nullptr),nodestatus(0)  {} ;
+    ListMTNode() : next_node(nullptr),prev_node(nullptr), datum_ptr(nullptr),nodestatus(0)  {} ;
     ListMTNode(ListMTNode const &old) = delete;
     ListMTNode(ListMTNode &&old) = delete;
     ListMTNode & operator=(ListMTNode const &old) =delete;
     ListMTNode & operator=(ListMTNode &&old) = delete;
-    ~ListMTNode()                                               {delete latpoint;}; //destructor
-    bool check_for_end_node() const                             {return nodestatus == static_cast<int>(StatusBit::is_last_node);};
-    bool is_marked_for_deletion() const                         {return nodestatus == static_cast<int>(StatusBit::is_to_be_deleted);};
-    bool is_sentinel_node() const                               {return (nodestatus == static_cast<int>(StatusBit::is_first_node))||(nodestatus == static_cast<int>(StatusBit::is_last_node) );};
+    ~ListMTNode()                                               {delete datum_ptr;}; //destructor
+    bool check_for_end_node() const                             {return nodestatus == static_cast<int>(NodeStatus::is_last_node);};
+    bool is_marked_for_deletion() const                         {return nodestatus == static_cast<int>(NodeStatus::is_to_be_deleted);};
+    bool is_sentinel_node() const                               {return (nodestatus == static_cast<int>(NodeStatus::is_first_node))||(nodestatus == static_cast<int>(NodeStatus::is_last_node) );};
     bool is_plain_node() const                                  {return nodestatus == 0;};
-private:
+//private: --not intended for outside use, anyway.
+public:
     AtomicNodePointer next_node;
     NodePointer       prev_node;
-    DataPointer       latpoint; //actual data. We use a pointer here for potential atomicity. This is hidden from the user.
+    DataPointer       datum_ptr; //actual data. We use a pointer here for potential atomicity. This is hidden from the user.
     int nodestatus; //We use int rather than an enum-type to be on the safe side regarding that atomic-operations be possible.
 public:
-    enum class StatusBit
+    enum class NodeStatus
     {
         is_to_be_deleted=1,
         is_first_node=2,
