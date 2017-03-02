@@ -1,4 +1,4 @@
-//#define USE_REGULAR_QUEUE //comment out if you use priority-queue
+#define USE_REGULAR_QUEUE //comment out if you use priority-queue
 
 
 #include "sieve_main.h"
