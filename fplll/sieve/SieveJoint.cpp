@@ -230,6 +230,7 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
     }
     current_list_size+=lattice_rank;
     #if GAUSS_SIEVE_IS_MULTI_THREADED == false
+
     cout << "Sorting ..." << std::flush;
     main_list.sort();
     cout << "is finished." << endl << std::flush;
