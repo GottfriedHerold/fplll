@@ -79,6 +79,8 @@ namespace GaussSieve
     bool check2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2); //ASSUMPTION: p1 is longer than p2.
                                                                        //2-reduces p1 with the help of p2.
                                                                        //p1 is overwritten, whereas p2 is const. Returns true if p1 actually changed.
+    template<class ET>
+    bool check2red_new (const LatticePoint<ET> &p1, const LatticePoint<ET> &p2, ET scalar);
 
 }
 

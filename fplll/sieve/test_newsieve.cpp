@@ -1,4 +1,4 @@
-#define USE_REGULAR_QUEUE //comment out if you use priority-queue
+//#define USE_REGULAR_QUEUE //comment out if you use priority-queue
 
 
 #include "sieve_main.h"
@@ -30,7 +30,11 @@ template <class ZT> void test_run_sieve(int dim, std::ofstream &ofs)
     ZZ_mat<ZT> BTest;
     BTest.resize(dim, dim);
     BTest.gen_trg(1.1);
-    lll_reduction(BTest, LLL_DEF_DELTA, LLL_DEF_ETA, LM_WRAPPER);
+    if (dim >= 68)
+        bkz_reduction(BTest, 8, BKZ_DEFAULT, FT_DEFAULT, 0);
+    else
+        lll_reduction(BTest, LLL_DEF_DELTA, LLL_DEF_ETA, LM_WRAPPER);
+    
     Sieve<Z_NR<ZT>, false> Test_Queue (BTest);
     
     ofs << "sieve is run on B[0]" << BTest[0] << endl;
@@ -52,10 +56,10 @@ int main(int argc, char **argv)
         int length = 7;
 
     	#ifdef USE_REGULAR_QUEUE 
-		std::ofstream ofs("test_sieve_PQ_dim68.txt");
+		std::ofstream ofs("test_sieve_PQ_dim75.txt");
 		ofs << "WITH PRIORITY QUEUE" << endl;
 	#else 
-		std::ofstream ofs("test_sieve_dim68.txt");
+		std::ofstream ofs("test_sieve_dim75.txt");
 		ofs << "WITH STANDARD QUEUE" << endl;
 	#endif
 //	for (int i=0; i<length; i++) {
@@ -68,8 +72,8 @@ int main(int argc, char **argv)
     
     for (int i=0; i<3; i++)
     {
-        ofs << "start sieve on lattice of dim = 68 " << endl;
-        test_run_sieve<mpz_t>(68, ofs);
+        ofs << "start sieve on lattice of dim = 70 " << endl;
+        test_run_sieve<mpz_t>(75, ofs);
         ofs << "----------------------------------------" << endl;
     }
     

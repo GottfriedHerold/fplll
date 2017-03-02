@@ -72,14 +72,44 @@ bool GaussSieve::check2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2)
 
 // separate chec2Red and perform2Red
 
-//if true, sclara is the multiple s.t. we reduce p1 = p1-sclar * p2;
-/*
+//if true, scalar is the multiple s.t. we reduce p1 = p1-sclar * p2;
+
 template<class ET>
 bool GaussSieve::check2red_new (const LatticePoint<ET> &p1, const LatticePoint<ET> &p2, ET scalar)
 {
-    return false;
+    
+    assert(p1.norm2 >= p2.norm2);
+    ET sc_prod, abs_2scprod;
+    scalar = 0;
+    sc_product(sc_prod, p1, p2);
+    abs_2scprod.mul_ui(sc_prod,2);
+    abs_2scprod.abs(abs_2scprod);
+    
+    // check if |2 * <p1, p2>| <= |p2|^2. If yes, no reduction
+    if (abs_2scprod <= p2.norm2)
+        return false;
+    
+    // compute the (integer) multiple for p1: mult = round(<p1, p2> / |p2|^2)
+    FP_NR<double> mult, tmp; //may be can use another type
+    mult.set_z(sc_prod); //conversions
+    tmp.set_z(p2.norm2);
+    
+    
+    mult.div(mult, tmp);
+    mult.rnd(mult);
+    scalar.set_f(mult); //converts mult to the type suitable for mult_const;
+    return true;
 }
-*/ //Did not compile, so I commented out. -- Gotti
+
+// return res = p1 - scalar*p2;
+template<class ET>
+LatticePoint<ET> perform2Red (const LatticePoint<ET> &p1, const LatticePoint<ET> &p2, ET scalar)
+{
+    LatticePoint<ET> res(p2);
+    scalar_mult(res, scalar);
+    return (p1 - res);
+    
+}
 
 //helper function for reading in from streams. Gobbles up str from the stream (and optionally whitespace before/after).
 //If str is not on the stream, outputs an error.
@@ -150,8 +180,8 @@ Z_NR<mpz_t> GaussSieve::compute_mink_bound(ZZ_mat<mpz_t> const & basis)
 
     //lambda_1^2 = n * det(B)^{2/n}
 
-    FP_NR<double> MinkBound_double = 0.114 * root_det2 * static_cast<double> (basis.get_rows() ); //technically, we need to multiply by Hermite's constant in dim n here. We are at least missing a constant factor here.
-    //DUE TO [KL79], the best know multiple (for the squared norm) whould be (pi* exp(1)*2^{2*0.099} ~ 0.102).
+    FP_NR<double> MinkBound_double = 0.102 * root_det2 * static_cast<double> (basis.get_rows() ); //technically, we need to multiply by Hermite's constant in dim n here. We are at least missing a constant factor here.
+    //DUE TO [KL79], the best know multiple (for the squared norm) whould be (pi* exp(1)*2^{2*0.099} ~ 0.102) for n->infinity. We use Blichfeldt's bound (pi*exp(1))=0.117.
 
     //cout << "after MinkBound_double is assigned... " << endl;
     Z_NR<mpz_t> Minkowski;
