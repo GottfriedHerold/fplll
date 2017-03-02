@@ -144,7 +144,9 @@ int main(int argc, char **argv)
     }
     srand(time(NULL));
     B.resize(dim, dim);
-    B.gen_trg(1.1);
+    //B.gen_trg(1.1);
+    srand (1);
+      B.gen_qary_prime(1, 10*dim); // equiv. to B.gen_GM(10*dim); this is the type of lattices we should generate. 
   }
 
   /* set targeted norm */
@@ -166,8 +168,11 @@ int main(int argc, char **argv)
     lll_reduction(B, LLL_DEF_DELTA, LLL_DEF_ETA, LM_WRAPPER);
     
 
-    cout << "run sieve on B[0] = " << B[0] << endl;
-    //cout << "B[1] = " << B[1] << endl;
+ //dump the reduced basis
+    
+    std::ofstream ofs("LLL-reduced_dump_"+to_string(dim)+".txt");
+    ofs << B << endl;
+    ofs.close();
 
   clock_t etime = clock();
   double secs   = (etime - stime) / (double)CLOCKS_PER_SEC;
