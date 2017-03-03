@@ -81,6 +81,9 @@ namespace GaussSieve
                                                                        //p1 is overwritten, whereas p2 is const. Returns true if p1 actually changed.
     template<class ET>
     bool check2red_new (const LatticePoint<ET> &p1, const LatticePoint<ET> &p2, ET scalar);
+    
+    template<class ET>
+    LatticePoint<ET> perform2red (const LatticePoint<ET> &p1, const LatticePoint<ET> &p2, ET const & scalar);
 
 }
 
