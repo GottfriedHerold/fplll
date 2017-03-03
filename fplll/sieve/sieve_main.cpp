@@ -183,7 +183,7 @@ int main(int argc, char **argv)
     //cout << "run sieve on B[0] = " << B[0] << endl;
     //cout << "B[1] = " << B[1] << endl;
     auto start = std::chrono::high_resolution_clock::now();
-	Sieve<Z_NR< mpz_t > , true> Test_2Sieve (B);
+	Sieve<Z_NR< mpz_t > , false> Test_2Sieve (B);
 	if(target_norm!=0)
     {
         Test_2Sieve.term_cond.set_target_length(target_norm);
