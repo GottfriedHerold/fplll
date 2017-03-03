@@ -158,7 +158,11 @@ int main(int argc, char **argv)
     B.resize(dim, dim);
 
     //generates a lower-triangular matrix B; the argument determines (in a complicated way) the bit-size of entries
-    B.gen_trg(1.1);
+    //B.gen_trg(1.1);
+    
+    srand (1);
+    //generates GM lattice
+    B.gen_qary_prime(1, 10*dim);
 
     //KleinSampler<ZT, F> is templated by two classes; returns NumVect<Z_NR<ZT> of dim = B.NumCols()
     //    KleinSampler<mpz_t, FP_NR<double>> *Sampler = new KleinSampler<mpz_t, FP_NR<double>>(B, 0, 234234);
@@ -176,7 +180,7 @@ int main(int argc, char **argv)
     #else
         cout << "Use Standard Queue" << endl;
     #endif
-    cout << "run sieve on B[0] = " << B[0] << endl;
+    //cout << "run sieve on B[0] = " << B[0] << endl;
     //cout << "B[1] = " << B[1] << endl;
     auto start = std::chrono::high_resolution_clock::now();
 	Sieve<Z_NR< mpz_t > , true> Test_2Sieve (B);
@@ -282,7 +286,8 @@ int main(int argc, char **argv)
     }
     srand(time(NULL));
     B.resize(dim, dim);
-    B.gen_trg(1.1);
+    //B.gen_trg(1.1);
+    BTest.gen_qary_prime(1, 10*dim);
   }
 
   /* set targeted norm */

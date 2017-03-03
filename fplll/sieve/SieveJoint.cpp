@@ -103,7 +103,7 @@ bool GaussSieve::check2red_new (const LatticePoint<ET> &p1, const LatticePoint<E
 
 // return res = p1 - scalar*p2;
 template<class ET>
-LatticePoint<ET> perform2Red (const LatticePoint<ET> &p1, const LatticePoint<ET> &p2, ET const & scalar)
+LatticePoint<ET> GaussSieve::perform2red (const LatticePoint<ET> &p1, const LatticePoint<ET> &p2, ET const & scalar)
 {
     LatticePoint<ET> res(p2);
     scalar_mult(res, scalar);
