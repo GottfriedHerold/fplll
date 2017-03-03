@@ -10,13 +10,12 @@
 template<class ET>
 void Sieve<ET,true>::run_2_sieve()
 {
-    int num_threads = 1;
     std::vector<std::thread> threads;
-    for (int i=0;i<num_threads;++i )
+    for (unsigned int i=0;i<num_threads_wanted;++i )
     {
         threads.emplace_back( &Sieve<ET,true>::sieve_2_thread, this, i);
     }
-    for (int i=0;i<num_threads;++i)
+    for (unsigned int i=0;i<num_threads_wanted;++i)
     {
         threads.at(i).join();
     }

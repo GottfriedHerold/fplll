@@ -185,7 +185,6 @@ void GaussList<ET,true,-1>::sort()
     assert(!( trace_back.empty()));
     while(trace_back.size()!=1)
     {
-        cout << "Stack: " << trace_back.size() << "current: " << top_block_size << "remain: " << size_remaining << endl << flush;
         unsigned long long int next_block_size=1;
         for( ; (size_remaining % (2*next_block_size))==0; )
         {
@@ -197,7 +196,6 @@ void GaussList<ET,true,-1>::sort()
         trace_back.pop();
         unsigned long long cur_size   = top_block_size;  //remaining size of the current block
         unsigned long long other_size = next_block_size; //remaining size of the block on top of the stack
-        cout << "Merging " << cur_size << "and " << other_size << endl << flush;
         NodePointer new_batch = nullptr; //entry point for merged batch.
         if ( *(current_batch->datum_ptr) < *(trace_back.top()->datum_ptr)  )
         {

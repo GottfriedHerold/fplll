@@ -200,7 +200,7 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
     ambient_dimension(B.get_cols()), //Note : this means that rows of B form the basis.
     multi_threaded_wanted(GAUSS_SIEVE_IS_MULTI_THREADED),
     #if GAUSS_SIEVE_IS_MULTI_THREADED == true
-    num_threads_wanted(1),
+    num_threads_wanted(std::max(std::thread::hardware_concurrency(),static_cast<unsigned int>(1))),
     #endif // GAUSS_SIEVE_IS_MULTI_THREADED
     sieve_k(k),
     sampler(nullptr),
