@@ -115,12 +115,11 @@ void GaussList<ET,true,-1>::sort()
         NodePointer current_batch = process_next; //to be appended to our stack of blocks.
         process_next  = current_batch->prev_node; //for the next iteration.
         ++pos;
-
-        //We now append the next block, merging blocks of equal size.
-        for(int i = 1; pos % (2ULL << i  ) == 0;++i )
+        //We now append the next block, merging blocks of equal size on top of the stack.
+        for(int i = 1; pos % (1ULL << i  ) == 0;++i )
         {
-            unsigned long long cur_size   = 2ULL<<(i-1); //remaining size of the current block
-            unsigned long long stack_size = 2ULL<<(i-1); //remaining size of the block on top of the stack
+            unsigned long long cur_size   = 1ULL<<(i-1); //remaining size of the current block
+            unsigned long long stack_size = 1ULL<<(i-1); //remaining size of the block on top of the stack
             NodePointer new_batch = current_batch; //entry point for merged batch.
             if ( *(current_batch->datum_ptr) < *(trace_back.top()->datum_ptr)  )
             {
@@ -142,6 +141,7 @@ void GaussList<ET,true,-1>::sort()
                 if(cur_size==0)
                 {
                     merge_batch->prev_node = trace_back.top();
+                    merge_batch = trace_back.top();
                     trace_back.top() = trace_back.top()->prev_node;
                     --stack_size;
                     continue;
@@ -149,6 +149,7 @@ void GaussList<ET,true,-1>::sort()
                 if(stack_size==0)
                 {
                     merge_batch->prev_node = current_batch;
+                    merge_batch = current_batch;
                     current_batch = current_batch -> prev_node;
                     --cur_size;
                     continue;
@@ -156,11 +157,13 @@ void GaussList<ET,true,-1>::sort()
                 if( *(current_batch->datum_ptr) < *(trace_back.top()->datum_ptr) )
                 {
                     merge_batch->prev_node = trace_back.top();
+                    merge_batch = trace_back.top();
                     trace_back.top() = trace_back.top()->prev_node;
                     --stack_size;
                 }else
                 {
                     merge_batch->prev_node = current_batch;
+                    merge_batch = current_batch;
                     current_batch = current_batch -> prev_node;
                     --cur_size;
                 }
@@ -171,8 +174,8 @@ void GaussList<ET,true,-1>::sort()
         }
         trace_back.push(current_batch);
     }
-    //now the stack contains pointers to blocks, making up all of our list. pos is equal to list-length + 1
-    --pos;
+//    mutex_currently_writing.unlock(); return;
+    //now the stack contains pointers to blocks, making up all of our list. pos is equal to list-length
     unsigned long long int top_block_size = 1;
     for( ; ( pos%(2*top_block_size) ) ==0 ;  )
     {
@@ -182,6 +185,7 @@ void GaussList<ET,true,-1>::sort()
     assert(!( trace_back.empty()));
     while(trace_back.size()!=1)
     {
+        cout << "Stack: " << trace_back.size() << "current: " << top_block_size << "remain: " << size_remaining << endl << flush;
         unsigned long long int next_block_size=1;
         for( ; (size_remaining % (2*next_block_size))==0; )
         {
@@ -193,6 +197,7 @@ void GaussList<ET,true,-1>::sort()
         trace_back.pop();
         unsigned long long cur_size   = top_block_size;  //remaining size of the current block
         unsigned long long other_size = next_block_size; //remaining size of the block on top of the stack
+        cout << "Merging " << cur_size << "and " << other_size << endl << flush;
         NodePointer new_batch = nullptr; //entry point for merged batch.
         if ( *(current_batch->datum_ptr) < *(trace_back.top()->datum_ptr)  )
         {
@@ -212,6 +217,7 @@ void GaussList<ET,true,-1>::sort()
             if(cur_size==0)
             {
                 merge_batch->prev_node = trace_back.top();
+                merge_batch = trace_back.top();
                 trace_back.top() = trace_back.top()->prev_node;
                 --other_size;
                 continue;
@@ -219,6 +225,7 @@ void GaussList<ET,true,-1>::sort()
             if(other_size==0)
             {
                 merge_batch->prev_node = current_batch;
+                merge_batch = current_batch;
                 current_batch = current_batch -> prev_node;
                 --cur_size;
                 continue;
@@ -226,12 +233,14 @@ void GaussList<ET,true,-1>::sort()
             if( *(current_batch->datum_ptr) < *(trace_back.top()->datum_ptr) )
             {
                 merge_batch->prev_node = trace_back.top();
+                merge_batch = trace_back.top();
                 trace_back.top() = trace_back.top()->prev_node;
                 --other_size;
             }
             else
             {
                 merge_batch->prev_node = current_batch;
+                merge_batch = current_batch;
                 current_batch = current_batch -> prev_node;
                 --cur_size;
             }
@@ -246,13 +255,14 @@ void GaussList<ET,true,-1>::sort()
     NodePointer target_next = end_sentinel_node;
     NodePointer iterate = trace_back.top();
     end_sentinel_node->prev_node = iterate;
-    while(iterate!=start_sentinel_node)
+    for(unsigned long long int i=0;i<pos;++i)
     {
         iterate->next_node.store(target_next,std::memory_order_release);
         target_next=iterate;
         iterate=iterate->prev_node;
     }
-    start_sentinel_node.store(target_next,std::memory_order_release);
+    target_next->prev_node = start_sentinel_node;
+    start_sentinel_node->next_node.store(target_next,std::memory_order_release);
 
     mutex_currently_writing.unlock();
 }

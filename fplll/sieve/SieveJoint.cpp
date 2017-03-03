@@ -229,12 +229,12 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
         main_list.insert_before(it,  conv_matrixrow_to_lattice_point (original_basis[i])  );
     }
     current_list_size+=lattice_rank;
-    #if GAUSS_SIEVE_IS_MULTI_THREADED == false
+//    #if GAUSS_SIEVE_IS_MULTI_THREADED == false
 
     cout << "Sorting ..." << std::flush;
     main_list.sort();
     cout << "is finished." << endl << std::flush;
-    #endif // GAUSS_SIEVE_IS_MULTI_THREADED
+//    #endif // GAUSS_SIEVE_IS_MULTI_THREADED
     //TODO : enable sorting for multithreaded case.
 
     #if GAUSS_SIEVE_IS_MULTI_THREADED==true

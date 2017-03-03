@@ -80,9 +80,9 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might
 //            ET scalar;
 //            if ( GaussSieve::check2red_new(p, *(it.access_details()), scalar) )
 //            {
-//               
+//
 //                p = GaussSieve::perform2red(p, *(it.access_details()), scalar);
-//                
+//
 //                //update the approximation of f
 //                if (p.norm2!=0) pApprox = static_cast< ApproxLatticePoint<ET,false> >(p);
 //            }
@@ -108,7 +108,7 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might
     {
 
         bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,pApprox.get_approx_norm2(),2* pApprox.get_length_exponent()-1,n   );
-        //if(!predict){++it;continue;} //if prediction is bad, don't even bother to reduce.
+        if(!predict){++it;continue;} //if prediction is bad, don't even bother to reduce.
         LatticePoint<ET> current_list_point = it.get_exact_point();
         if (GaussSieve::check2red(current_list_point, p)) //We can reduce *it.
 		{
