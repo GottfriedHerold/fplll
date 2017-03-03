@@ -75,7 +75,7 @@ bool GaussSieve::check2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2)
 //if true, scalar is the multiple s.t. we reduce p1 = p1-sclar * p2;
 
 template<class ET>
-bool GaussSieve::check2red_new (const LatticePoint<ET> &p1, const LatticePoint<ET> &p2, ET scalar)
+bool GaussSieve::check2red_new (const LatticePoint<ET> &p1, const LatticePoint<ET> &p2, ET &scalar)
 {
 
     //assert(p1.norm2 >= p2.norm2); Not neccessarily true in multi-threaded case. -- Gotti

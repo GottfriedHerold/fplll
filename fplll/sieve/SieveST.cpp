@@ -21,6 +21,7 @@ void Sieve<ET,false>::run_2_sieve()
     //check_if_done(); //sets up default conditions if not already set. We ignore the return value. -- Moved to run(), Gotti
     //ET target_norm = term_cond.get_target_length();
     while (!check_if_done() )
+//	while (i<2)
     //while(main_list.cbegin()->norm2 > target_norm)
     {
         p=main_queue.true_pop();
@@ -53,6 +54,8 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might
     int const n = get_ambient_dimension();
     bool loop = true;
 
+    ET scalar; //reduction multiple output by check3red_new
+
     typename MainListType::Iterator it_comparison_flip=main_list.cend(); //used to store the point where the list elements become larger than p.
 
     while (loop) //while p keeps changing
@@ -70,22 +73,28 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might
 	    bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n   );
 	    if(!predict) continue;
 
-            if(GaussSieve::check2red(p, *(it.access_details()) ) ) //p was changed
+	/* OLD IMPLEMENTATION: check2red both check and reduces p
+	    if(GaussSieve::check2red(p, *(it.access_details()) ) ) //p was changed
             {
 		        if(p.norm2!=0)  pApprox = static_cast< ApproxLatticePoint<ET,false> >(p);
+		cout << "p = ";		
+		p.printLatticePoint();
                 loop = true;
                 break;
             }
+	*/
+	
+            if ( GaussSieve::check2red_new(p, *(it.access_details()), scalar) )
+            {
+		p = GaussSieve::perform2red(p, *(it.access_details()), scalar);
 
-//            ET scalar;
-//            if ( GaussSieve::check2red_new(p, *(it.access_details()), scalar) )
-//            {
-//
-//                p = GaussSieve::perform2red(p, *(it.access_details()), scalar);
-//
-//                //update the approximation of f
-//                if (p.norm2!=0) pApprox = static_cast< ApproxLatticePoint<ET,false> >(p);
-//            }
+                //update the approximation of f
+                if (p.norm2!=0) pApprox = static_cast< ApproxLatticePoint<ET,false> >(p);
+
+		loop = true;
+		break;
+            }
+	
         }
     }
 
@@ -110,18 +119,20 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might
         bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,pApprox.get_approx_norm2(),2* pApprox.get_length_exponent()-1,n   );
         if(!predict){++it;continue;} //if prediction is bad, don't even bother to reduce.
         LatticePoint<ET> current_list_point = it.get_exact_point();
-        if (GaussSieve::check2red(current_list_point, p)) //We can reduce *it.
+        if (GaussSieve::check2red_new(current_list_point, p, scalar)) //We can reduce *it.
 		{
+			//create new list point
+			LatticePoint<ET> reduced = GaussSieve::perform2red(p, current_list_point, scalar);
 			//if (!predict) cerr << "Misprediction 2" << endl;
 			//cout << "v was found" <<  endl;
 
-            if (current_list_point.norm2 == 0)
+            if (reduced.norm2 == 0)
             {
                 number_of_collisions++;
                 break;
             }
-            //cout << "about to push into the queue " << endl;
-			main_queue.push(current_list_point);
+
+			main_queue.push(reduced);
 			it = main_list.erase(it); //this also moves it forward
 			--current_list_size;
 
