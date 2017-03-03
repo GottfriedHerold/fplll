@@ -47,6 +47,7 @@ template <class DT> class GarbageBin;
 #include <queue>
 #include "assert.h"
 #include "LatticePoint2.h"
+#include <stack>
 
 //Class for (weakly?) sorted list of lattice points.
 //includes thread-safe variant(s). May need experiments which implementation is best. (mutex on whole structure on every write, lock-free,...)
@@ -69,6 +70,8 @@ public:
     using Iterator = GaussIterator<ET,false,-1>;
     using DetailType = typename DataType::DetailType;
     using ExactType = LatticePoint<ET>;
+
+
 
     explicit GaussList() = default;
     GaussList(GaussList const & old) = delete;
@@ -179,7 +182,7 @@ public:
                                                           //remain valid. *pos is put onto gb, whose job is eventually freeing memory.
                                                           //TODO : Include mechanism to forwarding arguments to gb.
 
-    void sort() = delete; //single-threaded only for now
+    void sort();
 
 
 
@@ -199,7 +202,7 @@ public:
     friend void swap(GaussIterator &A, GaussIterator &B)              {std::swap(A.p,B.p);};
     using DataType    = typename GaussList<ET,true,-1>::DataType;
     using Node=ListMTNode< DataType >; //data representation
-    using Nodeptr = Node *;
+    using NodePointer = Node *;
     using DataPointer = DataType*;
     using CDataPointer= DataType const *;
     using DerefType  = DataType; //without cv - spec.
@@ -207,7 +210,7 @@ public:
     using ExactType  = LatticePoint<ET>; //need not be the same!
 
     GaussIterator() = delete; //should always init with valid object.
-    GaussIterator(Nodeptr const & _p)                                   : p(_p)         {assert(_p!=nullptr);};
+    GaussIterator(NodePointer const & _p)                                   : p(_p)         {assert(_p!=nullptr);};
     GaussIterator(GaussIterator<ET,true,-1> const &old)                 : p(old.p)      {};
     GaussIterator(GaussIterator<ET,true,-1> && old)=default;
     GaussIterator& operator=(GaussIterator const &other) = default;
@@ -230,7 +233,7 @@ public:
 
 
 private:
-    Nodeptr p; //does not own. Need not be atomic. Is NOT a const - pointer!
+    NodePointer p; //does not own. Need not be atomic. Is NOT a const - pointer!
 };
 
 

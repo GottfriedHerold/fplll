@@ -131,6 +131,9 @@ class ApproxLatticePoint<ET, false, -1>     //Approx. Lattice Point. Stores appr
     DetailType * get_details_ptr_rw() const                 {return details;};
     unsigned int get_dim() const                            {return details->size();};
     bool operator< (ApproxLatticePoint const &other ) const {return (this->details->norm2 < other.get_details_ptr()->norm2);};
+    bool operator<=(ApproxLatticePoint const &other ) const {return (this->details->norm2 <=other.get_details_ptr()->norm2);};
+    bool operator> (ApproxLatticePoint const &other ) const {return (this->details->norm2 > other.get_details_ptr()->norm2);};
+    bool operator>=(ApproxLatticePoint const &other ) const {return (this->details->norm2 >=other.get_details_ptr()->norm2);};
     //private: //internal member functions
     void update_approximation(); //computes approximation from *approx. Assumes memory is already allocated.
     void invalidate(){approx= nullptr;details=nullptr;}
