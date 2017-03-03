@@ -69,14 +69,14 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might
             //if(!LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-2,n   ) ) continue;
 	    bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n   );
 	    if(!predict) continue;
-            
+
             if(GaussSieve::check2red(p, *(it.access_details()) ) ) //p was changed
             {
 		        if(p.norm2!=0)  pApprox = static_cast< ApproxLatticePoint<ET,false> >(p);
                 loop = true;
                 break;
             }
-            
+
 //            ET scalar;
 //            if ( GaussSieve::check2red_new(p, *(it.access_details()), scalar) )
 //            {

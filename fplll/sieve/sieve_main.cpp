@@ -159,7 +159,7 @@ int main(int argc, char **argv)
 
     //generates a lower-triangular matrix B; the argument determines (in a complicated way) the bit-size of entries
     //B.gen_trg(1.1);
-    
+
     srand (1);
     //generates GM lattice
     B.gen_qary_prime(1, 10*dim);

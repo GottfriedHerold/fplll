@@ -249,8 +249,10 @@ void GaussList<ET,true,-1>::sort()
     while(iterate!=start_sentinel_node)
     {
         iterate->next_node.store(target_next,std::memory_order_release);
-
+        target_next=iterate;
+        iterate=iterate->prev_node;
     }
+    start_sentinel_node.store(target_next,std::memory_order_release);
 
     mutex_currently_writing.unlock();
 }
