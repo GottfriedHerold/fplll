@@ -150,9 +150,9 @@ public:
     unsigned int get_ambient_dimension() const                  {return ambient_dimension;};        //non-thread-safe
     unsigned int get_k() const                                  {return sieve_k;};                  //non-thread-safe
     void set_k(unsigned int new_k)                              {sieve_k=new_k;return;};            //non-thread-safe
-    bool is_multithreaded_wanted() const                        {return multi_threaded_wanted;}; //Note: No setter
+    bool is_multithreaded_wanted() const                        {return multi_threaded_wanted;};    //Note: No setter
     #if GAUSS_SIEVE_IS_MULTI_THREADED == true
-    void set_num_threads(unsigned int t)                        {num_threads_wanted = t;};
+    void set_num_threads(unsigned int t)                                                            //non-thread safe, only call while suspended. In SieveMT.cpp
     unsigned int get_num_threads() const                        {return num_threads_wanted;};
     #endif // GAUSS_SIEVE_IS_MULTI_THREADED
 //  LPType get_shortest_vector_found() const                    {return shortest_vector_found;}; //TODO: Thread-safety
@@ -195,9 +195,10 @@ private:
     #endif // GAUSS_SIEVE_IS_MULTI_THREADED
     unsigned int sieve_k; //parameter k of the sieve currently running.
     SamplerType sampler; //TODO: Thread-safety. Move control to queue.
-    int verbosity;
+    int verbosity;       //ranged from 0 to 3 (0 : silent, 1 : errors only, 2 : more output, 3 : debug
 
 public:  //made public to avoid complicated (due to template hack) friend - declaration.
+            //TODO : Change term-cond to a user-provided function.
     TerminationConditions<ET> term_cond;
 private:
 

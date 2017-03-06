@@ -5,7 +5,15 @@
 #error SieveMT.cpp included with wrong macro settings
 #endif
 
-
+template<class ET>
+void Sieve<ET,true>::set_num_threads(unsigned int t)
+{
+    assert(t>0);
+    assert(!check_whether_sieve_is_running()); //can only change number of threads in suspended state.
+    delete[] garbage_bins;
+    num_threads_wanted = t;
+    garbage_bins = new GarbageBin<typename MainListType::DataType>[num_threads_wanted];
+}
 
 template<class ET>
 void Sieve<ET,true>::run_2_sieve()
