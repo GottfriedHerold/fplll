@@ -81,7 +81,7 @@ namespace GaussSieve
                                                                        //p1 is overwritten, whereas p2 is const. Returns true if p1 actually changed.
     template<class ET>
     bool check2red_new (const LatticePoint<ET> &p1, const LatticePoint<ET> &p2, ET &scalar);
-    
+
     template<class ET>
     LatticePoint<ET> perform2red (const LatticePoint<ET> &p1, const LatticePoint<ET> &p2, ET const & scalar);
 
@@ -116,7 +116,12 @@ public:
     Sieve(Sieve &&old) = default;
     Sieve & operator=(Sieve const & old)=delete;
     Sieve & operator=(Sieve &&old) = default; //movable, but not copyable.
+
+    #if GAUSS_SIEVE_IS_MULTI_THREADED == true
+    explicit Sieve(LatticeBasisType B, unsigned int k=2, unsigned int num_threads=0, TerminationConditions<ET> termcond = {}, unsigned int verbosity_=1, int seed_sampler = 0);
+    #else
     explicit Sieve(LatticeBasisType B, unsigned int k=2, TerminationConditions<ET> termcond = {}, unsigned int verbosity_=1, int seed_sampler = 0);
+    #endif // GAUSS_SIEVE_IS_MULTI_THREADED
     //explicit Sieve(std::string const &infilename); //read from dump file.
     ~Sieve();
     static bool constexpr class_multithreaded =  GAUSS_SIEVE_IS_MULTI_THREADED;

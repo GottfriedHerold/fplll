@@ -192,7 +192,11 @@ Z_NR<mpz_t> GaussSieve::compute_mink_bound(ZZ_mat<mpz_t> const & basis)
 #endif // SIEVE_JOINT_CPP
 
 template<class ET> //ET : underlying entries of the vectors. Should be a Z_NR<foo> - type. Consider making argument template itself.
-Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int k, TerminationConditions<ET> termcond, unsigned int verbosity_, int seed_sampler):  //move to cpp //TODO:MT
+#if GAUSS_SIEVE_IS_MULTI_THREADED==true
+Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int k, unsigned int num_threads, TerminationConditions<ET> termcond, unsigned int verbosity_, int seed_sampler):
+#else
+Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int k, TerminationConditions<ET> termcond, unsigned int verbosity_, int seed_sampler):
+#endif
     main_list(),
     main_queue(this),
     original_basis(B),
@@ -200,7 +204,7 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
     ambient_dimension(B.get_cols()), //Note : this means that rows of B form the basis.
     multi_threaded_wanted(GAUSS_SIEVE_IS_MULTI_THREADED),
     #if GAUSS_SIEVE_IS_MULTI_THREADED == true
-    num_threads_wanted(std::max(std::thread::hardware_concurrency(),static_cast<unsigned int>(1))),
+    num_threads_wanted(num_threads),
     #endif // GAUSS_SIEVE_IS_MULTI_THREADED
     sieve_k(k),
     sampler(nullptr),
@@ -212,17 +216,20 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
     number_of_points_sampled(0),
     number_of_points_constructed(0),
     current_list_size(0)
-    //D1(0),D2(0),D3(0),D4(0),D5(0),D6(0),D7(0),D8(0),D9(0),D10(0)
     #if GAUSS_SIEVE_IS_MULTI_THREADED==true
     ,garbage_bins(nullptr)
     #endif // GAUSS_SIEVE_IS_MULTI_THREADED
 
 {
+    #if GAUSS_SIEVE_IS_MULTI_THREADED==true
+    if(num_threads_wanted==0) //0 means we take a meaningful default, which is given by thread::hardware_concurrency
+    num_threads_wanted = std::max(std::thread::hardware_concurrency(),static_cast<unsigned int>(1)); //Note: hardware_concurrency might return 0 for "unknown".
+    #endif
     sampler = new KleinSampler<typename ET::underlying_data_type, FP_NR<double>>(B, verbosity, seed_sampler);
     //unsigned int n = lattice_rank;
     //auto it = main_list.before_begin();
     //assert(main_list.empty()); We don't have a function to check that yet...
-    cout <<"Initializing list with original basis..." << endl << std::flush;
+    if (verbosity>=2) {cout <<"Initializing list with original basis..." << endl;}
     auto it = main_list.cbegin();
     for (unsigned int i=0; i<lattice_rank; ++i)
     {
@@ -230,13 +237,11 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
     }
     current_list_size+=lattice_rank;
 //    #if GAUSS_SIEVE_IS_MULTI_THREADED == false
-
-    cout << "Sorting ..." << std::flush;
+    if(verbosity>=2)    {cout << "Sorting ...";}
     main_list.sort();
-    cout << "is finished." << endl << std::flush;
+    if(verbosity>=2)    {cout << "is finished." << endl;}
 //    #endif // GAUSS_SIEVE_IS_MULTI_THREADED
     //TODO : enable sorting for multithreaded case.
-
     #if GAUSS_SIEVE_IS_MULTI_THREADED==true
     garbage_bins = new GarbageBin<typename MainListType::DataType>[num_threads_wanted]; //maybe init later.
     #endif
