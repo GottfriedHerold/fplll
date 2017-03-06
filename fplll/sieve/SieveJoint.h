@@ -122,7 +122,9 @@ public:
     static bool constexpr class_multithreaded =  GAUSS_SIEVE_IS_MULTI_THREADED;
     //class_multithreaded is for introspection, is_multithreaded is what the caller wants (may differ if we dump and re-read with different params)
     void run_2_sieve(); //actually runs the Gauss Sieve with k=2
+    void run_sieve(int k); //runs k-sieve
     void SieveIteration2 (LatticePoint<ET> &p); //one run through the main_list (of 2-sieve)
+    void SieveIteration3 (LatticePoint<ET> &p); //one run through the main_list (of 3-sieve)
     #if GAUSS_SIEVE_IS_MULTI_THREADED == true
     void sieve_2_thread(int const thread_id);
     #endif
