@@ -13,7 +13,10 @@
 #include "SieveGauss.h"
 #include "LatticePoint2.h"
 
+#include "FilteredPoint.h"
+
 using namespace fplll;
+//using namespace LatticeApproximations;
 
 /**
  * help function
@@ -173,7 +176,16 @@ int main(int argc, char **argv)
     lll_reduction(B, LLL_DEF_DELTA, LLL_DEF_ETA, LM_WRAPPER);
 
     ApproxLatticePoint<Z_NR<mpz_t>,false,-1> X ( conv_matrixrow_to_lattice_point(B[0]) );
-    cout << X;
+    
+    ApproxLatticePoint<Z_NR<mpz_t>,false,-1> p ( conv_matrixrow_to_lattice_point(B[1]) );
+    int32_t inner_prod = compute_sc_prod(X.get_approx(), p.get_approx(), dim);
+    
+    //cout << inner_prod << endl;
+    FilteredPoint<Z_NR<mpz_t>> l (X, inner_prod);
+    
+    //cout << "A point from a filtered list: " << l.getApproxVector() << " sc_prod: " << l.get_sc_prod() << endl;
+    
+    //cout << X;
 
     #ifndef USE_REGULAR_QUEUE
         cout << "Use Priority Queue" << endl;
@@ -189,7 +201,7 @@ int main(int argc, char **argv)
         Test_2Sieve.term_cond.set_target_length(target_norm);
         cout << "Setting target norm2 to" << target_norm << endl << flush;
     }
-	Test_2Sieve.run();
+	//Test_2Sieve.run();
 	cout << "sv is " << endl;
     Test_2Sieve.get_shortest_vector_found().printLatticePoint();
     Test_2Sieve.print_status();
