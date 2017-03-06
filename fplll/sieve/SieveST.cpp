@@ -5,8 +5,17 @@
 #error SieveST.cpp included with wrong macro settings
 #endif
 
+
+//to avoid errs from SieveMT
 template<class ET>
 void Sieve<ET,false>::run_2_sieve()
+{
+    run_sieve (2);
+}
+
+//we should re-use this function for k-sieve, but call different SieveInteration
+template<class ET>
+void Sieve<ET,false>::run_sieve(int k)
 {
     //using SieveT = Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
 
@@ -25,7 +34,10 @@ void Sieve<ET,false>::run_2_sieve()
     //while(main_list.cbegin()->norm2 > target_norm)
     {
         p=main_queue.true_pop();
-        SieveIteration2(p);
+        if (k==2)
+            SieveIteration2(p);
+        else if (k==3)
+            SieveIteration3(p);
         //cout << i <<  " list size" << current_list_size << " Queue: " << main_queue.size() << endl << flush;
         ++i;
         if (i % 500 == 0) {
@@ -151,6 +163,27 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might
     //}
 
 };
+
+template<class ET>
+void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
+{
+        
+}
+
+//template<class ET>
+//void Sieve<ET,false>::run_3_sieve()
+//{
+//    
+//    int i=0; //# of iterations
+//    LatticePoint<ET> p;
+//    while (! check_if_done()) {
+//        
+//        p=main_queue.true_pop();
+//        
+//        
+//    }
+//    
+//}
 
 //currently unused diagnostic code.
 /*

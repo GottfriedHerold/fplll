@@ -71,6 +71,7 @@ namespace GaussSieve //helper functions
 #include <exception>
 #include "TermCond.h"
 #include "GaussQueue.h"
+#include "FilteredPoint.h"
 
 namespace GaussSieve
 {
@@ -106,6 +107,7 @@ class Sieve<ET, GAUSS_SIEVE_IS_MULTI_THREADED >
     using MainListType     = GaussList<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
     using LatticeBasisType = ZZ_mat<typename ET::underlying_data_type>;
     using SamplerType      = KleinSampler<typename ET::underlying_data_type, FP_NR<double>> *; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
+    using FilteredListType = std::vector<FilteredPoint<ET>>; //queue is also fine for our purposes
 
 public:
     /*FRIENDS */
@@ -127,7 +129,9 @@ public:
     static bool constexpr class_multithreaded =  GAUSS_SIEVE_IS_MULTI_THREADED;
     //class_multithreaded is for introspection, is_multithreaded is what the caller wants (may differ if we dump and re-read with different params)
     void run_2_sieve(); //actually runs the Gauss Sieve with k=2
+    void run_sieve(int k); //runs k-sieve
     void SieveIteration2 (LatticePoint<ET> &p); //one run through the main_list (of 2-sieve)
+    void SieveIteration3 (LatticePoint<ET> &p); //one run through the main_list (of 3-sieve)
     #if GAUSS_SIEVE_IS_MULTI_THREADED == true
     void sieve_2_thread(int const thread_id);
     #endif
@@ -178,6 +182,7 @@ private:
     MainListType main_list;
     //MainListType3 main_list_test;
     MainQueueType main_queue;
+    FilteredListType filtered_list;
 
 //information about lattice and algorithm we are using
 

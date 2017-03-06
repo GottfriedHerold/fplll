@@ -199,6 +199,7 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
 #endif
     main_list(),
     main_queue(this),
+    filtered_list(),
     original_basis(B),
     lattice_rank(B.get_rows()),
     ambient_dimension(B.get_cols()), //Note : this means that rows of B form the basis.
