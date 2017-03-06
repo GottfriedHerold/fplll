@@ -71,6 +71,7 @@ namespace GaussSieve //helper functions
 #include <exception>
 #include "TermCond.h"
 #include "GaussQueue.h"
+#include "FilteredPoint.h"
 
 namespace GaussSieve
 {
@@ -106,6 +107,7 @@ class Sieve<ET, GAUSS_SIEVE_IS_MULTI_THREADED >
     using MainListType     = GaussList<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
     using LatticeBasisType = ZZ_mat<typename ET::underlying_data_type>;
     using SamplerType      = KleinSampler<typename ET::underlying_data_type, FP_NR<double>> *; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
+    using FilteredListType = std::vector<FilteredPoint<ET>>; //queue is also fine for our purposes
 
 public:
     /*FRIENDS */
@@ -175,6 +177,7 @@ private:
     MainListType main_list;
     //MainListType3 main_list_test;
     MainQueueType main_queue;
+    FilteredListType filtered_list;
 
 //information about lattice and algorithm we are using
 

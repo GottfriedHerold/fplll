@@ -167,7 +167,7 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might
 template<class ET>
 void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
 {
-    
+        
 }
 
 //template<class ET>

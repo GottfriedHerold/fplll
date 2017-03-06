@@ -195,6 +195,7 @@ template<class ET> //ET : underlying entries of the vectors. Should be a Z_NR<fo
 Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int k, TerminationConditions<ET> termcond, unsigned int verbosity_, int seed_sampler):  //move to cpp //TODO:MT
     main_list(),
     main_queue(this),
+    filtered_list(),
     original_basis(B),
     lattice_rank(B.get_rows()),
     ambient_dimension(B.get_cols()), //Note : this means that rows of B form the basis.
