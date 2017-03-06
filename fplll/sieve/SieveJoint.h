@@ -152,7 +152,7 @@ public:
     void set_k(unsigned int new_k)                              {sieve_k=new_k;return;};            //non-thread-safe
     bool is_multithreaded_wanted() const                        {return multi_threaded_wanted;};    //Note: No setter
     #if GAUSS_SIEVE_IS_MULTI_THREADED == true
-    void set_num_threads(unsigned int t)                                                            //non-thread safe, only call while suspended. In SieveMT.cpp
+    void set_num_threads(unsigned int t);                                                            //non-thread safe, only call while suspended. In SieveMT.cpp
     unsigned int get_num_threads() const                        {return num_threads_wanted;};
     #endif // GAUSS_SIEVE_IS_MULTI_THREADED
 //  LPType get_shortest_vector_found() const                    {return shortest_vector_found;}; //TODO: Thread-safety
