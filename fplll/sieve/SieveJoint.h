@@ -120,9 +120,9 @@ public:
     Sieve & operator=(Sieve &&old) = default; //movable, but not copyable.
 
     #if GAUSS_SIEVE_IS_MULTI_THREADED == true
-    explicit Sieve(LatticeBasisType B, unsigned int k=2, unsigned int num_threads=0, TerminationConditions<ET> termcond = {}, unsigned int verbosity_=1, int seed_sampler = 0);
+    explicit Sieve(LatticeBasisType B, unsigned int k=2, unsigned int num_threads=0, TerminationConditions<ET> termcond = {}, unsigned int verbosity_=2, int seed_sampler = 0);
     #else
-    explicit Sieve(LatticeBasisType B, unsigned int k=2, TerminationConditions<ET> termcond = {}, unsigned int verbosity_=1, int seed_sampler = 0);
+    explicit Sieve(LatticeBasisType B, unsigned int k=2, TerminationConditions<ET> termcond = {}, unsigned int verbosity_=2, int seed_sampler = 0);
     #endif // GAUSS_SIEVE_IS_MULTI_THREADED
     //explicit Sieve(std::string const &infilename); //read from dump file.
     ~Sieve();
@@ -137,10 +137,10 @@ public:
     #endif
     LPType get_SVP() = delete; //obtains Shortest vector and it's length. If sieve has not yet run, start it. Not yet implemented.
     void run(); //runs the sieve specified by the parameters.
-    void print_status(int verb = -1, std::ostream &out = cout) {dump_status_to_stream(out,false,verb);};
+    void print_status(int verb = -1, std::ostream &out = cout) {dump_status_to_stream(out,verb);};
     //prints status to out. verb overrides the verbosity unless set to -1.
     void dump_status_to_file(std::string const &outfilename, bool overwrite = false); //dumps to file
-    void dump_status_to_stream(ostream &of, bool everything = false, int verb=-1); //dumps to stream. Can be read back if everything == true. Otherwise, verbosity determines what is output.
+    void dump_status_to_stream(ostream &of, int verb=-1); //dumps to stream. Can be read back if verb>= 3. Otherwise, verbosity determines what is output.
 
 //getter / setter functions
 
@@ -228,6 +228,7 @@ private:
 
 #if GAUSS_SIEVE_IS_MULTI_THREADED==true
     GarbageBin<typename MainListType::DataType> * garbage_bins; //dynamically allocated array of garbage bins.
+    std::mutex dump_mutex;
 #endif // GAUSS_SIEVE_IS_MULTI_THREADED
 
 //length of shortest vector contained in shortest_vector_found
@@ -265,6 +266,7 @@ Reads length(str) chars from stream is, expecting them to equal str. If what is 
 template<class ET>
 void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_file(std::string const &outfilename, bool overwrite)
 {
+    assert(!check_whether_sieve_is_running());
     if(verbosity>=2)
     {
         cout << "Dumping to file " << outfilename << " ..." << endl;
@@ -283,7 +285,7 @@ void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_file(std::string co
         }
     }
     std::ofstream of(outfilename,std::ofstream::out | std::ofstream::trunc);
-    dump_status_to_stream(of, true);
+    dump_status_to_stream(of, 3); //verbosity set to 3 to dump everything.
     if(verbosity>=2)
     {
         cout << "Dump successful." << endl;
@@ -291,9 +293,9 @@ void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_file(std::string co
 }
 
 template<class ET>
-void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_stream(ostream &of, bool everything, int verb)
+void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_stream(ostream &of, int verb)
 {
-    int howverb = everything ? 100 : (verb==-1 ? verbosity : verb);
+    int howverb = verb==-1 ? verbosity : verb;
     if(howverb>=2) of << SIEVE_FILE_ID << endl;
     if(howverb>=2) of << SIEVE_VER_STR << endl;
     if(howverb>=2) of << "--Params--" << endl;
