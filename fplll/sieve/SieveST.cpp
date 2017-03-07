@@ -90,7 +90,7 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might
     int const n = get_ambient_dimension();
     bool loop = true;
 
-    ET scalar; //reduction multiple output by check3red_new
+    ET scalar; //reduction multiple output by check2red_new
 
     typename MainListType::Iterator it_comparison_flip=main_list.cend(); //used to store the point where the list elements become larger than p.
 
@@ -196,28 +196,50 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might
     //	(*it1).printLatticePoint();
     //}
 
-};
+}
 
 template<class ET>
 void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
 {
+    if (p.norm2==0) return;
+    ApproxLatticePoint<ET,false> pApprox (p);
+    
+    int const n = get_ambient_dimension();
 
-}
+    ET scalar;
+    
+    //typename MainListType::Iterator it_comparison_flip=main_list.cend();
+    
+    
+    for (auto it = main_list.cbegin(); it!=main_list.cend(); ++it)
+    {
+            if (p.norm2 < it.get_true_norm2())
+                break;
+        
+            // check if 2-red is possible
+            ++number_of_scprods;
+            bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n   );
+            if(!predict) continue;
+        
+            ++number_of_exact_scprods;
+            if ( GaussSieve::check2red_new(p, *(it.access_details()), scalar) )
+            {
+                p = GaussSieve::perform2red(p, *(it.access_details()), scalar);
+                
+                //put p back into the queue and break
+                if (p.norm2!=0)
+                    main_queue.push(p);
+                
+                break;
+            }
+            else
+                ++number_of_mispredictions;
 
-//template<class ET>
-//void Sieve<ET,false>::run_3_sieve()
-//{
-//
-//    int i=0; //# of iterations
-//    LatticePoint<ET> p;
-//    while (! check_if_done()) {
-//
-//        p=main_queue.true_pop();
-//
-//
-//    }
-//
-//}
+        
+    }
+
+
+};
 
 //currently unused diagnostic code.
 /*
