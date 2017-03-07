@@ -47,6 +47,17 @@ void Sieve<ET,true>::set_num_threads(unsigned int t)
 }
 
 template<class ET>
+void Sieve<ET,true>::run() //runs the sieve specified by the parameters.
+{
+    assert(sieve_k == 2); //for now
+    sieve_status =SieveStatus::sieve_status_running;
+    check_if_done(); //this updates the Minkowski condition, if needed.
+    run_2_sieve();
+    sieve_status = SieveStatus::sieve_status_finished;
+}
+
+
+template<class ET>
 void Sieve<ET,true>::run_2_sieve()
 {
     std::vector<std::thread> threads;

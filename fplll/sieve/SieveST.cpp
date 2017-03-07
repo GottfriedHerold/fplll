@@ -30,15 +30,15 @@ ET Sieve<ET,false>::get_best_length2()
 
 
 //to avoid errs from SieveMT
-template<class ET>
-void Sieve<ET,false>::run_2_sieve()
-{
-    run_sieve (2);
-}
+//template<class ET>
+//void Sieve<ET,false>::run_2_sieve()
+//{
+//    run_sieve (2);
+//}
 
 //we should re-use this function for k-sieve, but call different SieveInteration
 template<class ET>
-void Sieve<ET,false>::run_sieve(int k)
+void Sieve<ET,false>::run()
 {
     //using SieveT = Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
 
@@ -57,18 +57,18 @@ void Sieve<ET,false>::run_sieve(int k)
     //while(main_list.cbegin()->norm2 > target_norm)
     {
         p=main_queue.true_pop();
-        if (k==2)
+        if (sieve_k==2)
             SieveIteration2(p);
-        else if (k==3)
+        else if (sieve_k==3)
             SieveIteration3(p);
         //cout << i <<  " list size" << current_list_size << " Queue: " << main_queue.size() << endl << flush;
         ++i;
-        if (i % 500 == 0) {
-            print_status();
+        //if (i % 500 == 0) {
+        //    print_status();
             //cout << "# of collisions: " << number_of_collisions << endl;
             //cout << "norm2 of the so far shortest vector: " << get_best_length2() << endl;
 
-        }
+        //}
     }
 
     //Diagnostic and use of the information moved up to the caller.

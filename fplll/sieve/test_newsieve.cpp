@@ -41,7 +41,7 @@ template <class ZT> void test_run_sieve(int dim, std::ofstream &ofs)
     ofs << "sieve is run on B[0]" << BTest[0] << endl;
     
     auto start = std::chrono::high_resolution_clock::now();
-    Test_Queue.run_2_sieve();
+    Test_Queue.run();
     auto finish = std::chrono::high_resolution_clock::now();
     auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(finish-start);
 
