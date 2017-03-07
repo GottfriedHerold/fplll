@@ -43,10 +43,10 @@ void Sieve<ET,false>::run()
     //using SieveT = Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
 
     //for ( LatticePoint<ET> & x : main_list) cout << x.norm2 << endl;
-
+    sieve_status =SieveStatus::sieve_status_running;
     int i=0;
     //int MaxIteration = 8000;
-
+    check_if_done(); //initialisation //TODO: Remove this.
     LatticePoint<ET> p;
     //NumVect<ET> sample;
 
@@ -70,6 +70,7 @@ void Sieve<ET,false>::run()
 
         //}
     }
+    sieve_status = SieveStatus::sieve_status_finished;
 
     //Diagnostic and use of the information moved up to the caller.
 
@@ -130,16 +131,14 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might
             {
                 ++number_of_mispredictions;
             }
-
         }
     }
 
     //p no longer changes. it_comparison_flip is iterator to first (shortest) element in the list that is longer than p.
     //If no such element exists, it_comparison_flip refers to after-the-end.
 
-    if (p.norm2 == 0)
+    if (p.norm2 == 0) //essentially means that p was already inside the list.
 	{
-		//increase the number of collisions
 		number_of_collisions++;
 		return;
 	}
