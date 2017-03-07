@@ -32,7 +32,7 @@ class FilteredPoint
     }
     
     // if sc is int_32
-    FilteredPoint(ApproxLatticePoint<ET> x, int32_t sc)
+    FilteredPoint(ApproxLatticePoint<ET> x, ApproxTypeNorm2 sc)
     {
         this->point = x;
         this->sc_prod = sc;
