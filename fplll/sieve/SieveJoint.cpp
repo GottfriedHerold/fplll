@@ -278,15 +278,15 @@ bool Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::check_if_done()
     return false;
 }
 
-template<class ET>
-void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::run() //runs the sieve specified by the parameters.
-{
-    assert(sieve_k == 2); //for now
-    sieve_status =SieveStatus::sieve_status_running;
-    check_if_done(); //this updates the Minkowski condition, if needed.
-    run_2_sieve();
-    sieve_status = SieveStatus::sieve_status_finished;
-}
+//template<class ET>
+//void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::run() //runs the sieve specified by the parameters.
+//{
+//    assert(sieve_k == 2); //for now
+//    sieve_status =SieveStatus::sieve_status_running;
+//    check_if_done(); //this updates the Minkowski condition, if needed.
+//    run_2_sieve();
+//    sieve_status = SieveStatus::sieve_status_finished;
+//}
 
 
 
