@@ -72,6 +72,7 @@ namespace GaussSieve //helper functions
 #include "TermCond.h"
 #include "GaussQueue.h"
 #include "FilteredPoint.h"
+#include "TermCondNew.h"
 
 namespace GaussSieve
 {

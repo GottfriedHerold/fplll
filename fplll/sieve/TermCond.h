@@ -1,6 +1,24 @@
 #ifndef TERM_COND_H
 #define TERM_COND_H
 
+/* Concept "TerminationCondition":
+
+A termination condition is a class template
+template<class ET>
+class TerminationCondition{
+template<MT>
+init(GaussSieve<ET,MT>
+}
+
+that implements (at least) the following methods:
+
+
+
+
+
+*/
+
+
 template<class ET>
 class TerminationConditions;
 

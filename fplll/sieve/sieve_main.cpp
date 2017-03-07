@@ -12,7 +12,7 @@
 #include <chrono>
 #include "SieveGauss.h"
 #include "LatticePoint2.h"
-
+#include "TermCondNew.h"
 #include "FilteredPoint.h"
 
 using namespace fplll;
@@ -186,6 +186,8 @@ int main(int argc, char **argv)
     //cout << "A point from a filtered list: " << l.getApproxVector() << " sc_prod: " << l.get_sc_prod() << endl;
 
     //cout << X;
+
+
 
     #ifndef USE_REGULAR_QUEUE
         cout << "Use Priority Queue" << endl;
