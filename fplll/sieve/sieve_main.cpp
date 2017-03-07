@@ -127,7 +127,7 @@ int main(int argc, char **argv)
     char *target_norm_string = NULL;
     int opt, dim = 10;
     Z_NR<mpz_t> target_norm;
-
+    target_norm = 0;
 
     if (argc == 1)
     {
@@ -178,7 +178,7 @@ int main(int argc, char **argv)
     ApproxLatticePoint<Z_NR<mpz_t>,false,-1> X ( conv_matrixrow_to_lattice_point(B[0]) );
 
     ApproxLatticePoint<Z_NR<mpz_t>,false,-1> p ( conv_matrixrow_to_lattice_point(B[1]) );
-    int32_t inner_prod = compute_sc_prod(X.get_approx(), p.get_approx(), dim);
+    int32_t inner_prod = LatticeApproximations::compute_sc_prod(X.get_approx(), p.get_approx(), dim);
 
     //cout << inner_prod << endl;
     FilteredPoint<Z_NR<mpz_t>> l (X, inner_prod);
@@ -195,7 +195,7 @@ int main(int argc, char **argv)
     //cout << "run sieve on B[0] = " << B[0] << endl;
     //cout << "B[1] = " << B[1] << endl;
     auto start = std::chrono::high_resolution_clock::now();
-	Sieve<Z_NR< mpz_t > , true> Test_2Sieve (B);
+	Sieve<Z_NR< mpz_t > , false> Test_2Sieve (B);
 	if(target_norm!=0)
     {
         Test_2Sieve.term_cond.set_target_length(target_norm);
