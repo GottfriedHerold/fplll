@@ -115,9 +115,9 @@ public:
     /*CONSTRUCTORS / DESTRUCTORS */
     Sieve() = delete;
     Sieve(Sieve const &old ) = delete;
-    Sieve(Sieve &&old) = default;
+    Sieve(Sieve &&old) = delete;
     Sieve & operator=(Sieve const & old)=delete;
-    Sieve & operator=(Sieve &&old) = default; //movable, but not copyable.
+    Sieve & operator=(Sieve &&old) = delete; //neither movable nor copyable. (not movable due to mutexes)
 
     #if GAUSS_SIEVE_IS_MULTI_THREADED == true
     explicit Sieve(LatticeBasisType B, unsigned int k=2, unsigned int num_threads=0, TerminationConditions<ET> termcond = {}, unsigned int verbosity_=2, int seed_sampler = 0);
@@ -133,14 +133,13 @@ public:
     void SieveIteration2 (LatticePoint<ET> &p); //one run through the main_list (of 2-sieve)
     void SieveIteration3 (LatticePoint<ET> &p); //one run through the main_list (of 3-sieve)
     #if GAUSS_SIEVE_IS_MULTI_THREADED == true
-    void sieve_2_thread(int const thread_id);
+    void sieve_2_thread(int const thread_id);   //function for worker threads
     #endif
-    LPType get_SVP() = delete; //obtains Shortest vector and it's length. If sieve has not yet run, start it. Not yet implemented.
-    void run(); //runs the sieve specified by the parameters.
-    void print_status(int verb = -1, std::ostream &out = cout) {dump_status_to_stream(out,verb);};
-    //prints status to out. verb overrides the verbosity unless set to -1.
-    void dump_status_to_file(std::string const &outfilename, bool overwrite = false); //dumps to file
-    void dump_status_to_stream(ostream &of, int verb=-1); //dumps to stream. Can be read back if verb>= 3. Otherwise, verbosity determines what is output.
+    LPType get_SVP() = delete;  //obtains Shortest vector and it's length. If sieve has not yet run, start it. Not yet implemented.
+    void run();                 //runs the sieve specified by the parameters.
+    void print_status(int verb = -1, std::ostream &out = cout) {dump_status_to_stream(out,verb);};      //prints status to out. verb overrides the verbosity unless set to -1.
+    void dump_status_to_file(std::string const &outfilename, bool overwrite = false);                   //dumps to file (verbosity overridden to 3)
+    void dump_status_to_stream(ostream &of, int verb=-1);       //dumps to stream. Can be read back if verb>= 3. Otherwise, verbosity determines what is output.
 
 //getter / setter functions
 
@@ -204,10 +203,11 @@ private:
 
     enum class SieveStatus
     {
-        sieve_status_error  =  -1, //indicates an error (add error codes as neccessary)
-        sieve_status_init   =  1, //we have initialized data (and may yet initialize some more, but sieve has not started
-        sieve_status_running=  2, //sieve is currently running
-        sieve_status_finished=100 //sieve has finished
+        sieve_status_error  =  -1,      //indicates an error (add error codes as neccessary)
+        sieve_status_init   =  1,       //we have initialized data (and may yet initialize some more, but sieve has not started
+        sieve_status_running=  2,       //sieve is currently running
+        sieve_status_suspended=3,       //sieve is currently suspended. Useful for dumping / cleanup of internal data structures.
+        sieve_status_finished=100       //sieve has finished
     } sieve_status; //thread safety?
     LPType shortest_vector_found; //including its length //TODO: Thread-safety
 
@@ -218,20 +218,20 @@ private:
     unsigned long long int number_of_points_constructed; //sampling  + succesful pairs
     unsigned long int current_list_size;
     unsigned long long int number_of_scprods;
+    unsigned long long int number_of_mispredictions; //could not reduce in spite of approximation saying so.
 #else //note: we might collect statistics per-thread and merge occasionally. This means these statistics might be inaccurate.
     atomic_ulong number_of_collisions;
     atomic_ulong number_of_points_sampled;
-    atomic_ullong number_of_points_constructed; //sampling  + succesful pairs
+    atomic_ullong number_of_points_constructed;
     atomic_ulong current_list_size;
     atomic_ullong number_of_scprods;
+    atomic_ullong number_of_mispredictions;
 #endif // GAUSS_SIEVE_IS_MULTI_THREADED
 
 #if GAUSS_SIEVE_IS_MULTI_THREADED==true
     GarbageBin<typename MainListType::DataType> * garbage_bins; //dynamically allocated array of garbage bins.
     std::mutex dump_mutex;
 #endif // GAUSS_SIEVE_IS_MULTI_THREADED
-
-//length of shortest vector contained in shortest_vector_found
 
 //TODO: total time spent?
 };
@@ -259,9 +259,6 @@ Reads length(str) chars from stream is, expecting them to equal str. If what is 
 #define SIEVE_FILE_ID "kTuple-Sieve dump file"
 //version string for dump file
 #define SIEVE_VER_STR "Version TEST1"
-#define SIEVE_FILE_ML "Main List"
-#define SIEVE_FILE_QUEUE "Queue"
-
 
 template<class ET>
 void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_file(std::string const &outfilename, bool overwrite)
@@ -288,7 +285,7 @@ void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_file(std::string co
     dump_status_to_stream(of, 3); //verbosity set to 3 to dump everything.
     if(verbosity>=2)
     {
-        cout << "Dump successful." << endl;
+        cout << "Dump finished." << endl;
     }
 }
 
@@ -300,7 +297,10 @@ void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_stream(ostream &of,
     if(howverb>=2) of << SIEVE_VER_STR << endl;
     if(howverb>=2) of << "--Params--" << endl;
     if(howverb>=2) of << "Multithreaded version=" << class_multithreaded << endl;
-    if(howverb>=2) of << "Multithreaded is wanted" << multi_threaded_wanted << endl;
+    if(howverb>=1) of << "Multithreaded is wanted" << multi_threaded_wanted << endl;
+    #if GAUSS_SIEVE_IS_MULTI_THREADED==true
+    if(howverb>=1) of << "Number of Threads=" << num_threads_wanted << endl;
+    #endif
     if(howverb>=2) of << "k=" << sieve_k << endl;
     if(howverb>=2) of << "verbosity=" << verbosity << endl;
     if(howverb>=1) of << "sieve_status=" << static_cast<int>(sieve_status) << endl;
@@ -312,19 +312,21 @@ void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_stream(ostream &of,
     if(howverb>=2) of << "Sampler Initialized" << static_cast<bool>(sampler!=nullptr) << endl;
     if(sampler!=nullptr)
     {
-        if(howverb>=2) cerr << "Note : Dumping of internal data of sampler not yet supported" << endl;
+        if(howverb>=3) cerr << "Note : Dumping of internal data of sampler not yet supported" << endl;
         //dump internals of sampler?
     }
-    if(howverb>=2) of << "Original Basis:" << endl;
-    if(howverb>=2) of << original_basis;
+    if(howverb>=3) of << "Original Basis:" << endl;
+    if(howverb>=3) of << original_basis;
     if(howverb>=2) of << "--End of Params--" << endl << endl;
     if(howverb>=1) of << "--Statistics--" << endl;
     if(howverb>=1) of << "Number of collisions=" << number_of_collisions << endl;
-    if(howverb>=1) of << "Number of Points Sampled=" << number_of_points_sampled << endl;
-    if(howverb>=1) of << "Number of Points Constructed=" << number_of_points_constructed << endl;
-    if(howverb>=1) of << "Best vector found so far=" << shortest_vector_found << endl; //TODO : Display length seperately
+    if(howverb>=1) of << "Number of points Sampled=" << number_of_points_sampled << endl;
+    if(howverb>=1) of << "Number of points Constructed=" << number_of_points_constructed << endl;
+    if(howverb>=1) of << "Number of approx. scalar products=" << number_of_scprods << endl;
+    if(howverb>=1) of << "Number of mispredictions=" << number_of_mispredictions << endl;
     if(howverb>=1) of << "Current List Size=" << get_current_list_size() << endl;
     if(howverb>=1) of << "Current Queue Size="<< get_current_queue_size()<< endl;
+    if(howverb>=1) of << "Best vector found so far=" << shortest_vector_found << endl; //TODO : Display length seperately
     if(howverb>=1) {of << "sv is: "; main_list.cbegin().get_exact_point().printLatticePoint();} //TODO: Remove (shortest_vector_found above should rather do this).
     if(howverb>=1) of << "--End of Statistics--" << endl << endl;
     if(howverb>=3)

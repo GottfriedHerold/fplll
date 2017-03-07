@@ -216,7 +216,9 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
     number_of_collisions(0),
     number_of_points_sampled(0),
     number_of_points_constructed(0),
-    current_list_size(0)
+    current_list_size(0),
+    number_of_scprods(0),
+    number_of_mispredictions(0)
     #if GAUSS_SIEVE_IS_MULTI_THREADED==true
     ,garbage_bins(nullptr)
     #endif // GAUSS_SIEVE_IS_MULTI_THREADED
