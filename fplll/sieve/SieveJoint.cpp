@@ -218,6 +218,7 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
     number_of_points_constructed(0),
     current_list_size(0),
     number_of_scprods(0),
+    number_of_exact_scprods(0),
     number_of_mispredictions(0)
     #if GAUSS_SIEVE_IS_MULTI_THREADED==true
     ,garbage_bins(nullptr)
@@ -243,6 +244,7 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
     if(verbosity>=2)    {cout << "Sorting ...";}
     main_list.sort();
     if(verbosity>=2)    {cout << "is finished." << endl;}
+    shortest_vector_found = main_list.cbegin()->get_details();
 //    #endif // GAUSS_SIEVE_IS_MULTI_THREADED
     //TODO : enable sorting for multithreaded case.
     #if GAUSS_SIEVE_IS_MULTI_THREADED==true

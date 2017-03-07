@@ -154,10 +154,12 @@ public:
     void set_num_threads(unsigned int t);                                                            //non-thread safe, only call while suspended. In SieveMT.cpp
     unsigned int get_num_threads() const                        {return num_threads_wanted;};
     #endif // GAUSS_SIEVE_IS_MULTI_THREADED
+    bool update_shortest_vector_found(LPType const & newvector);
+
 //  LPType get_shortest_vector_found() const                    {return shortest_vector_found;}; //TODO: Thread-safety
-    LPType get_shortest_vector_found()                          {return (main_list.cbegin())->get_details();}; //TODO: Thread-safety.
+    LPType get_shortest_vector_found();
 //  ET get_best_length2() const                                 {return get_shortest_vector_found().norm2;};
-    ET get_best_length2()                                       {return (main_list.cbegin())->get_details().norm2;}; //TODO: Change to above
+    ET get_best_length2();                                       //{return (main_list.cbegin())->get_details().norm2;}; //TODO: Change to above
     bool check_whether_sieve_is_running() const                 {return (sieve_status==SieveStatus::sieve_status_running);};
     unsigned long int get_number_of_collisions() const          {return number_of_collisions;};
     unsigned long int get_number_of_points_sampled() const      {return number_of_points_sampled;};
@@ -218,6 +220,7 @@ private:
     unsigned long long int number_of_points_constructed; //sampling  + succesful pairs
     unsigned long int current_list_size;
     unsigned long long int number_of_scprods;
+    unsigned long long int number_of_exact_scprods;
     unsigned long long int number_of_mispredictions; //could not reduce in spite of approximation saying so.
 #else //note: we might collect statistics per-thread and merge occasionally. This means these statistics might be inaccurate.
     atomic_ulong number_of_collisions;
@@ -225,12 +228,14 @@ private:
     atomic_ullong number_of_points_constructed;
     atomic_ulong current_list_size;
     atomic_ullong number_of_scprods;
+    atomic_ullong number_of_exact_scprods;
     atomic_ullong number_of_mispredictions;
 #endif // GAUSS_SIEVE_IS_MULTI_THREADED
 
 #if GAUSS_SIEVE_IS_MULTI_THREADED==true
     GarbageBin<typename MainListType::DataType> * garbage_bins; //dynamically allocated array of garbage bins.
     std::mutex dump_mutex;
+    std::mutex shortest_vector_mutex;
 #endif // GAUSS_SIEVE_IS_MULTI_THREADED
 
 //TODO: total time spent?
@@ -323,6 +328,7 @@ void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_stream(ostream &of,
     if(howverb>=1) of << "Number of points Sampled=" << number_of_points_sampled << endl;
     if(howverb>=1) of << "Number of points Constructed=" << number_of_points_constructed << endl;
     if(howverb>=1) of << "Number of approx. scalar products=" << number_of_scprods << endl;
+    if(howverb>=1) of << "Number of exact scalar products=" << number_of_exact_scprods << endl;
     if(howverb>=1) of << "Number of mispredictions=" << number_of_mispredictions << endl;
     if(howverb>=1) of << "Current List Size=" << get_current_list_size() << endl;
     if(howverb>=1) of << "Current Queue Size="<< get_current_queue_size()<< endl;

@@ -5,6 +5,29 @@
 #error SieveST.cpp included with wrong macro settings
 #endif
 
+template<class ET>
+bool Sieve<ET,false>::update_shortest_vector_found(LPType const & newvector)
+{
+    if(newvector.norm2<= shortest_vector_found.norm2)
+    {
+        shortest_vector_found = newvector;
+        return true;
+    }
+    return false;
+}
+
+template<class ET>
+typename Sieve<ET,false>::LPType Sieve<ET,false>::get_shortest_vector_found()
+{
+    return shortest_vector_found;
+}
+
+template<class ET>
+ET Sieve<ET,false>::get_best_length2()
+{
+    return shortest_vector_found.norm2;
+}
+
 
 //to avoid errs from SieveMT
 template<class ET>
@@ -80,33 +103,34 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might
                 it_comparison_flip = it;
                 break;
             }
-	    //Diagnosis(this, pApprox, p, *it, *(it.access_details()) ,n);
-            //if(!LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-2,n   ) ) continue;
-	    bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n   );
+        ++number_of_scprods;
+        bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n   );
 	    if(!predict) continue;
 
 	/* OLD IMPLEMENTATION: check2red both check and reduces p
 	    if(GaussSieve::check2red(p, *(it.access_details()) ) ) //p was changed
             {
 		        if(p.norm2!=0)  pApprox = static_cast< ApproxLatticePoint<ET,false> >(p);
-		cout << "p = ";		
+		cout << "p = ";
 		p.printLatticePoint();
                 loop = true;
                 break;
             }
 	*/
-	
+            ++number_of_exact_scprods;
             if ( GaussSieve::check2red_new(p, *(it.access_details()), scalar) )
             {
-		p = GaussSieve::perform2red(p, *(it.access_details()), scalar);
-
-                //update the approximation of f
+                p = GaussSieve::perform2red(p, *(it.access_details()), scalar);
+            //update the approximation of f
                 if (p.norm2!=0) pApprox = static_cast< ApproxLatticePoint<ET,false> >(p);
-
-		loop = true;
-		break;
+                loop = true;
+                break;
             }
-	
+            else
+            {
+                ++number_of_mispredictions;
+            }
+
         }
     }
 
@@ -124,13 +148,22 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might
     //insert p into main_list;
     main_list.insert_before(it_comparison_flip,p);
     ++current_list_size;
+    if(update_shortest_vector_found(p))
+    {
+        if(verbosity>=2)
+        {
+            cout << "New shortest vector found. Norm2 = " << get_best_length2();
+        }
+    }
+
     for(auto it = it_comparison_flip; it!=main_list.cend(); ) //go through rest of the list.
                                                               //We know that every element current_list_point=*it is at least as long as p, so we reduce x using p.
     {
-
+        ++number_of_scprods;
         bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,pApprox.get_approx_norm2(),2* pApprox.get_length_exponent()-1,n   );
         if(!predict){++it;continue;} //if prediction is bad, don't even bother to reduce.
         LatticePoint<ET> current_list_point = it.get_exact_point();
+        ++number_of_exact_scprods;
         if (GaussSieve::check2red_new(current_list_point, p, scalar)) //We can reduce *it.
 		{
 			//create new list point
@@ -138,10 +171,11 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might
 			//if (!predict) cerr << "Misprediction 2" << endl;
 			//cout << "v was found" <<  endl;
 
-            if (reduced.norm2 == 0)
+            if (reduced.norm2 == 0) //Note : this cannot happen unless the list contains a non-trivial multiple of p (because the collision would have triggered before).
             {
                 number_of_collisions++;
-                break;
+                ++it;
+                continue; //was a break. Changed to ++it;continue; -- Gotti
             }
 
 			main_queue.push(reduced);
@@ -151,6 +185,7 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might
 		}
 		else
 		{
+            ++number_of_mispredictions;
 		//	prev = it1;
 			++it;
 		}
@@ -167,22 +202,22 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might
 template<class ET>
 void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
 {
-        
+
 }
 
 //template<class ET>
 //void Sieve<ET,false>::run_3_sieve()
 //{
-//    
+//
 //    int i=0; //# of iterations
 //    LatticePoint<ET> p;
 //    while (! check_if_done()) {
-//        
+//
 //        p=main_queue.true_pop();
-//        
-//        
+//
+//
 //    }
-//    
+//
 //}
 
 //currently unused diagnostic code.

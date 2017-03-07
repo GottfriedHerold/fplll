@@ -6,6 +6,37 @@
 #endif
 
 template<class ET>
+bool Sieve<ET,true>::update_shortest_vector_found(LPType const & newvector)
+{
+    if(newvector.norm2<=  get_best_length2())
+    {
+        shortest_vector_mutex.lock();
+        if(newvector.norm2 <= shortest_vector_found.norm2) //need to check again!
+            {
+                shortest_vector_found = newvector;
+                shortest_vector_mutex.unlock();
+                return true;
+            }
+        shortest_vector_mutex.unlock();
+    }
+    return false;
+}
+
+template<class ET>
+typename Sieve<ET,true>::LPType Sieve<ET,true>::get_shortest_vector_found()
+{
+    return (main_list.cbegin())->get_details(); //this does not require a mutex due to lock-free list.
+}
+
+template<class ET>
+ET Sieve<ET,true>::get_best_length2()
+{
+    return (main_list.cbegin())->get_details().norm2; //this does not require a mutex due to lock-free list.
+}
+
+
+
+template<class ET>
 void Sieve<ET,true>::set_num_threads(unsigned int t)
 {
     assert(t>0);
