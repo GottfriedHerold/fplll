@@ -188,7 +188,6 @@ int main(int argc, char **argv)
     //cout << X;
 
 
-
     #ifndef USE_REGULAR_QUEUE
         cout << "Use Priority Queue" << endl;
     #else
