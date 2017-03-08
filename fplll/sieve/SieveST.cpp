@@ -8,7 +8,7 @@
 template<class ET>
 bool Sieve<ET,false>::update_shortest_vector_found(LPType const & newvector)
 {
-    if(newvector.norm2<= shortest_vector_found.norm2)
+    if(newvector.norm2 < shortest_vector_found.norm2)
     {
         shortest_vector_found = newvector;
         return true;
@@ -46,11 +46,10 @@ void Sieve<ET,false>::run()
     sieve_status =SieveStatus::sieve_status_running;
     int i=0;
     //int MaxIteration = 8000;
-    check_if_done(); //initialisation //TODO: Remove this.
+    term_cond->init(this); //initialisation of termination conditions.
     LatticePoint<ET> p;
     //NumVect<ET> sample;
 
-    //check_if_done(); //sets up default conditions if not already set. We ignore the return value. -- Moved to run(), Gotti
     //ET target_norm = term_cond.get_target_length();
     while (!check_if_done() )
 //	while (i<2)
@@ -63,12 +62,12 @@ void Sieve<ET,false>::run()
             SieveIteration3(p);
         //cout << i <<  " list size" << current_list_size << " Queue: " << main_queue.size() << endl << flush;
         ++i;
-        //if (i % 500 == 0) {
-        //    print_status();
-            //cout << "# of collisions: " << number_of_collisions << endl;
-            //cout << "norm2 of the so far shortest vector: " << get_best_length2() << endl;
-
-        //}
+//        if (i % 500 == 0) {
+//            print_status();
+//            cout << "# of collisions: " << number_of_collisions << endl;
+//            cout << "norm2 of the so far shortest vector: " << get_best_length2() << endl;
+//
+//        }
     }
     sieve_status = SieveStatus::sieve_status_finished;
 
@@ -151,7 +150,7 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might
     {
         if(verbosity>=2)
         {
-            cout << "New shortest vector found. Norm2 = " << get_best_length2();
+            cout << "New shortest vector found. Norm2 = " << get_best_length2() << endl;
         }
     }
 
@@ -203,39 +202,39 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
 {
     if (p.norm2==0) return;
     ApproxLatticePoint<ET,false> pApprox (p);
-    
+
     int const n = get_ambient_dimension();
 
     ET scalar;
-    
+
     //typename MainListType::Iterator it_comparison_flip=main_list.cend();
-    
-    
+
+
     for (auto it = main_list.cbegin(); it!=main_list.cend(); ++it)
     {
             if (p.norm2 < it.get_true_norm2())
                 break;
-        
+
             // check if 2-red is possible
             ++number_of_scprods;
             bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n   );
             if(!predict) continue;
-        
+
             ++number_of_exact_scprods;
             if ( GaussSieve::check2red_new(p, *(it.access_details()), scalar) )
             {
                 p = GaussSieve::perform2red(p, *(it.access_details()), scalar);
-                
+
                 //put p back into the queue and break
                 if (p.norm2!=0)
                     main_queue.push(p);
-                
+
                 break;
             }
             else
                 ++number_of_mispredictions;
 
-        
+
     }
 
 

@@ -51,7 +51,7 @@ void Sieve<ET,true>::run() //runs the sieve specified by the parameters.
 {
     assert(sieve_k == 2); //for now
     sieve_status =SieveStatus::sieve_status_running;
-    check_if_done(); //this updates the Minkowski condition, if needed.
+    term_cond->init(this); //this updates the Minkowski condition, if needed.
     run_2_sieve();
     sieve_status = SieveStatus::sieve_status_finished;
 }

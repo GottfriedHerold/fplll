@@ -106,19 +106,6 @@ return;
 
 */
 
-template<class ZT>
-[[deprecated("Use the run - routine of the sieve.")]]
-void call_sieve (ZZ_mat<ZT> B, int sieve_verbosity, Z_NR<ZT> target_norm)
-{
-	TerminationConditions< Z_NR<ZT> > term_cond;
-	Sieve<Z_NR< ZT > , false> Test_2Sieve (B);
-	if(target_norm!=0)
-    {
-        Test_2Sieve.term_cond.set_target_length(target_norm);
-        cout << "Setting target norm2 to" << target_norm << endl << flush;
-    }
-	Test_2Sieve.run_2_sieve();
-}
 
 
 int main(int argc, char **argv)
@@ -186,7 +173,7 @@ int main(int argc, char **argv)
     //cout << "A point from a filtered list: " << l.getApproxVector() << " sc_prod: " << l.get_sc_prod() << endl;
 
     //cout << X;
-
+    bool constexpr multithreaded = false;
 
     #ifndef USE_REGULAR_QUEUE
         cout << "Use Priority Queue" << endl;
@@ -196,10 +183,14 @@ int main(int argc, char **argv)
     //cout << "run sieve on B[0] = " << B[0] << endl;
     //cout << "B[1] = " << B[1] << endl;
     auto start = std::chrono::high_resolution_clock::now();
-	Sieve<Z_NR< mpz_t > , false> Test_2Sieve (B);
+	Sieve<Z_NR< mpz_t > , multithreaded> Test_2Sieve (B);
+	TerminationCondition<Z_NR<mpz_t>,multithreaded> * termcond = new MinkowskiTerminationCondition<Z_NR<mpz_t>, multithreaded>;
+	Test_2Sieve.set_termination_condition(termcond);
 	if(target_norm!=0)
     {
-        Test_2Sieve.term_cond.set_target_length(target_norm);
+        delete termcond;
+        termcond = new LengthTerminationCondition<Z_NR<mpz_t>,multithreaded>(target_norm);
+        Test_2Sieve.set_termination_condition(termcond);
         cout << "Setting target norm2 to" << target_norm << endl << flush;
     }
 	Test_2Sieve.run();
@@ -210,7 +201,7 @@ int main(int argc, char **argv)
     auto finish = std::chrono::high_resolution_clock::now();
     auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(finish-start);
     cout << " Time taken: " << microseconds.count()/1000000.0 << "sec" << endl;
-
+    delete termcond;
 #if 0
 #if 0
   dot_time = 0;

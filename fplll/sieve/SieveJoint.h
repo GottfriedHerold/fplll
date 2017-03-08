@@ -57,6 +57,16 @@ class Sieve;
 namespace GaussSieve //helper functions
 {
     bool string_consume(istream &is, std::string const & str, bool elim_ws= true, bool verbose=true); //helper function for dumping/reading
+    Z_NR<mpz_t> compute_mink_bound(ZZ_mat<mpz_t> const & basis);
+    template<class ET>
+    bool check2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2); //ASSUMPTION: p1 is longer than p2.
+                                                                       //2-reduces p1 with the help of p2.
+                                                                       //p1 is overwritten, whereas p2 is const. Returns true if p1 actually changed.
+    template<class ET>
+    bool check2red_new (const LatticePoint<ET> &p1, const LatticePoint<ET> &p2, ET &scalar);
+
+    template<class ET>
+    LatticePoint<ET> perform2red (const LatticePoint<ET> &p1, const LatticePoint<ET> &p2, ET const & scalar);
 }
 
 /*INCLUDES */
@@ -69,25 +79,11 @@ namespace GaussSieve //helper functions
 #include <fstream>
 #include <string>
 #include <exception>
-#include "TermCond.h"
+//#include "TermCond.h"
 #include "GaussQueue.h"
 #include "FilteredPoint.h"
 #include "TermCondNew.h"
 
-namespace GaussSieve
-{
-    Z_NR<mpz_t> compute_mink_bound(ZZ_mat<mpz_t> const & basis); //computes an value x s.t. lambda_1 <= x using Minkowski's Theorem.
-    template<class ET>
-    bool check2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2); //ASSUMPTION: p1 is longer than p2.
-                                                                       //2-reduces p1 with the help of p2.
-                                                                       //p1 is overwritten, whereas p2 is const. Returns true if p1 actually changed.
-    template<class ET>
-    bool check2red_new (const LatticePoint<ET> &p1, const LatticePoint<ET> &p2, ET &scalar);
-
-    template<class ET>
-    LatticePoint<ET> perform2red (const LatticePoint<ET> &p1, const LatticePoint<ET> &p2, ET const & scalar);
-
-}
 
 #endif //end of ONLY-ONCE part
 
@@ -102,6 +98,7 @@ GO HERE.
 template<class ET>
 class Sieve<ET, GAUSS_SIEVE_IS_MULTI_THREADED >
 {
+public:
     /*DATA TYPES*/
     using LPType           = LatticePoint<ET>;
     using MainQueueType    = GaussQueue<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
@@ -109,6 +106,7 @@ class Sieve<ET, GAUSS_SIEVE_IS_MULTI_THREADED >
     using LatticeBasisType = ZZ_mat<typename ET::underlying_data_type>;
     using SamplerType      = KleinSampler<typename ET::underlying_data_type, FP_NR<double>> *; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
     using FilteredListType = std::vector<FilteredPoint<ET>>; //queue is also fine for our purposes
+    using TermCondType     = TerminationCondition<ET,GAUSS_SIEVE_IS_MULTI_THREADED> *;
 
 public:
     /*FRIENDS */
@@ -121,9 +119,9 @@ public:
     Sieve & operator=(Sieve &&old) = delete; //neither movable nor copyable. (not movable due to mutexes)
 
     #if GAUSS_SIEVE_IS_MULTI_THREADED == true
-    explicit Sieve(LatticeBasisType B, unsigned int k=2, unsigned int num_threads=0, TerminationConditions<ET> termcond = {}, unsigned int verbosity_=2, int seed_sampler = 0);
+    explicit Sieve(LatticeBasisType B, unsigned int k=2, unsigned int num_threads=0, TermCondType const termcond = nullptr, unsigned int verbosity_=2, int seed_sampler = 0);
     #else
-    explicit Sieve(LatticeBasisType B, unsigned int k=2, TerminationConditions<ET> termcond = {}, unsigned int verbosity_=2, int seed_sampler = 0);
+    explicit Sieve(LatticeBasisType B, unsigned int k=2, TermCondType const termcond = nullptr, unsigned int verbosity_=2, int seed_sampler = 0);
     #endif // GAUSS_SIEVE_IS_MULTI_THREADED
     //explicit Sieve(std::string const &infilename); //read from dump file.
     ~Sieve();
@@ -156,7 +154,7 @@ public:
     unsigned int get_num_threads() const                        {return num_threads_wanted;};
     #endif // GAUSS_SIEVE_IS_MULTI_THREADED
     bool update_shortest_vector_found(LPType const & newvector);
-
+    LatticeBasisType const & get_original_basis()               {return original_basis;};
 //  LPType get_shortest_vector_found() const                    {return shortest_vector_found;}; //TODO: Thread-safety
     LPType get_shortest_vector_found();
 //  ET get_best_length2() const                                 {return get_shortest_vector_found().norm2;};
@@ -168,12 +166,12 @@ public:
     unsigned long int get_current_list_size() const             {return current_list_size;};
     unsigned long int get_current_queue_size()                  {return main_queue.size();}; //TODO : fix const-correctness
     unsigned long long get_number_of_scprods() const            {return number_of_scprods;};
-
+    void set_termination_condition(TermCondType termcond)       {term_cond = termcond;}; //TODO: If we default - initialize (and own in this case), may need to delete previous value.
 private:
 
 //Use termination Condition to check whether we are done, based on statistics so far.
     bool check_if_done();
-    ET ComputeMinkowski2Bound(); //computes Minkowski bound for the square(!) length. May need to round upwards.
+    //ET ComputeMinkowski2Bound(); //computes Minkowski bound for the square(!) length. May need to round upwards.
 
 //Note: The member fields of Sieve denote the (global) "internal" status of the sieve during a run or execution.
 //It should be possible to dump the status to harddisk and resume from dump using that information.
@@ -199,11 +197,11 @@ private:
     SamplerType sampler; //TODO: Thread-safety. Move control to queue.
     int verbosity;       //ranged from 0 to 3 (0 : silent, 1 : errors only, 2 : more output, 3 : debug
 
-public:  //made public to avoid complicated (due to template hack) friend - declaration.
-            //TODO : Change term-cond to a user-provided function.
-    TerminationConditions<ET> term_cond;
+//public:  //made public to avoid complicated (due to template hack) friend - declaration.
+//            //TODO : Change term-cond to a user-provided function.
+//    TerminationConditions<ET> term_cond;
 private:
-
+    TermCondType term_cond;
     enum class SieveStatus
     {
         sieve_status_error  =  -1,      //indicates an error (add error codes as neccessary)

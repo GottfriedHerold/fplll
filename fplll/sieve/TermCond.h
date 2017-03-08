@@ -1,6 +1,8 @@
 #ifndef TERM_COND_H
 #define TERM_COND_H
 
+#error "no longer used"
+
 /* Concept "TerminationCondition":
 
 A termination condition is a class template
