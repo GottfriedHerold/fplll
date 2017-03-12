@@ -118,6 +118,8 @@ class GaussIterator<ET,false,-1> //: public std::list<ApproxLatticePoint<ET,fals
     GaussIterator(UnderlyingIterator const & other) : it(other) {};
     GaussIterator&  operator++() {++it; return *this;}; //prefix version
     GaussIterator  operator++(int){return it++;}; //postfix version
+
+    GaussIterator&  operator--() {--it; return *this;}; //For tests
     bool operator==( GaussIterator const & other) const {return it==(other.it);};
     bool operator!=( GaussIterator const & other) const {return it!=(other.it);};
     bool is_end() const = delete; //not implemented for single-threaded yet.
@@ -219,6 +221,9 @@ public:
 
     GaussIterator& operator++();    //prefix version
     GaussIterator  operator++(int); //postfix version
+
+    GaussIterator& operator--();    ////For tests. Not needed in MT. Tests are so far performed on ST. To be deleted
+	
     DataPointer const operator->() const                                {return p->datum_ptr;}; //Note weird semantics of -> overload cause datum_ptr (which is a pointer) to get dereferenced as well.
     DerefType const & operator*()   const                               {return *(p->datum_ptr);};
     //operator DataPointer() const                                        {return p->datum_ptr;}; //converts from Iterator to pointer to lattice point.

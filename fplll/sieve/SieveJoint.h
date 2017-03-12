@@ -333,6 +333,13 @@ void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_stream(ostream &of,
     if(howverb>=1) of << "Current Queue Size="<< get_current_queue_size()<< endl;
     if(howverb>=1) of << "Best vector found so far=" << shortest_vector_found << endl; //TODO : Display length seperately
     if(howverb>=1) {of << "sv is: "; main_list.cbegin().get_exact_point().printLatticePoint();} //TODO: Remove (shortest_vector_found above should rather do this).
+	// to check the ratio between the shortest and the longest vectors in the list
+    if(howverb>=1) {
+		auto it = main_list.cend(); 
+		// operator--() is needed for tests
+		--(it);
+		of << "longest vector is: "; it.get_exact_point().printLatticePoint();
+    }
     if(howverb>=1) of << "--End of Statistics--" << endl << endl;
     if(howverb>=3)
     {

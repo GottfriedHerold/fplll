@@ -284,6 +284,14 @@ GaussIterator<ET,true,-1>& GaussIterator<ET,true,-1>::operator++() //prefix vers
     return *this;
 };
 
+template<class ET>
+GaussIterator<ET,true,-1>& GaussIterator<ET,true,-1>::operator--() //prefix version
+{
+    p=p->prev_node.load(memory_order_acquire);
+    assert(p!=nullptr);
+    return *this;
+};
+
 
 
 
