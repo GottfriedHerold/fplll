@@ -233,6 +233,10 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
             }
             else
                 ++number_of_mispredictions;
+        
+            //run 3-reductions
+        
+            
 
 
     }

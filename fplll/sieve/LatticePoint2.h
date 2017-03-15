@@ -295,4 +295,48 @@ inline bool LatticeApproximations::Compare_Sc_Prod(ApproxLatticePoint<ET,false,-
     }
 }
 
+/*
+    According to Maple, given len_x1 = || x_1||, len_p = || p||, and len_x2 = ||x_2||, the optimal <p, x1> is given by
+ 
+    see the file "string_parser"
+ 
+    
+*/
+template<class ET>
+inline bool Compare_Sc_Prod_px1 (LatticeApproximations::ApproxTypeNorm2 len_p, LatticeApproximations::ApproxTypeNorm2 len_x1, LatticeApproximations::ApproxTypeNorm2 len_x2)
+{
+ 
+    LatticeApproximations:: ApproxTypeNorm2 len_p_quad = len_p * len_p;  // need to make sure it fits
+    LatticeApproximations:: ApproxTypeNorm2 len_x1_quad = len_x1 * len_x1;
+    LatticeApproximations:: ApproxTypeNorm2 len_x2_quad = len_x2 * len_x2;
+    
+
+    int term1 = 16 * len_p_quad - 8*(len_x1 + len_x2) * len_p + len_x1_quad + (14 * len_x1 * len_x2) + len_x2_quad;
+    
+    double sqrt_term1 = sqrt(term1);
+    
+    int term_last = term1 - 24 * len_x1 *len_x2;
+    
+    int term2 = 4 * len_p - len_x1 + len_x2;
+    
+    double term3 = sqrt(len_p) * len_x2;
+    
+    double term4 = 1 / (24 * sqrt(len_x1) * term3);
+    
+    double big_sqrt_term = sqrt (
+                (double) (1/(len_x1 * len_x2_quad)) *
+                (double) (term2 * term2 * term1) -
+                4 * sqrt_term1 * (double)(len_p) +
+                sqrt_term1 * (double)(len_x1) +
+                sqrt_term1 * (double)(len_x2)
+                             );
+    double res = term4 * sqrt(2) * big_sqrt_term * sqrt(len_x1)*(double)(len_x2)-
+    (double)(term2)*(sqrt_term1) + term_last;
+    
+    return false;
+    
+}
+
+
+
 #endif // LATTICE_VECTOR_CLASS_2H
