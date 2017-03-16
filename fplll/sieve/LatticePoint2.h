@@ -296,14 +296,14 @@ inline bool LatticeApproximations::Compare_Sc_Prod(ApproxLatticePoint<ET,false,-
 }
 
 /*
-    According to Maple, given len_x1 = || x_1||^2, len_p = || p||^2, and len_x2 = ||x_2||^2, the optimal <p, x1>, <p,x2>, <x1x2> are given by (all divided by the corresp. lengthes)
+    According to Maple, given len_x1 = || x_1||^2, len_p = || p||^2, and len_x2 = ||x_2||^2, the optimal <p, x1>, <p,x2>, <x1x2> are given by (all divided by the corresp. lengthes) the formulas we compute below
  
-    !!! Assuming p = max {x1, x2, p};
+    These formulas assume p = max {x1, x2, p};
  
     
 */
 
-inline void Compare_Sc_Prod_px1 (LatticeApproximations::ApproxTypeNorm2 len_p, LatticeApproximations::ApproxTypeNorm2 len_x1, LatticeApproximations::ApproxTypeNorm2 len_x2, double x1x2, double px1, double px2)
+inline void Compare_Sc_Prod_p (LatticeApproximations::ApproxTypeNorm2 len_p, LatticeApproximations::ApproxTypeNorm2 len_x1, LatticeApproximations::ApproxTypeNorm2 len_x2, double x1x2, double px1, double px2)
 {
  
     LatticeApproximations:: ApproxTypeNorm2 len_p_quad = len_p * len_p;  // need to make sure it fits
@@ -333,7 +333,7 @@ inline void Compare_Sc_Prod_px1 (LatticeApproximations::ApproxTypeNorm2 len_p, L
     double x1x2quad =x1x2_sq*x1x2_sq;
     double sqrt_len_x1 = sqrt(len_x1);
     
-    double term_px1 = double ((double) len_x1 * x1x2quad + (double)(16 *len_p)*x1x2_sq - (double)(10*len_x1)*x1x2_sq + (double)len_x1);
+    double term_px1 = double ((double) (9*len_x1) * x1x2quad + (double)(16 *len_p)*x1x2_sq - (double)(10*len_x1)*x1x2_sq + (double)len_x1);
     
     nom = 3*x1x2_sq* sqrt_len_x1- 3*sqrt_len_x1 + sqrt(term_px1);
     
@@ -348,8 +348,56 @@ inline void Compare_Sc_Prod_px1 (LatticeApproximations::ApproxTypeNorm2 len_p, L
     
     px2 = nom / denom;
     
+}
+
+/*
+ 
+    Same as above but now we assume x1 = max {x1, x2, p}
+*/
+
+inline void Compare_Sc_Prod_x1 (LatticeApproximations::ApproxTypeNorm2 len_p, LatticeApproximations::ApproxTypeNorm2 len_x1, LatticeApproximations::ApproxTypeNorm2 len_x2, double x1x2, double px1, double px2)
+
+{
+    LatticeApproximations:: ApproxTypeNorm2 len_p_quad = len_p * len_p;  // need to make sure it fits
+    LatticeApproximations:: ApproxTypeNorm2 len_x1_quad = len_x1 * len_x1;
+    LatticeApproximations:: ApproxTypeNorm2 len_x2_quad = len_x2 * len_x2;
     
     
+    // compute px2
+    
+    int term_px2 = 16 * len_x1_quad - 8*(len_p + len_x2) * len_x1 + len_p_quad + (14 * len_p * len_x2) + len_x2_quad;
+    
+    double sqrt_term_px2 = sqrt(term_px2);
+    
+    
+    int term2 = -4 * len_x1 + len_p + len_x2;
+    
+    double denom = sqrt(36 * len_p * len_x2);
+    
+    double nom = (double) term2 + sqrt_term_px2;
+    
+    px2 = - nom / denom;
+    
+    //compute px1
+    
+    double px2_sq = px2*px2;
+    double px2_quad =px2_sq*px2_sq;
+    double sqrt_len_p = sqrt(len_p);
+    
+    double term_px1 = double ((double) (9*len_p) * px2_quad + (double)(16 *len_x1)*px2_sq - (double)(10*len_p)*px2_sq + (double)len_p);
+    
+    nom = 3*px2_sq* sqrt_len_p- 3*sqrt_len_p + sqrt(term_px1);
+    
+    denom = 4 * sqrt(len_x1);
+    
+    px1  = nom / denom;
+    
+    //compute x1x2
+    
+    nom = px2_sq * sqrt_len_p - sqrt_len_p +sqrt(term_px1);
+    denom = 4*px2*sqrt(len_x1);
+    
+    x1x2 = nom / denom;
     
 }
 
