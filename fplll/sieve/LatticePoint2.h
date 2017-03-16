@@ -296,45 +296,73 @@ inline bool LatticeApproximations::Compare_Sc_Prod(ApproxLatticePoint<ET,false,-
 }
 
 /*
-    According to Maple, given len_x1 = || x_1||, len_p = || p||, and len_x2 = ||x_2||, the optimal <p, x1> is given by
+    According to Maple, given len_x1 = || x_1||^2, len_p = || p||^2, and len_x2 = ||x_2||^2, the optimal <p, x1>, <p,x2>, <x1x2> are given by (all divided by the corresp. lengthes)
  
-    see the file "string_parser"
+    !!! Assuming p = max {x1, x2, p};
  
     
 */
-template<class ET>
-inline bool Compare_Sc_Prod_px1 (LatticeApproximations::ApproxTypeNorm2 len_p, LatticeApproximations::ApproxTypeNorm2 len_x1, LatticeApproximations::ApproxTypeNorm2 len_x2)
+
+inline void Compare_Sc_Prod_px1 (LatticeApproximations::ApproxTypeNorm2 len_p, LatticeApproximations::ApproxTypeNorm2 len_x1, LatticeApproximations::ApproxTypeNorm2 len_x2, double x1x2, double px1, double px2)
 {
  
     LatticeApproximations:: ApproxTypeNorm2 len_p_quad = len_p * len_p;  // need to make sure it fits
     LatticeApproximations:: ApproxTypeNorm2 len_x1_quad = len_x1 * len_x1;
     LatticeApproximations:: ApproxTypeNorm2 len_x2_quad = len_x2 * len_x2;
     
+    
+    // compute x1x2
+    
 
-    int term1 = 16 * len_p_quad - 8*(len_x1 + len_x2) * len_p + len_x1_quad + (14 * len_x1 * len_x2) + len_x2_quad;
+    int term_x1x2 = 16 * len_p_quad - 8*(len_x1 + len_x2) * len_p + len_x1_quad + (14 * len_x1 * len_x2) + len_x2_quad;
     
-    double sqrt_term1 = sqrt(term1);
+    double sqrt_term_x1x2 = sqrt(term_x1x2);
     
-    int term_last = term1 - 24 * len_x1 *len_x2;
     
-    int term2 = 4 * len_p - len_x1 + len_x2;
+    int term2 = -4 * len_p + len_x1 + len_x2;
     
-    double term3 = sqrt(len_p) * len_x2;
+    double denom = sqrt(36 * len_p * len_x2);
     
-    double term4 = 1 / (24 * sqrt(len_x1) * term3);
+    double nom = (double) term2 + sqrt_term_x1x2;
     
-    double big_sqrt_term = sqrt (
-                (double) (1/(len_x1 * len_x2_quad)) *
-                (double) (term2 * term2 * term1) -
-                4 * sqrt_term1 * (double)(len_p) +
-                sqrt_term1 * (double)(len_x1) +
-                sqrt_term1 * (double)(len_x2)
-                             );
-    double res = term4 * sqrt(2) * big_sqrt_term * sqrt(len_x1)*(double)(len_x2)-
-    (double)(term2)*(sqrt_term1) + term_last;
+    x1x2 = - nom / denom;
     
-    return false;
+    //compute px1
     
+    double x1x2_sq = x1x2*x1x2;
+    double x1x2quad =x1x2_sq*x1x2_sq;
+    double sqrt_len_x1 = sqrt(len_x1);
+    
+    double term_px1 = double ((double) len_x1 * x1x2quad + (double)(16 *len_p)*x1x2_sq - (double)(10*len_x1)*x1x2_sq + (double)len_x1);
+    
+    nom = 3*x1x2_sq* sqrt_len_x1- 3*sqrt_len_x1 + sqrt(term_px1);
+    
+    denom = 4 * sqrt(len_p);
+    
+    px1  = nom / denom;
+    
+    //compute px2
+    
+    nom = x1x2_sq * sqrt_len_x1 - sqrt_len_x1 +sqrt(term_px1);
+    denom = 4*x1x2*sqrt(len_p);
+    
+    px2 = nom / denom;
+    
+    
+    
+    
+}
+
+/*
+Computes the determinant of 
+                [1 px1 px2]
+                [px1 1 x1x2]
+                [px2 x1x2 1]
+ 
+*/
+inline double detConf (double px1, double px2, double x1x2)
+{
+    return 2 * px1 * px2 * x1x2 - px1 * px1 - px2 * px2 - x1x2 * x1x2 + 1;
 }
 
 

@@ -236,6 +236,21 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
         
             //run 3-reductions
         
+            // Compute the target inner-products <p, x_i>, <p, x_j>, <x_i, x_j> given ||p||, ||x_i||, ||x_j|| for all pairs of blocks (i,j).
+        
+        float length_factor = 1.15; //to be verified
+        
+        LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_current_block =  main_list.cbegin()->get_approx_norm2();
+        
+        double px1;
+        double px2;
+        double x1x2;
+        
+        double detC;
+        
+        //if(detC > threshold) //decide if we look inside the blocks at all
+        
+        
             
 
 
