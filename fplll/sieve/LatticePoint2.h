@@ -55,6 +55,7 @@ template<> class MaybeRational<Z_NR<double> >{public: static bool constexpr val=
 inline ApproxTypeNorm2 compute_sc_prod(ApproxType const * const arg1, ApproxType const * const arg2, unsigned int len);
 template<class ET>
 inline bool Compare_Sc_Prod(ApproxLatticePoint<ET,false,-1> const & arg1, ApproxLatticePoint<ET,false,-1> const & arg2, ApproxTypeNorm2 abslimit, int limit_exp, int dim);
+inline void Determine_Sc_Prod (ApproxTypeNorm2 len_max, ApproxTypeNorm2 len_x1, ApproxTypeNorm2 len_x2, double x1x2, double px1, double px2);
 }
 
 
@@ -295,14 +296,64 @@ inline bool LatticeApproximations::Compare_Sc_Prod(ApproxLatticePoint<ET,false,-
     }
 }
 
+
 /*
     According to Maple, given len_x1 = || x_1||^2, len_p = || p||^2, and len_x2 = ||x_2||^2, the optimal <p, x1>, <p,x2>, <x1x2> are given by (all divided by the corresp. lengthes) the formulas we compute below
  
-    These formulas assume p = max {x1, x2, p};
+    These formulas assume p = max {x1, x2, p};  The order of {x1, x2} does not matter. The total order of the triple is assumed to be correct (sieve should know it).
  
     
 */
+inline void LatticeApproximations::Determine_Sc_Prod (LatticeApproximations::ApproxTypeNorm2 len_max, LatticeApproximations::ApproxTypeNorm2 len_x1, LatticeApproximations::ApproxTypeNorm2 len_x2, double x1x2, double px1, double px2)
+{
+    
+    LatticeApproximations:: ApproxTypeNorm2 len_max_quad= len_max * len_max;  // need to make sure it fits
+    LatticeApproximations:: ApproxTypeNorm2 len_x1_quad = len_x1 * len_x1;
+    LatticeApproximations:: ApproxTypeNorm2 len_x2_quad = len_x2 * len_x2;
+    
+    
+    // compute x1x2 - the inner product of two shorter vectors
+    
+    
+    int term_x1x2 = 16 * len_max_quad - 8*(len_x1 + len_x2) * len_max + len_x1_quad + (14 * len_x1 * len_x2) + len_x2_quad;
+    
+    double sqrt_term_x1x2 = sqrt(term_x1x2);
+    
+    
+    int term2 = -4 * len_max + len_x1 + len_x2;
+    
+    double denom = sqrt(36 * len_max * len_x2);
+    
+    double nom = (double) term2 + sqrt_term_x1x2;
+    
+    x1x2 = - nom / denom;
+    
+    //compute px1
+    
+    double x1x2_sq = x1x2*x1x2;
+    double x1x2quad =x1x2_sq*x1x2_sq;
+    double sqrt_len_x1 = sqrt(len_x1);
+    
+    double term_px1 = double ((double) (9*len_x1) * x1x2quad + (double)(16 *len_max)*x1x2_sq - (double)(10*len_x1)*x1x2_sq + (double)len_x1);
+    
+    nom = 3*x1x2_sq* sqrt_len_x1- 3*sqrt_len_x1 + sqrt(term_px1);
+    
+    denom = 4 * sqrt(len_max);
+    
+    px1  = nom / denom;
+    
+    //compute px2
+    
+    nom = x1x2_sq * sqrt_len_x1 - sqrt_len_x1 +sqrt(term_px1);
+    denom = 4*x1x2*sqrt(len_max);
+    
+    px2 = nom / denom;
+    
+}
 
+
+// OLD IMPLEMENTATION
+/*
 inline void Compare_Sc_Prod_p (LatticeApproximations::ApproxTypeNorm2 len_p, LatticeApproximations::ApproxTypeNorm2 len_x1, LatticeApproximations::ApproxTypeNorm2 len_x2, double x1x2, double px1, double px2)
 {
  
@@ -349,12 +400,12 @@ inline void Compare_Sc_Prod_p (LatticeApproximations::ApproxTypeNorm2 len_p, Lat
     px2 = nom / denom;
     
 }
-
+*/
 /*
  
     Same as above but now we assume x1 = max {x1, x2, p}
 */
-
+/*
 inline void Compare_Sc_Prod_x1 (LatticeApproximations::ApproxTypeNorm2 len_p, LatticeApproximations::ApproxTypeNorm2 len_x1, LatticeApproximations::ApproxTypeNorm2 len_x2, double x1x2, double px1, double px2)
 
 {
@@ -400,7 +451,7 @@ inline void Compare_Sc_Prod_x1 (LatticeApproximations::ApproxTypeNorm2 len_p, La
     x1x2 = nom / denom;
     
 }
-
+*/
 /*
 Computes the determinant of 
                 [1 px1 px2]

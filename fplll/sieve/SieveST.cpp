@@ -238,18 +238,25 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
         
             // Compute the target inner-products <p, x_i>, <p, x_j>, <x_i, x_j> given ||p||, ||x_i||, ||x_j|| for all pairs of blocks (i,j).
         
-        float length_factor = 1.15; //to be verified
+            float length_factor = 1.15; //to be verified
         
-        LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_current_block =  main_list.cbegin()->get_approx_norm2();
+            LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_current_block1 =  main_list.cbegin()->get_approx_norm2();
+            LatticeApproximations::ApproxTypeNorm2 pApproxNorm =  pApprox.get_approx_norm2();
         
-        double px1;
-        double px2;
-        double x1x2;
+            cout << "block 1 is of length: " << assumed_norm_of_current_block1 << endl;
         
-        double detC;
+            double px1=.0;
+            double px2=.0;
+            double x1x2=.0;
         
-        //if(detC > threshold) //decide if we look inside the blocks at all
+            double detC;
         
+            //if(detC > threshold) //decide if we look inside the blocks at all
+        
+            if(pApproxNorm > assumed_norm_of_current_block1) //check on the same block
+                LatticeApproximations::Determine_Sc_Prod(pApproxNorm, assumed_norm_of_current_block1, assumed_norm_of_current_block1, x1x2, px1,px2);
+            else
+                LatticeApproximations::Determine_Sc_Prod(assumed_norm_of_current_block1, pApproxNorm, assumed_norm_of_current_block1, px2, px1, x1x2);
         
             
 
