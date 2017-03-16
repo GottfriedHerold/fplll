@@ -18,12 +18,12 @@
 		<Unit filename="LatticePoint2.h" />
 		<Unit filename="PointList.cpp" />
 		<Unit filename="PointList.h" />
+		<Unit filename="Sampler.h" />
 		<Unit filename="SieveGauss.h" />
 		<Unit filename="SieveJoint.cpp" />
 		<Unit filename="SieveJoint.h" />
 		<Unit filename="SieveMT.cpp" />
 		<Unit filename="SieveST.cpp" />
-		<Unit filename="TermCond.h" />
 		<Unit filename="TermCondNew.h" />
 		<Unit filename="notes.txt" />
 		<Unit filename="sampler_basic.cpp" />

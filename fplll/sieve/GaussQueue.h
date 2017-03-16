@@ -37,9 +37,9 @@ template<class ET> //single-threaded version:
 class GaussQueue<ET,false>
 {
 public:
-    using EntryType = ET; //entries of lattice points
-    using LPType = LatticePoint<ET>; //Type of Data internally stored
-    using RetType= LatticePoint<ET>; //Type of Data returned
+    using EntryType = ET;               //entries of lattice points
+    using LPType = LatticePoint<ET>;    //Type of Data internally stored
+    using RetType= LatticePoint<ET>;    //Type of Data returned
     #ifndef USE_REGULAR_QUEUE
     using QueueType =      std::priority_queue< LPType* , std::vector<LPType* >, IsLongerVector_classPtr<ET> >;
     #else
@@ -55,7 +55,7 @@ public:
     GaussQueue& operator= (GaussQueue &&old) = delete;
     ~GaussQueue();
 
-    bool empty() const              {return main_queue.empty();};  //we might as well always return false!
+    bool empty() const              {return main_queue.empty();};  //we might as well always return false (or make this private)!
     size_type size() const          {return main_queue.size();};   //returns size of queue (used for diagnostics and statistics only)
     void push(LPType const &val); //puts a copy of val in the queue
     void push(LPType && val);     //uses move semantics for that.
@@ -68,8 +68,8 @@ public:
                                    //might become deprecated
 
 private:
-    QueueType main_queue;
-    Sieve<ET,false>* gauss_sieve; //caller object.
+    QueueType main_queue;           //actual queue of lattice points to be processed.
+    Sieve<ET,false>* gauss_sieve;   //pointer to caller object.
     //SamplerType *sampler; //controlled by the GaussSieve currently. TODO: Change that
 };
 
