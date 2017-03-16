@@ -55,7 +55,7 @@ template<> class MaybeRational<Z_NR<double> >{public: static bool constexpr val=
 inline ApproxTypeNorm2 compute_sc_prod(ApproxType const * const arg1, ApproxType const * const arg2, unsigned int len);
 template<class ET>
 inline bool Compare_Sc_Prod(ApproxLatticePoint<ET,false,-1> const & arg1, ApproxLatticePoint<ET,false,-1> const & arg2, ApproxTypeNorm2 abslimit, int limit_exp, int dim);
-inline void Determine_Sc_Prod (ApproxTypeNorm2 len_max, ApproxTypeNorm2 len_x1, ApproxTypeNorm2 len_x2, double x1x2, double px1, double px2);
+inline void Determine_Sc_Prod (ApproxTypeNorm2 len_max, ApproxTypeNorm2 len_x1, ApproxTypeNorm2 len_x2,  double & x1x2, double & px1, double & px2);
 }
 
 
@@ -304,7 +304,7 @@ inline bool LatticeApproximations::Compare_Sc_Prod(ApproxLatticePoint<ET,false,-
  
     
 */
-inline void LatticeApproximations::Determine_Sc_Prod (LatticeApproximations::ApproxTypeNorm2 len_max, LatticeApproximations::ApproxTypeNorm2 len_x1, LatticeApproximations::ApproxTypeNorm2 len_x2, double x1x2, double px1, double px2)
+inline void LatticeApproximations::Determine_Sc_Prod (LatticeApproximations::ApproxTypeNorm2 const len_max, LatticeApproximations::ApproxTypeNorm2 const len_x1, LatticeApproximations::ApproxTypeNorm2 const len_x2, double & x1x2, double & px1, double & px2)
 {
     
     LatticeApproximations:: ApproxTypeNorm2 len_max_quad= len_max * len_max;  // need to make sure it fits
@@ -322,9 +322,13 @@ inline void LatticeApproximations::Determine_Sc_Prod (LatticeApproximations::App
     
     int term2 = -4 * len_max + len_x1 + len_x2;
     
-    double denom = sqrt(36 * len_max * len_x2);
+    double denom = sqrt((36 * len_max * len_x2));
     
     double nom = (double) term2 + sqrt_term_x1x2;
+    
+    cout << "nom = " << nom << " denom = " << denom << endl;
+    cout << "(double)(36 * len_max * len_x2)  " << (double)(36 * len_max * len_x2) << endl;
+    
     
     x1x2 = - nom / denom;
     
@@ -348,6 +352,8 @@ inline void LatticeApproximations::Determine_Sc_Prod (LatticeApproximations::App
     denom = 4*x1x2*sqrt(len_max);
     
     px2 = nom / denom;
+    
+    //cout << "x1x2 = " << & x1x2 << " px1 = " << & px1 << " px2 = " << & px2;
     
 }
 

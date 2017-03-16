@@ -119,7 +119,7 @@ public:
     Sieve & operator=(Sieve &&old) = delete; //neither movable nor copyable. (not movable due to mutexes)
 
     #if GAUSS_SIEVE_IS_MULTI_THREADED == true
-    explicit Sieve(LatticeBasisType B, unsigned int k=2, unsigned int num_threads=0, TermCondType const termcond = nullptr, unsigned int verbosity_=2, int seed_sampler = 0);
+    explicit Sieve(LatticeBasisType B, unsigned int k, unsigned int num_threads=0, TermCondType const termcond = nullptr, unsigned int verbosity_=2, int seed_sampler = 0);
     #else
     explicit Sieve(LatticeBasisType B, unsigned int k=2, TermCondType const termcond = nullptr, unsigned int verbosity_=2, int seed_sampler = 0);
     #endif // GAUSS_SIEVE_IS_MULTI_THREADED

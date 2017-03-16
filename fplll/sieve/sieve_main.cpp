@@ -115,6 +115,7 @@ int main(int argc, char **argv)
     int opt, dim = 10;
     Z_NR<mpz_t> target_norm;
     target_norm = 0;
+    int k=2;
 
     if (argc == 1)
     {
@@ -122,7 +123,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    while ((opt = getopt(argc, argv, "d:t:")) != -1) {
+    while ((opt = getopt(argc, argv, "d:t:k:")) != -1) {
         switch (opt) {
             case 'd':
                 dim = atoi(optarg);
@@ -130,6 +131,8 @@ int main(int argc, char **argv)
             case 't':
                 target_norm_string = optarg;
                 break;
+            case 'k':
+                k=atoi(optarg);
         }
     }
 
@@ -183,6 +186,8 @@ int main(int argc, char **argv)
     //cout << "run sieve on B[0] = " << B[0] << endl;
     //cout << "B[1] = " << B[1] << endl;
     auto start = std::chrono::high_resolution_clock::now();
+    
+    /*
 	Sieve<Z_NR< mpz_t > , multithreaded> Test_2Sieve (B);
 	TerminationCondition<Z_NR<mpz_t>,multithreaded> * termcond = new MinkowskiTerminationCondition<Z_NR<mpz_t>, multithreaded>;
 	Test_2Sieve.set_termination_condition(termcond);
@@ -197,7 +202,14 @@ int main(int argc, char **argv)
 	cout << "sv is " << endl;
     Test_2Sieve.get_shortest_vector_found().printLatticePoint();
     Test_2Sieve.print_status();
-    //call_sieve(B, 1, target_norm);
+    */
+    
+    Sieve<Z_NR<mpz_t>, false> Test_3Sieve(B, k);
+    TerminationCondition<Z_NR<mpz_t>,false> * termcond = new MinkowskiTerminationCondition<Z_NR<mpz_t>, false>;
+    Test_3Sieve.set_termination_condition(termcond);
+    //Test_3Sieve.run();
+    
+    
     auto finish = std::chrono::high_resolution_clock::now();
     auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(finish-start);
     cout << " Time taken: " << microseconds.count()/1000000.0 << "sec" << endl;

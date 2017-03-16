@@ -48,7 +48,7 @@ void Sieve<ET,false>::run()
     //int MaxIteration = 8000;
     term_cond->init(this); //initialisation of termination conditions.
     LatticePoint<ET> p;
-    //NumVect<ET> sample;
+    cout << "start " << sieve_k << "-Sieve" << endl;
 
     //ET target_norm = term_cond.get_target_length();
     while (!check_if_done() )
@@ -59,7 +59,10 @@ void Sieve<ET,false>::run()
         if (sieve_k==2)
             SieveIteration2(p);
         else if (sieve_k==3)
+        
             SieveIteration3(p);
+            
+        
         //cout << i <<  " list size" << current_list_size << " Queue: " << main_queue.size() << endl << flush;
         ++i;
 //        if (i % 500 == 0) {
@@ -244,6 +247,7 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
             LatticeApproximations::ApproxTypeNorm2 pApproxNorm =  pApprox.get_approx_norm2();
         
             cout << "block 1 is of length: " << assumed_norm_of_current_block1 << endl;
+            cout << "pApproxNorm: " << pApproxNorm << endl;
         
             double px1=.0;
             double px2=.0;
@@ -254,9 +258,19 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
             //if(detC > threshold) //decide if we look inside the blocks at all
         
             if(pApproxNorm > assumed_norm_of_current_block1) //check on the same block
+            {
                 LatticeApproximations::Determine_Sc_Prod(pApproxNorm, assumed_norm_of_current_block1, assumed_norm_of_current_block1, x1x2, px1,px2);
+                //cout << "case 1:" << "x1x2 = " << x1x2 << " px1 = " << px1 << " px2 = " << px2;
+                assert(false);
+            }
             else
+            {
                 LatticeApproximations::Determine_Sc_Prod(assumed_norm_of_current_block1, pApproxNorm, assumed_norm_of_current_block1, px2, px1, x1x2);
+                //cout << "case 2:" << "x1x2 = " << x1x2 << " px1 = " << px1 << " px2 = " << px2;
+                assert(false);
+            }
+        
+            break;
         
             
 

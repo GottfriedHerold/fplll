@@ -72,12 +72,14 @@ int main(int argc, char **argv)
 //		ofs << "----------------------------------------" << endl;
 //	}
     
-    for (int i=0; i<1; i++)
-    {
-        ofs << "start sieve on lattice of dim =  " << dim << endl;
-        test_run_sieve<mpz_t>(dim, ofs);
-        ofs << "----------------------------------------" << endl;
-    }
+//    for (int i=0; i<1; i++)
+//    {
+//        ofs << "start sieve on lattice of dim =  " << dim << endl;
+//        test_run_sieve<mpz_t>(dim, ofs);
+//        ofs << "----------------------------------------" << endl;
+//    }
+    
+    
     
 
    ofs.close();
