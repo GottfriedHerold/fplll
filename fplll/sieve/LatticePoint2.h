@@ -8,6 +8,7 @@
 #include "LatticePoint.h"
 #include <type_traits>
 #include <numeric>
+#include <iomanip>   //to check precision in computing innder-products
 
 #define SCALENORMS 0.995
 
@@ -307,51 +308,68 @@ inline bool LatticeApproximations::Compare_Sc_Prod(ApproxLatticePoint<ET,false,-
 inline void LatticeApproximations::Determine_Sc_Prod (LatticeApproximations::ApproxTypeNorm2 const len_max, LatticeApproximations::ApproxTypeNorm2 const len_x1, LatticeApproximations::ApproxTypeNorm2 const len_x2, double & x1x2, double & px1, double & px2)
 {
     
-    LatticeApproximations:: ApproxTypeNorm2 len_max_quad= len_max * len_max;  // need to make sure it fits
-    LatticeApproximations:: ApproxTypeNorm2 len_x1_quad = len_x1 * len_x1;
-    LatticeApproximations:: ApproxTypeNorm2 len_x2_quad = len_x2 * len_x2;
-    
-    
+    //LatticeApproximations:: ApproxTypeNorm2 len_max_quad= len_max * len_max;
+    //LatticeApproximations:: ApproxTypeNorm2 len_x1_quad = len_x1 * len_x1;
+    //LatticeApproximations:: ApproxTypeNorm2 len_x2_quad = len_x2 * len_x2;
+
     // compute x1x2 - the inner product of two shorter vectors
+    // float should be enough
     
+    float len_max_quad = (float)len_max*(float)len_max;
+    float len_x1_quad = (float)len_x1*(float)len_x1;
+    float len_x2_quad = (float)len_x2*(float)len_x2;
     
-    int term_x1x2 = 16 * len_max_quad - 8*(len_x1 + len_x2) * len_max + len_x1_quad + (14 * len_x1 * len_x2) + len_x2_quad;
+    float term_x1x2 = 16 * len_max_quad - (float)(8*(float)len_x1*(float)len_max) - (float) (8*(float)len_x2 * (float)len_max) + len_x1_quad + (float)(14 * (float)len_x1 * (float)len_x2) + len_x2_quad; //without casting each length individually the result is wrong. -- TO IMPROVE
     
-    double sqrt_term_x1x2 = sqrt(term_x1x2);
+    float sqrt_term_x1x2 = sqrt(term_x1x2);
     
+    float term2 = (-4*(float)len_max + (float)len_x1 + (float)len_x2);
     
-    int term2 = -4 * len_max + len_x1 + len_x2;
+    float num = term2 + sqrt_term_x1x2;
     
-    double denom = sqrt((36 * len_max * len_x2));
+    long product = 36 * (long)len_x1 * (long)len_x2; //does not fit otherwise
     
-    double nom = (double) term2 + sqrt_term_x1x2;
+    float denom = sqrt((float) product);
+
     
-    cout << "nom = " << nom << " denom = " << denom << endl;
-    cout << "(double)(36 * len_max * len_x2)  " << (double)(36 * len_max * len_x2) << endl;
+//    cout << "num = " << num << " denom = " << denom << endl;
+//    cout << "term_x1x2 = " << setprecision(16) << term_x1x2 << endl;
+//    cout << "sqrt_term_x1x2 = " << setprecision(16) << sqrt_term_x1x2 << endl;
+//    cout << "term2 = " << term2 << endl;
+//    cout << "lex_max = " << len_max << endl;
+//    cout << "len_x1 = " << len_x1 << endl;
+//    cout << "len_x2 = " << len_x2 << endl;
     
+    x1x2 =  - num / denom;
     
-    x1x2 = - nom / denom;
+    cout << "x1x2 = " << setprecision(16) <<  x1x2 << endl;
+    cout << "----------- " << endl;
     
     //compute px1
     
-    double x1x2_sq = x1x2*x1x2;
-    double x1x2quad =x1x2_sq*x1x2_sq;
-    double sqrt_len_x1 = sqrt(len_x1);
+    float x1x2_sq = x1x2*x1x2;
+    float x1x2quad =x1x2_sq*x1x2_sq;
+    float sqrt_len_x1 = sqrt(len_x1);
     
-    double term_px1 = double ((double) (9*len_x1) * x1x2quad + (double)(16 *len_max)*x1x2_sq - (double)(10*len_x1)*x1x2_sq + (double)len_x1);
+    float term_px1 = float ((float) (9*len_x1) * x1x2quad + (float)(16 *len_max)*x1x2_sq - (float)(10*len_x1)*x1x2_sq + (float)len_x1);
     
-    nom = 3*x1x2_sq* sqrt_len_x1- 3*sqrt_len_x1 + sqrt(term_px1);
+    num = 3*x1x2_sq* sqrt_len_x1- 3*sqrt_len_x1 + sqrt(term_px1);
     
-    denom = 4 * sqrt(len_max);
+    denom = 4 * sqrt((float)len_max);
     
-    px1  = nom / denom;
+    px1  = num / denom;
+    
+    cout << "px1 = " << setprecision(16) <<  px1 << endl;
     
     //compute px2
     
-    nom = x1x2_sq * sqrt_len_x1 - sqrt_len_x1 +sqrt(term_px1);
-    denom = 4*x1x2*sqrt(len_max);
+    num = x1x2_sq * sqrt_len_x1 - sqrt_len_x1 +sqrt(term_px1);
+    denom = 4*x1x2*sqrt(float(len_max));
     
-    px2 = nom / denom;
+    px2 = num / denom;
+    
+    //cout << "num = " << num << " denom = " << denom << endl;
+    cout << "px2 = " << setprecision(16) <<  px2 << endl;
     
     //cout << "x1x2 = " << & x1x2 << " px1 = " << & px1 << " px2 = " << & px2;
     
