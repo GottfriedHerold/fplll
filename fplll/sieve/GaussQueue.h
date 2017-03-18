@@ -24,6 +24,7 @@ using GaussQueueMT=GaussQueue<ET,true>;
 #include "assert.h"
 #include "SieveGauss.h"
 #include <utility>
+#include "Sampler.h"
 
 template<class ET> class IsLongerVector_classPtr
 {

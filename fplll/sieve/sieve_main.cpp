@@ -172,7 +172,7 @@ int main(int argc, char **argv)
 
     //cout << inner_prod << endl;
     FilteredPoint<Z_NR<mpz_t>> l (X, inner_prod);
-
+    KleinSamplerOld<Z_NR<mpz_t>,false, FP_NR<double>> SamplerTest; //to make sure template is instantiated.
     //cout << "A point from a filtered list: " << l.getApproxVector() << " sc_prod: " << l.get_sc_prod() << endl;
 
     //cout << X;
@@ -186,7 +186,7 @@ int main(int argc, char **argv)
     //cout << "run sieve on B[0] = " << B[0] << endl;
     //cout << "B[1] = " << B[1] << endl;
     auto start = std::chrono::high_resolution_clock::now();
-    
+
     /*
 	Sieve<Z_NR< mpz_t > , multithreaded> Test_2Sieve (B);
 	TerminationCondition<Z_NR<mpz_t>,multithreaded> * termcond = new MinkowskiTerminationCondition<Z_NR<mpz_t>, multithreaded>;
@@ -203,13 +203,13 @@ int main(int argc, char **argv)
     Test_2Sieve.get_shortest_vector_found().printLatticePoint();
     Test_2Sieve.print_status();
     */
-    
+
     Sieve<Z_NR<mpz_t>, false> Test_3Sieve(B, k);
     TerminationCondition<Z_NR<mpz_t>,false> * termcond = new MinkowskiTerminationCondition<Z_NR<mpz_t>, false>;
     Test_3Sieve.set_termination_condition(termcond);
     //Test_3Sieve.run();
-    
-    
+
+
     auto finish = std::chrono::high_resolution_clock::now();
     auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(finish-start);
     cout << " Time taken: " << microseconds.count()/1000000.0 << "sec" << endl;
