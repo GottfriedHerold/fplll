@@ -57,6 +57,7 @@ inline ApproxTypeNorm2 compute_sc_prod(ApproxType const * const arg1, ApproxType
 template<class ET>
 inline bool Compare_Sc_Prod(ApproxLatticePoint<ET,false,-1> const & arg1, ApproxLatticePoint<ET,false,-1> const & arg2, ApproxTypeNorm2 abslimit, int limit_exp, int dim);
 inline void Determine_Sc_Prod (ApproxTypeNorm2 len_max, ApproxTypeNorm2 len_x1, ApproxTypeNorm2 len_x2,  double & x1x2, double & px1, double & px2);
+inline double detConf (double px1, double px2, double x1x2);
 }
 
 
@@ -342,9 +343,6 @@ inline void LatticeApproximations::Determine_Sc_Prod (LatticeApproximations::App
     
     x1x2 =  - num / denom;
     
-    cout << "x1x2 = " << setprecision(16) <<  x1x2 << endl;
-    cout << "----------- " << endl;
-    
     //compute px1
     
     float x1x2_sq = x1x2*x1x2;
@@ -359,7 +357,7 @@ inline void LatticeApproximations::Determine_Sc_Prod (LatticeApproximations::App
     
     px1  = num / denom;
     
-    cout << "px1 = " << setprecision(16) <<  px1 << endl;
+    //cout << "px1 = " << setprecision(16) <<  px1 << endl;
     
     //compute px2
     
@@ -369,9 +367,8 @@ inline void LatticeApproximations::Determine_Sc_Prod (LatticeApproximations::App
     px2 = num / denom;
     
     //cout << "num = " << num << " denom = " << denom << endl;
-    cout << "px2 = " << setprecision(16) <<  px2 << endl;
+    //cout << "px2 = " << setprecision(16) <<  px2 << endl;
     
-    //cout << "x1x2 = " << & x1x2 << " px1 = " << & px1 << " px2 = " << & px2;
     
 }
 
@@ -483,7 +480,7 @@ Computes the determinant of
                 [px2 x1x2 1]
  
 */
-inline double detConf (double px1, double px2, double x1x2)
+inline double LatticeApproximations::detConf (double px1, double px2, double x1x2)
 {
     return 2 * px1 * px2 * x1x2 - px1 * px1 - px2 * px2 - x1x2 * x1x2 + 1;
 }
