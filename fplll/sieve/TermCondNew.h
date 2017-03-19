@@ -35,8 +35,9 @@
 //We assume that if we dump a Termination condition T1 to a filestream and read it into T2, then T2 will be in the same status as T1.
 //You may need to overwrite dump_to_stream / read_from_stream to enable that.
 //Reading in needs to work on already initialised data (i.e. has to overwrite previous values).
-//Note that after reading in, we are guaranteed that init() is called before we do any check() or check_vec().
-
+//After reading in, we are guaranteed that init() is called before we do any check() or check_vec().
+//For custom termination conditions making use of statistics, assume that check() is only called rarely and that statistics collected might be lagging behind (due to inter-thread synchronisation buffers).
+//In particular, only ever compare >= or <= and never ==.
 
 template<class ET, bool MT>
 class TerminationCondition;
@@ -96,11 +97,11 @@ template<class ET,bool MT>
 class NeverTerminationCondition : public TerminationCondition<ET,MT> //never terminate
 {
     public:
-    virtual int check(Sieve<ET,MT> * const sieve) {return 0;};
-    virtual int check_vec(Sieve<ET,MT> * const sieve, ET const & length2) {return 0;};
-    virtual bool is_simple() const {return true;};
+    virtual int check(Sieve<ET,MT> * const sieve) override                              {return 0;};
+    virtual int check_vec(Sieve<ET,MT> * const sieve, ET const & length2) override      {return 0;};
+    virtual bool is_simple() const override                                             {return true;};
     virtual ~NeverTerminationCondition() {};
-    virtual TerminationConditionType  termination_condition_type() const {return TerminationConditionType::never_terminate;};    //run-time type information.
+    virtual TerminationConditionType  termination_condition_type() const override       {return TerminationConditionType::never_terminate;};    //run-time type information.
 };
 
 template<class ET,bool MT>
@@ -108,17 +109,17 @@ class LengthTerminationCondition : public TerminationCondition<ET,MT> //Length T
 {
     public:
     LengthTerminationCondition(ET const & init_target_length) : target_length(init_target_length) {};
-    virtual int check(Sieve<ET,MT> * const sieve)                           {return (sieve -> get_best_length2()<=target_length)?1:0;};
-    virtual int check_vec(Sieve<ET,MT> * const sieve, ET const & length2)   {return (length2<=target_length)?1:0;};
-    virtual bool is_simple() const {return true;};
-    virtual TerminationConditionType  termination_condition_type() const {return TerminationConditionType::length_condition;};    //run-time type information.
+    virtual int check(Sieve<ET,MT> * const sieve) override                              {return (sieve -> get_best_length2()<=target_length)?1:0;};
+    virtual int check_vec(Sieve<ET,MT> * const sieve, ET const & length2) override      {return (length2<=target_length)?1:0;};
+    virtual bool is_simple() const override                                             {return true;};
+    virtual TerminationConditionType  termination_condition_type() const override       {return TerminationConditionType::length_condition;};    //run-time type information.
     virtual ~LengthTerminationCondition() {};
     class bad_dumpread_LengthTermCond:public std::runtime_error
     {
         public: bad_dumpread_LengthTermCond():runtime_error("Dump read failed for LengthTerminationCondition") {}
     }; //exception indicating that read from dump failed.
-    virtual ostream & dump_to_stream(ostream &os)                           {os << "Target Length=" << target_length << endl; return os;}
-    virtual istream & read_from_stream(istream &is)
+    virtual ostream & dump_to_stream(ostream &os) override                              {os << "Target Length=" << target_length << endl; return os;}
+    virtual istream & read_from_stream(istream &is) override
     {
         if(!GaussSieve::string_consume(is,"Target Length=")) throw bad_dumpread_LengthTermCond();
         is >> target_length;
@@ -133,12 +134,12 @@ class MinkowskiTerminationCondition : public TerminationCondition<ET,MT> //Lengt
 {
     public:
     MinkowskiTerminationCondition() : target_length() {}; //unitialised. We are guaranteed that init() is run before use.
-    virtual int check(Sieve<ET,MT>  * const sieve)                           {return (sieve -> get_best_length2()<=target_length)?1:0;};
-    virtual int check_vec(Sieve<ET,MT>  * const sieve, ET const & length2)   {return (length2<=target_length)?1:0;};
-    virtual bool is_simple() const                                           {return true;};
-    virtual TerminationConditionType  termination_condition_type() const     {return TerminationConditionType::minkowski_condition;};    //run-time type information.
+    virtual int check(Sieve<ET,MT>  * const sieve) override                          {return (sieve -> get_best_length2()<=target_length)?1:0;};
+    virtual int check_vec(Sieve<ET,MT>  * const sieve, ET const & length2) override  {return (length2<=target_length)?1:0;};
+    virtual bool is_simple() const override                                          {return true;};
+    virtual TerminationConditionType  termination_condition_type() const override    {return TerminationConditionType::minkowski_condition;};    //run-time type information.
     virtual ~MinkowskiTerminationCondition() {};
-    virtual void init(Sieve<ET,MT> * const sieve)                            {target_length = GaussSieve::compute_mink_bound(sieve->get_original_basis());};
+    virtual void init(Sieve<ET,MT> * const sieve) override                           {target_length = GaussSieve::compute_mink_bound(sieve->get_original_basis());};
     private:
     ET target_length;
 };
