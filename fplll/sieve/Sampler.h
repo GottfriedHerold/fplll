@@ -24,15 +24,15 @@ class KleinSamplerOld;
 
 namespace GaussSieve
 {
-    #ifdef __GNUC__ //GCC has constexpr variants of trigonometric functions
-    long double constexpr pi_long = std::atan2(0, -1); // pi = 3.14...
-    double constexpr pi_double = std::atan2(0,-1);
-    long double constexpr pi=std::atan2(0,-1);
-    #else
+//    #if __GNUG__ //GCC has constexpr variants of trigonometric functions. Unfortunately, other compilers also define __GNUC__ and so on and detecting this at compile time is a pain.
+//    long double constexpr pi_long = std::atan2(0, -1); // pi = 3.14...
+//    double constexpr pi_double = std::atan2(0,-1);
+//    long double constexpr pi=std::atan2(0,-1);
+//    #else
     long double constexpr pi_long = 3.14159265358979323846264338327950288419716939937510L;
     long constexpr pi_double = 3.14159265358979323846264338327950288419716939937510;
     long double constexpr pi = 3.14159265358979323846264338327950288419716939937510L;
-    #endif // __GNUC__
+//    #endif // __GNUC__
 
     template<class Z, class Engine>
     Z sample_z_gaussian(double s, double center, Engine & engine, double cutoff);
@@ -172,6 +172,7 @@ Z GaussSieve::sample_z_gaussian(double s, double center, Engine & engine, double
 //This is too compiler/implementation-specific and does not work most of the time...
 
     static_assert(is_integral<Z>::value,"Return type for sample_z_gaussian must be POD integral type.");
+
     Z maxdev = static_cast<Z>(std::ceil(s * cutoff)); //maximum deviation of the Gaussian from the center. Note that maxdev may be 1.
     std::uniform_int_distribution<Z> uniform_in_range (std::floor(center-maxdev),std::ceil(center+maxdev));
     std::uniform_real_distribution<double> rejection_test(0.0,1.0); //defaults to value from [0,1), used in rejection sampling.
