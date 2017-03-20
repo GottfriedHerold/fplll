@@ -211,91 +211,124 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
     ET scalar;
 
     //typename MainListType::Iterator it_comparison_flip=main_list.cend();
+    
+    float length_factor = 1.15; //to be verified
+    
+    typename MainListType::Iterator first_element_of_a_block = main_list.cbegin();
+    LatticeApproximations::ApproxTypeNorm2 pApproxNorm =  pApprox.get_approx_norm2();
+    
+    //the largest norm
+    auto longest_v = main_list.cend();
+    LatticeApproximations::ApproxTypeNorm2 largest_norm = longest_v->get_approx_norm2();
 
-
-    for (auto it = main_list.cbegin(); it!=main_list.cend(); ++it)
-    {
-            if (p.norm2 < it.get_true_norm2()) // 
+    bool outer_loop = true;
+    
+    // store target inner-products for the currently considered pair of blocks
+    double px1=.0;
+    double px2=.0;
+    double x1x2=.0;
+    
+    //assume we have to lists LHS and RHS. Outer loop is over the blocks of the LHS list. For each block (which defines the length of x1), a corresponding filtering is applied to the RHS list. This is a 'standard' loop. The overhead is the number of blocks.
+    
+    // loop over the blocks in LHS
+    while (outer_loop) {
+        
+        LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_current_block_LHS =  first_element_of_a_block->get_approx_norm2();
+        LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_current_block_RHS =  first_element_of_a_block->get_approx_norm2();
+        
+        //max length of elements in the current block
+        
+        LatticeApproximations::ApproxTypeNorm2 max_length_of_current_block = floor(length_factor * assumed_norm_of_current_block_LHS + 1);
+        
+        //check if max_length_of_current_block is less then the longest vector in the list. If yes, reset
+        
+        if(max_length_of_current_block > largest_norm) //this also means we are in the last block on the LHS. TODO: use it for the while-condition
+        {
+            max_length_of_current_block = largest_norm;
+            outer_loop = false;
+        }
+        
+        // compute targets <p, x1>, <p,x2> for the block (i,i); p has the largest norm
+        
+        LatticeApproximations::Determine_Sc_Prod(pApproxNorm, assumed_norm_of_current_block_LHS, assumed_norm_of_current_block_RHS, x1x2, px1,px2);
+        
+        //iterate over the RHS list starting from the first_element_of_a_block
+        
+        for (auto it = first_element_of_a_block; it!=main_list.cend(); ++it)
+        {
+            if (p.norm2 < it.get_true_norm2())
+            {
+                outer_loop = false;
                 break;
-
+            }
+            
             // check if 2-red is possible
             ++number_of_scprods;
             bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n   );
             if(!predict) continue;
-
+            
             ++number_of_exact_scprods;
             if ( GaussSieve::check2red_new(p, *(it.access_details()), scalar) )
             {
                 p = GaussSieve::perform2red(p, *(it.access_details()), scalar);
-
+                
                 //put p back into the queue and break
                 if (p.norm2!=0)
                     main_queue.push(p);
-
+                
                 break;
             }
             else
                 ++number_of_mispredictions;
-     }
-     //run 3-reductions
+        }
+ 
         
-     // Compute the target inner-products <p, x_i>, <p, x_j>, <x_i, x_j> given ||p||, ||x_i||, ||x_j|| for all pairs of blocks (i,j).
+        // TODO: loop over the blocks
+//        while (block1_loop)
+//        {
+//            
+//            cout << "block 2 is of length: " << assumed_norm_of_current_block2 << endl;
+//            //cout << "pApproxNorm: " << pApproxNorm << endl;
+//            
+//            double px1=.0;
+//            double px2=.0;
+//            double x1x2=.0;
+//            
+//            double detC=.0;
+//            
+//            if(pApproxNorm > assumed_norm_of_current_block1) // I think it should be assumed_norm_of_current_block2
+//            {
+//                LatticeApproximations::Determine_Sc_Prod(pApproxNorm, assumed_norm_of_current_block1, assumed_norm_of_current_block2, x1x2, px1,px2);
+//                cout << "case 1:" << "x1x2 = " << x1x2 << " px1 = " << px1 << " px2 = " << px2 << endl;
+//                detC = LatticeApproximations::detConf(px1, px2, x1x2);
+//                cout << "detC = " << detC << endl;
+//                assert(false);
+//            }
+//            else
+//            {
+//                LatticeApproximations::Determine_Sc_Prod(assumed_norm_of_current_block1, pApproxNorm, assumed_norm_of_current_block2, px2, px1, x1x2);
+//                cout << "case 2:" << "x1x2 = " << x1x2 << " px1 = " << px1 << " px2 = " << px2 << endl;
+//                //detC = LatticeApproximations::detConf(px1, px2, x1x2);
+//                //cout << "detC = " << detC << endl;
+//                //cout << "something went wrong... terminating " << px2 << endl;
+//                assert(false);
+//            }
+//            
+//            //if(detC > threshold) //decide if we look inside the blocks at all
+//            
+//            // try to 3-reduce p
+//            
+//            
+//            // for all pairs of vectors from the current blocks, check how close <p, x1>, <p, x2>, <x1, x2> to the target values
+//            
+//            
+//            }
+
         
-     float length_factor = 1.15; //to be verified
-     LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_current_block1 =  main_list.cbegin()->get_approx_norm2();
-     LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_current_block2 =  main_list.cbegin()->get_approx_norm2();
-     LatticeApproximations::ApproxTypeNorm2 pApproxNorm =  pApprox.get_approx_norm2();
-
-
-// TODO: loop over the blocks
-     bool block1_loop = true;
-     while (block1_loop)
-     {
         
-            cout << "block 1 is of length: " << assumed_norm_of_current_block1 << endl;
-	    cout << "block 2 is of length: " << assumed_norm_of_current_block2 << endl;
-            //cout << "pApproxNorm: " << pApproxNorm << endl;
         
-            double px1=.0;
-            double px2=.0;
-            double x1x2=.0;
         
-            double detC=.0;
-        
-            if(pApproxNorm > assumed_norm_of_current_block1) // I think it should be assumed_norm_of_current_block2
-            {
-                LatticeApproximations::Determine_Sc_Prod(pApproxNorm, assumed_norm_of_current_block1, assumed_norm_of_current_block2, x1x2, px1,px2);
-                cout << "case 1:" << "x1x2 = " << x1x2 << " px1 = " << px1 << " px2 = " << px2 << endl;
-		detC = LatticeApproximations::detConf(px1, px2, x1x2);
-		cout << "detC = " << detC << endl;
-                assert(false);
-            }
-            else
-            {
-		LatticeApproximations::Determine_Sc_Prod(assumed_norm_of_current_block1, pApproxNorm, assumed_norm_of_current_block2, px2, px1, x1x2);
-                cout << "case 2:" << "x1x2 = " << x1x2 << " px1 = " << px1 << " px2 = " << px2 << endl;
-		//detC = LatticeApproximations::detConf(px1, px2, x1x2);
-		//cout << "detC = " << detC << endl;
-                //cout << "something went wrong... terminating " << px2 << endl;
-                assert(false);
-            }
-
-	    //if(detC > threshold) //decide if we look inside the blocks at all
-
-	    // try to 3-reduce p
-
-	    
-            // for all pairs of vectors from the current blocks, check how close <p, x1>, <p, x2>, <x1, x2> to the target values
-
-
-      }
-
-	    
-
-	   		
-
-  //  }
-
+    }
 
 };
 
