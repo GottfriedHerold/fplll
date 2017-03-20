@@ -6,21 +6,20 @@
 #include <iostream>
 #include <cfenv>
 
-template<class ET, bool MT, class Sseq = std::seed_seq>
+template<class ET, bool MT, class Engine, class Sseq = std::seed_seq>
 class Sampler;
 template<class ET,bool MT> ostream & operator<<(ostream &os, Sampler<ET,MT>* const samplerptr); //printing
 template<class ET,bool MT> istream & operator>>(istream &is, Sampler<ET,MT>* const samplerptr); //reading (may also be used by constructor from istream)
 enum class SamplerType
 {
     user_defined = 0,
-    klein_old    = 1
+    elliptic_sampler= 1
 };
 template<class Engine, bool MT, class Sseq = std::seed_seq> //make separate class to allow specialisation for MT.
-class MTPRNG;                     //wrapper around (a vector of) random number engines of type Engine
-template<class ET, bool MT, class Sseq = std::seed_seq>
-class KleinSamplerNew;
-template<class ET, bool MT, class F, class Sseq = std::seed_seq>
-class KleinSamplerOld;
+class MTPRNG;                    //wrapper around (a vector of) random number engines of type Engine
+//template<class ET, bool MT, class Sseq = std::seed_seq>
+//class KleinSamplerNew;
+
 
 namespace GaussSieve
 {
@@ -30,12 +29,14 @@ namespace GaussSieve
 //    long double constexpr pi=std::atan2(0,-1);
 //    #else
     long double constexpr pi_long = 3.14159265358979323846264338327950288419716939937510L;
-    long constexpr pi_double = 3.14159265358979323846264338327950288419716939937510;
+    double constexpr pi_double = 3.14159265358979323846264338327950288419716939937510;
     long double constexpr pi = 3.14159265358979323846264338327950288419716939937510L;
 //    #endif // __GNUC__
 
     template<class Z, class Engine>
-    Z sample_z_gaussian(double s, double center, Engine & engine, double cutoff);
+    Z sample_z_gaussian(double s, double const center, Engine & engine, double const cutoff);
+    template<class Z, class Engine>
+    Z sample_z_gaussian_VMD(double const s2pi, double const center, Engine & engine, double const maxdeviation);
     //samples from a discrete Gaussian distribution with parameter s and center c. We cutoff the Gaussian at s*cutoff.
     //i.e. the distribution is discrete on Z with output probability for x being proportional to exp(- pi(x-c)^2/s^2). Note the scaling by pi in the exponent.
     //For reasons of numerical stability, center should not be very large in absolute value (it is possible to reduce to |center|<1 anyway), s.t.
@@ -44,6 +45,8 @@ namespace GaussSieve
     //We do NOT support mpz_t here! Note that the output takes the role of coefficients wrt a given basis.
     //We only support double. For sieving algorithms, there is no really good reason to support higher precision.
     //Note: if one wants to have higher precision, one also needs to adjust the PRNGs to actually output high precision.
+    //The variant sample_z_gaussian_VMD takes s2pi = s^2 * pi and cutoff * s as parameters.
+
 
     //inline double gaussian_fn(double s, double x);                  //computes the (scaled) Gaussian density exp(-pi x^2 / s^2)
     //inline double gaussian_fn_adj(double s, double x, double adj);  //computes the (scaled) Gaussian density exp(-pi (x^2 - adj)/s^2 )
@@ -97,15 +100,16 @@ class MTPRNG<Engine, false, Sseq>
 
 //generic Sampler. All other sampler are derived from it.
 
-template<class ET,bool MT, class Sseq> //Sseq is supposed to satisfy the C++ concept "SeedSequence". The standard library has std::seed_seq as a canonical example.
+template<class ET,bool MT, class Engine, class Sseq> //Sseq is supposed to satisfy the C++ concept "SeedSequence". The standard library has std::seed_seq as a canonical example.
 class Sampler
 //Note :    In multi-threaded environment, we only have 1 sampler object
 //          caller_thread is set to -1 if we make a single-threaded call
 {
     public:
-    friend ostream & operator<< <ET,MT>(ostream &os, Sampler<ET,MT,Sseq>* const samplerptr);
-    friend istream & operator>> <ET,MT>(istream &is, Sampler<ET,MT,Sseq>* const samplerptr);
+    friend ostream & operator<< <ET,MT>(ostream &os, Sampler<ET,MT,Engine, Sseq>* const samplerptr);
+    friend istream & operator>> <ET,MT>(istream &is, Sampler<ET,MT,Engine, Sseq>* const samplerptr);
 
+    Sampler<ET,MT,Engine,Sseq> (Sseq initial_seed) {}
     virtual void init(Sieve<ET,MT> * const sieve, Sseq seed) {}                           //called before any points are sampled;
     virtual ~Sampler()=0; //needs to be virtual
     virtual SamplerType  sampler_type() const {return SamplerType::user_defined;};    //run-time type information.
@@ -119,6 +123,7 @@ class Sampler
     private:
     virtual ostream & dump_to_stream(ostream &os)  {return os;};    //dummy implementation of << operator.
     virtual istream & read_from_stream(istream &is){return is;};    //dummy implementation of >> operator.
+    MTPRNG<Engine, MT, Sseq> engine;
 
 };
 template <class ET,bool MT, class Sseq>
@@ -128,44 +133,13 @@ template<class ET,bool MT> ostream & operator<<(ostream &os,Sampler<ET,MT>* cons
 template<class ET,bool MT> istream & operator>>(istream &is,Sampler<ET,MT>* const samplerptr){return samplerptr->read_from_stream(is);};
 
 
-//GPV / Klein sampler, adapted from old sampler_basic.*, but using our own conventions.
-
-template<class ET,bool MT, class F,class Sseq>
-class KleinSamplerOld : public Sampler<ET,MT, Sseq>
-{
-    public:
-    virtual void init(Sieve<ET,MT> * const sieve, Sseq seed) override;
-    virtual SamplerType  sampler_type() const override                          {return SamplerType::klein_old;};
-    virtual ~KleinSamplerOld();
-    virtual LatticePoint<ET> sample(int thread=0) override;
-    private:
-    Sieve<ET,MT> * sieveptr; //pointer to parent sieve.
-    ZZ_mat<typename ET::underlying_data_type> current_basis;
-};
-
-template<class ET,bool MT, class F, class Sseq>
-void KleinSamplerOld<ET,MT,F,Sseq>::init(Sieve<ET,MT> * const sieve, Sseq seed)
-{
-
-}
-template<class ET,bool MT, class F, class Sseq>
-KleinSamplerOld<ET,MT,F,Sseq>::~KleinSamplerOld()
-{
-
-}
-
-template<class ET,bool MT, class F, class Sseq>
-LatticePoint<ET> KleinSamplerOld<ET,MT,F,Sseq>::sample(int thread)
-{
-
-}
 
 /**
  * sampling Z by rejection sampling
  */
 
 template<class Z, class Engine>
-Z GaussSieve::sample_z_gaussian(double s, double center, Engine & engine, double cutoff)
+Z GaussSieve::sample_z_gaussian(double s, double const center, Engine & engine, double const cutoff)
 {
 //Note : The following allows to access / modify floating point exceptions and modes.
 //#pragma STDC FENV_ACCESS on
@@ -205,5 +179,47 @@ Z GaussSieve::sample_z_gaussian(double s, double center, Engine & engine, double
         }
     }
 }
+
+template<class Z, class Engine>
+Z sample_z_gaussian_VMD(double const s2pi, double const center, Engine & engine, double const maxdeviation)
+{
+//Note : The following allows to access / modify floating point exceptions and modes.
+//#pragma STDC FENV_ACCESS on
+//This is too compiler/implementation-specific and does not work most of the time...
+
+    static_assert(is_integral<Z>::value,"Return type for sample_z_gaussian must be POD integral type.");
+
+    std::uniform_int_distribution<Z> uniform_in_range (std::floor(center-maxdeviation),std::ceil(center+maxdeviation));
+    std::uniform_real_distribution<double> rejection_test(0.0,1.0); //defaults to value from [0,1), used in rejection sampling.
+    Z closest_int = std::round(center); //closest int to center, i.e. most likely value.
+    double adj = -(center-closest_int)*(center-closest_int); //negative squared distance to most likely value. Used to scale up the Gaussian weight function s.t. it is 1 at the most likely value.
+
+    //std::fenv_t env;
+    //feholdexcept( &env); //This disables all floating-point exceptions.
+
+//use rejection sampling
+    while(true)
+    {
+        Z result = uniform_in_range(engine); //sample uniform result.
+        double dist = result - center;
+    //compute Gaussian weight. std::fma(dist,dist,adj) computes dist^2 + adj = (result-center)^2  - MIN{(result-center)^2 | result integral}.
+    //s was overwritten to be s^2/pi.
+
+    //Note that the argument of the exp-function might be a tiny positive value due to numeric error
+    //(Even if result==closest_int, adj = ROUND((closest_int-center)^2), the computation of std::fma(dist,dist,adj) does not round the intermediate dist^2, leading to a non-zero argument)
+    //In particular, it is conceivable that floating point underruns occur in the std::fma - call.
+    //Furthermore, if cutoff is large or if s<<1 (in this case, the issue is the rounding when we determined the range), the argument to exp can be extremely small, leading to further potential underruns.
+    //We do not care about this for now...
+
+        if( rejection_test(engine) <  std::exp(-std::fma(dist,dist,adj)/s2pi))
+        {
+            //std::feclearexcept(FE_UNDERFLOW);
+            //std::feupdateenv(&env);
+            return result;
+        }
+    }
+}
+
+
 
 #endif

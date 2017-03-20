@@ -119,7 +119,7 @@ public:
     Sieve & operator=(Sieve &&old) = delete; //neither movable nor copyable. (not movable due to mutexes)
 
     #if GAUSS_SIEVE_IS_MULTI_THREADED == true
-    explicit Sieve(LatticeBasisType B, unsigned int k, unsigned int num_threads=0, TermCondType const termcond = nullptr, unsigned int verbosity_=2, int seed_sampler = 0);
+    explicit Sieve(LatticeBasisType B, unsigned int k=2, unsigned int num_threads=0, TermCondType const termcond = nullptr, unsigned int verbosity_=2, int seed_sampler = 0);
     #else
     explicit Sieve(LatticeBasisType B, unsigned int k=2, TermCondType const termcond = nullptr, unsigned int verbosity_=2, int seed_sampler = 0);
     #endif // GAUSS_SIEVE_IS_MULTI_THREADED
@@ -335,7 +335,7 @@ void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_stream(ostream &of,
     if(howverb>=1) {of << "sv is: "; main_list.cbegin().get_exact_point().printLatticePoint();} //TODO: Remove (shortest_vector_found above should rather do this).
 	// to check the ratio between the shortest and the longest vectors in the list
     if(howverb>=1) {
-		auto it = main_list.cend(); 
+		auto it = main_list.cend();
 		// operator--() is needed for tests
 		--(it);
 		of << "longest vector is: "; it.get_exact_point().printLatticePoint();

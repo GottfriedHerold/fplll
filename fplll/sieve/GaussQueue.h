@@ -25,6 +25,7 @@ using GaussQueueMT=GaussQueue<ET,true>;
 #include "SieveGauss.h"
 #include <utility>
 #include "Sampler.h"
+#include "EllipticSampler.h"
 
 template<class ET> class IsLongerVector_classPtr
 {

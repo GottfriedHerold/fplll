@@ -44,6 +44,7 @@ template <class ZT, class F> KleinSampler<ZT, F>::KleinSampler(ZZ_mat<ZT> &B, bo
   srand(seed);
   set_verbose(ver);
   print_param();
+  cout << *s_prime;
 }
 
 template <class ZT, class F> KleinSampler<ZT, F>::~KleinSampler()

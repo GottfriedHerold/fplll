@@ -67,6 +67,32 @@ int main(int argc, char **argv)
 sample_gaussians<long>(50, 10.0, 0.3, 4.0);
 sample_gaussians<long>(50, 0.0000001, 0.48, 4.0); //should still be fast.
 
+
+ZZ_mat<mpz_t> B,u,u_inv;
+B.resize(10, 10);
+Matrix<FP_NR<double > > r,mu;
+Matrix<Z_NR<mpz_t> > g;
+    //generates a lower-triangular matrix B; the argument determines (in a complicated way) the bit-size of entries
+    //B.gen_trg(1.1);
+
+srand (1);
+    //generates GM lattice
+B.gen_qary_prime(1, 15);
+
+
+auto pGSO = new MatGSO<Z_NR<mpz_t>, FP_NR<double>>(B, u, u_inv, 1);
+
+  pGSO->update_gso();
+  mu = pGSO->get_mu_matrix();
+  r  = pGSO->get_r_matrix();
+  g  = pGSO->get_g_matrix();
+
+cout << B << endl;
+cout << mu<< endl;
+cout << r << endl;
+cout << g << endl;
+
+
 //        //int dim[] = {52, 54, 56, 58, 60, 62, 64};
 //        int dim = 62;
 //        int length = 7;
