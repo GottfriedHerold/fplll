@@ -11,6 +11,8 @@
 #include "LatticePoint2.h"
 #include <iostream>
 #include <fstream>
+#include "Sampler.h"
+#include <random>
 
 using namespace fplll;
 
@@ -19,69 +21,77 @@ using namespace fplll;
 template <class ZT> void test_run_sieve(int dim, std::ofstream &ofs)
 {
     //TerminationConditions< Z_NR<ZT> > term_cond; //sets target-legnth as Mink. bound
-   
-    
+
+
     //lll_reduction(B, LLL_DEF_DELTA, LLL_DEF_ETA, LM_WRAPPER);
     //Sieve<Z_NR<ZT>, false> Test_Queue (B);
     //Test_Queue.run_2_sieve();
-    
+
     ZZ_mat<ZT> BTest;
     BTest.resize(dim, dim);
     //BTest.gen_trg(1.1);
     srand (1);
     BTest.gen_qary_prime(1, 10*dim);
-    
+
     if (dim >= 60)
         bkz_reduction(BTest, 8, BKZ_DEFAULT, FT_DEFAULT, 0);
     else
         lll_reduction(BTest, LLL_DEF_DELTA, LLL_DEF_ETA, LM_WRAPPER);
-    
+
     Sieve<Z_NR<ZT>, false> Test_Queue (BTest);
-    
+
     ofs << "sieve is run on B[0]" << BTest[0] << endl;
-    
+
     auto start = std::chrono::high_resolution_clock::now();
     Test_Queue.run();
     auto finish = std::chrono::high_resolution_clock::now();
     auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(finish-start);
 
     Test_Queue.print_status(-1,ofs);
-    
-    
+
+
     ofs << " Time taken: " << microseconds.count()/1000000.0 << "sec" << endl;
+}
+
+template <class Z> void sample_gaussians(int number, double s, double center, double cutoff)
+{
+    std::mt19937_64 engine;
+    for (int i=0; i<number;++i)
+    {
+        cout << GaussSieve::sample_z_gaussian<Z, std::mt19937_64>(s,center,engine, cutoff) << endl;
+    }
 }
 
 int main(int argc, char **argv)
 {
-        //int dim[] = {52, 54, 56, 58, 60, 62, 64};
-        int dim = 62;
-        int length = 7;
+sample_gaussians<long>(50, 10.0, 0.3, 4.0);
+sample_gaussians<long>(50, 0.0000001, 0.48, 4.0); //should still be fast.
 
-    	#ifdef USE_REGULAR_QUEUE 
-        std::ofstream ofs("test_sieve_PQ_dim" +to_string(dim) + ".txt");
-		ofs << "WITH PRIORITY QUEUE" << endl;
-	#else 
-		std::ofstream ofs("test_sieve_dim"+to_string(dim) + ".txt");
-		ofs << "WITH STANDARD QUEUE" << endl;
-	#endif
+//        //int dim[] = {52, 54, 56, 58, 60, 62, 64};
+//        int dim = 62;
+//        int length = 7;
+//
+//    	#ifdef USE_REGULAR_QUEUE
+//        std::ofstream ofs("test_sieve_PQ_dim" +to_string(dim) + ".txt");
+//		ofs << "WITH PRIORITY QUEUE" << endl;
+//	#else
+//		std::ofstream ofs("test_sieve_dim"+to_string(dim) + ".txt");
+//		ofs << "WITH STANDARD QUEUE" << endl;
+//	#endif
 //	for (int i=0; i<length; i++) {
-//        	
-//       		
+//
+//
 //		ofs << "start sieve on lattice of dim = " << dim[i] << endl;
-//        	test_run_sieve<mpz_t>(dim[i], ofs); 
+//        	test_run_sieve<mpz_t>(dim[i], ofs);
 //		ofs << "----------------------------------------" << endl;
 //	}
-    
+
 //    for (int i=0; i<1; i++)
 //    {
 //        ofs << "start sieve on lattice of dim =  " << dim << endl;
 //        test_run_sieve<mpz_t>(dim, ofs);
 //        ofs << "----------------------------------------" << endl;
 //    }
-    
-    
-    
-
-   ofs.close();
+//   ofs.close();
   return 1;
 }

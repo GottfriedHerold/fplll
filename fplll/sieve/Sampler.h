@@ -24,16 +24,23 @@ class KleinSamplerOld;
 
 namespace GaussSieve
 {
-    template<class Z, class Engine>
-    Z sample_z_gaussian(double s, double center, Engine & engine, double cutoff);
+    #ifdef __GNUC__ //GCC has constexpr variants of trigonometric functions
     long double constexpr pi_long = std::atan2(0, -1); // pi = 3.14...
     double constexpr pi_double = std::atan2(0,-1);
     long double constexpr pi=std::atan2(0,-1);
+    #else
+    long double constexpr pi_long = 3.14159265358979323846264338327950288419716939937510L;
+    long constexpr pi_double = 3.14159265358979323846264338327950288419716939937510;
+    long double constexpr pi = 3.14159265358979323846264338327950288419716939937510L;
+    #endif // __GNUC__
+
+    template<class Z, class Engine>
+    Z sample_z_gaussian(double s, double center, Engine & engine, double cutoff);
     //samples from a discrete Gaussian distribution with parameter s and center c. We cutoff the Gaussian at s*cutoff.
     //i.e. the distribution is discrete on Z with output probability for x being proportional to exp(- pi(x-c)^2/s^2). Note the scaling by pi in the exponent.
     //For reasons of numerical stability, center should not be very large in absolute value (it is possible to reduce to |center|<1 anyway), s.t.
     //center +/- cutoff * s does not overflow.
-    //Z must be among one of short, int, long, long long.
+    //Z must be among one of short, int, long, long long. center needs to be representable as an (exact) double.
     //We do NOT support mpz_t here! Note that the output takes the role of coefficients wrt a given basis.
     //We only support double. For sieving algorithms, there is no really good reason to support higher precision.
     //Note: if one wants to have higher precision, one also needs to adjust the PRNGs to actually output high precision.
@@ -167,7 +174,7 @@ Z GaussSieve::sample_z_gaussian(double s, double center, Engine & engine, double
     static_assert(is_integral<Z>::value,"Return type for sample_z_gaussian must be POD integral type.");
     Z maxdev = static_cast<Z>(std::ceil(s * cutoff)); //maximum deviation of the Gaussian from the center. Note that maxdev may be 1.
     std::uniform_int_distribution<Z> uniform_in_range (std::floor(center-maxdev),std::ceil(center+maxdev));
-    std::uniform_real_distribution<double> rejection_test(); //defaults to value from [0,1), used in rejection sampling.
+    std::uniform_real_distribution<double> rejection_test(0.0,1.0); //defaults to value from [0,1), used in rejection sampling.
     Z closest_int = std::round(center); //closest int to center, i.e. most likely value.
     double adj = -(center-closest_int)*(center-closest_int); //negative squared distance to most likely value. Used to scale up the Gaussian weight function s.t. it is 1 at the most likely value.
 
@@ -195,40 +202,7 @@ Z GaussSieve::sample_z_gaussian(double s, double center, Engine & engine, double
             //std::feupdateenv(&env);
             return result;
         }
-
+    }
 }
-}
-//Old code:
-//  F min, max, st, range, tmp, tmp1;
-//  double r, e;
-//
-//  /* (c \pm s*t) for t \approx logn */
-//  st = s;
-//  st.mul(st, t, GMP_RNDN);
-//  min.sub(c, st, GMP_RNDN);
-//  max.add(c, st, GMP_RNDN);
-//  min.rnd(min);
-//  max.rnd(max);
-//  range.sub(max, min, GMP_RNDN);
-//
-//  Z_NR<ZT> x;
-//  while (1)
-//  {
-//    r = double(rand()) / RAND_MAX;
-//    tmp.mul_d(range, r, GMP_RNDN);
-//    tmp.rnd(tmp);
-//    tmp.add(tmp, min, GMP_RNDN);
-//    x.set_f(tmp);
-//    tmp1.sub(tmp, c, GMP_RNDN);
-//    tmp1.mul(tmp1, tmp1, GMP_RNDN);
-//    tmp1.mul_d(tmp1, -M_PI, GMP_RNDN);
-//    tmp.mul(s, s, GMP_RNDN);
-//    tmp1.div(tmp1, tmp, GMP_RNDN);
-//    e = tmp1.get_d(GMP_RNDN);
-//    r = exp(e);
-//    if ((double(rand()) / RAND_MAX) <= r)
-//      return x;
-//  }
-
 
 #endif
