@@ -133,7 +133,8 @@ sampler(nullptr)
 {
     assert(caller_sieve!=nullptr);
     std::seed_seq seed{1,2,4};
-    sampler = new EllipticSampler<ET,false, std::mt19937_64, std::seed_seq> (seed);
+    //sampler = new EllipticSampler<ET,false, std::mt19937_64, std::seed_seq> (seed);
+    sampler = new ShiSampler<ET,false, std::mt19937_64, std::seed_seq> (seed);
     //sampler=caller_sieve->sampler; //TODO: Remove sampler from SieveJoint.h and place it under control of the queue.
 }
 

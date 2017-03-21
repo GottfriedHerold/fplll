@@ -44,12 +44,12 @@ void ShiSampler<ET,MT,Engine,Sseq>::custom_init()
 
     s2pi.resize(rank);
     maxdeviations.resize(rank);
-    g  = GSO.get_r_matrix();
+    g  = GSO.get_g_matrix();
 
     FP_NR<double> maxbistar2 = GSO.get_max_bstar();
     FP_NR<double> tmp;
     FP_NR<double> tmp2;
-    for (int i = 0; i < rank; ++i)
+    for (unsigned int i = 0; i < rank; ++i)
     {
         tmp.set_z(g(i, i));
         tmp2.div(maxbistar2,tmp); //s'_i^2 = max GS length^2 / lenght^2 of basis vector
