@@ -59,10 +59,10 @@ void Sieve<ET,false>::run()
         if (sieve_k==2)
             SieveIteration2(p);
         else if (sieve_k==3)
-        
+
             SieveIteration3(p);
-            
-        
+
+
         //cout << i <<  " list size" << current_list_size << " Queue: " << main_queue.size() << endl << flush;
         ++i;
 //        if (i % 500 == 0) {
@@ -211,55 +211,55 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
     ET scalar;
 
     //typename MainListType::Iterator it_comparison_flip=main_list.cend();
-    
+
     float length_factor = 1.15; //to be verified
-    
+
     typename MainListType::Iterator first_element_of_LHS_block = main_list.cbegin();
     typename MainListType::Iterator first_element_of_RHS_block = main_list.cbegin();
     LatticeApproximations::ApproxTypeNorm2 pApproxNorm =  pApprox.get_approx_norm2();
-    
+
     //the largest norm
     auto longest_v = main_list.cend();
     LatticeApproximations::ApproxTypeNorm2 largest_norm = longest_v->get_approx_norm2();
 
     bool outer_loop = true;
-    
+
     // store target inner-products for the currently considered pair of blocks
     float px1=.0;
     float px2=.0;
     float x1x2=.0;
-    
+
     int NumOfBlocks = 0;
-    
+
     //assume we have to lists LHS and RHS. Outer loop is over the blocks of the LHS list. For each block (which defines the length of x1), a corresponding filtering is applied to the RHS list. This is a 'standard' loop. The overhead is the number of blocks.
-    
+
     // loop over the blocks in LHS
     while (outer_loop) {
-        
+
         LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_current_block_LHS =  first_element_of_LHS_block->get_approx_norm2();
         LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_current_block_RHS =  assumed_norm_of_current_block_RHS;
-        
+
         //max length of elements in the current block
-        
+
         LatticeApproximations::ApproxTypeNorm2 max_length_of_current_block = floor(length_factor * assumed_norm_of_current_block_LHS + 1);
-        
+
         //check if max_length_of_current_block is less then the longest vector in the list. If yes, reset
-        
+
         if(max_length_of_current_block > largest_norm) //this also means we are in the last block on the LHS. TODO: use it for the while-condition
         {
             max_length_of_current_block = largest_norm;
             outer_loop = false;
         }
-        
+
         // compute targets <p, x1>, <p,x2> for the block (i,i); p has the largest norm
-        
+
         LatticeApproximations::Determine_Sc_Prod(pApproxNorm, assumed_norm_of_current_block_LHS, assumed_norm_of_current_block_RHS, x1x2, px1,px2);
-        
+
         NumOfBlocks++;
-        
-        
+
+
         //iterate over the RHS list starting from the first_element_of_a_block
-        
+
         for (auto it = first_element_of_LHS_block; it!=main_list.cend(); ++it)
         //int counter = 0;
         //auto it = first_element_of_LHS_block;
@@ -270,72 +270,72 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                 outer_loop = false;
                 break;
             }
-            
+
             // check if x is still in the assumed block)
             if (it->get_approx_norm2() > max_length_of_current_block)
             {
                 assumed_norm_of_current_block_RHS = it->get_approx_norm2();
                 max_length_of_current_block =floor(length_factor * assumed_norm_of_current_block_LHS + 1);
-                
+
                 //recompute target inner-products
-                
+
                 LatticeApproximations::Determine_Sc_Prod(pApproxNorm, assumed_norm_of_current_block_LHS, assumed_norm_of_current_block_RHS, x1x2, px1,px2);
-                
+
                 //for the first if-cond, change first_element_of_LHH_block to 'it' for the next run of the outer-loop
                 if (first_element_of_LHS_block == first_element_of_RHS_block )
                     first_element_of_LHS_block = it;
-                
+
             }
-            
+
             // check if 2-red is possible
             ++number_of_scprods;
             bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n   );
             if(!predict) continue;
-            
+
             ++number_of_exact_scprods;
             if ( GaussSieve::check2red_new(p, *(it.access_details()), scalar) )
             {
                 p = GaussSieve::perform2red(p, *(it.access_details()), scalar);
-                
+
                 //put p back into the queue and break
                 if (p.norm2!=0)
                     main_queue.push(p);
-                
+
                 break;
             }
             else
                 ++number_of_mispredictions;
-            
+
             //detC = LatticeApproximations::detConf(px1, px2, x1x2);
             //if(detC > threshold) //decide if we look inside the blocks at all
-            
-            
+
+
             // check if <p, it> is close to px1
-            
+
             float true_inner_product = .0;
             predict = LatticeApproximations::Compare_Sc_Prod_3red(pApprox, *it, n, px1, true_inner_product);
             //assert(false);
             if(!predict) continue;
-            
+
             //loop over all elements x2 from the filtered list to 3-reduce (p, x1, x2)
-            
+
             for (auto it_filter = filtered_list.cbegin(); it_filter != filtered_list.cend(); ++it_filter)
             {
-                
-                
+
+
             }
-            
+
             //add 'it' to filtered_list
             FilteredPoint<ET, float> new_filtered_point(*it, true_inner_product);
             //filtered_list.emplace_back(it);
 
-        
+
         } // end of the for-loop
 
         // filtered list is new for a new block from the LHS
-        
+
         filtered_list.clear();
-        
+
     } // end of the while-loop
 
 };

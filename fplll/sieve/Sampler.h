@@ -181,6 +181,7 @@ void Sampler<ET,MT,Engine,Sseq>::init(Sieve<ET,MT> * const sieve)
 {
     sieveptr = sieve;
     engine.init(sieve->get_num_threads());
+    custom_init();
 }
 
 template<class ET,bool MT, class Engine, class Sseq> ostream & operator<<(ostream &os,Sampler<ET,MT,Engine,Sseq>* const samplerptr){return samplerptr->dump_to_stream(os);};

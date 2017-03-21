@@ -12,7 +12,7 @@ template<class ET, bool MT, class Engine, class Sseq>
 class EllipticSampler: public Sampler<ET,MT, Engine, Sseq>
 {
     public:
-    EllipticSampler(Sseq & seq, double const s=2.0, double const cutoff = 2.0)
+    EllipticSampler(Sseq & seq, double const s=0.25, double const cutoff = 10.0)
         :   Sampler<ET,MT,Engine,Sseq>(seq),s2pi(s*s*GaussSieve::pi),maxdeviations(s*cutoff) {};
     virtual SamplerType  sampler_type() const override                          {return SamplerType::elliptic_sampler;};
     virtual ~EllipticSampler();
@@ -53,11 +53,12 @@ EllipticSampler<ET,MT,Engine, Sseq>::~EllipticSampler()
 template<class ET,bool MT, class Engine, class Sseq>
 LatticePoint<ET> EllipticSampler<ET,MT,Engine, Sseq>::sample(int thread)
 {
+    assert(sieveptr!=nullptr);
     unsigned int const dim = sieveptr->get_ambient_dimension();
     unsigned int const rank = sieveptr->get_lattice_rank();
     NumVect<ET> vec(dim); vec.fill(0); //current vector built up so far.
     vector<double> shifts(rank, 0.0); //shift, expressed in coordinates wrt the Gram-Schmidt basis.
-    for(int j=rank-1; j>=0;--j)
+    for(int j=rank-1; j>=0; --j)
     {
         long const newcoeff = GaussSieve::sample_z_gaussian_VMD<long,Engine>(s2pi,shifts[j],engine.rnd(),maxdeviations); //coefficient of b_j in vec.
         //vec+= current_basis[j].get_underlying_row(); //build up vector

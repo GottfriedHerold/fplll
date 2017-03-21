@@ -156,7 +156,9 @@ typename GaussQueue<ET,false>::RetType GaussQueue<ET,false>::true_pop()
         ++ (gauss_sieve->number_of_points_sampled);
         ++ (gauss_sieve->number_of_points_constructed);
 //        return gauss_sieve->sampler->sample();
-        return sampler->sample();
+        assert(sampler!=nullptr);
+        typename GaussQueue<ET,false>::RetType ret = sampler->sample();
+        return ret;
     }
     else
     {
