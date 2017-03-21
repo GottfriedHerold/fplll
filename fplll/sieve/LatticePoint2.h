@@ -56,8 +56,10 @@ template<> class MaybeRational<Z_NR<double> >{public: static bool constexpr val=
 inline ApproxTypeNorm2 compute_sc_prod(ApproxType const * const arg1, ApproxType const * const arg2, unsigned int len);
 template<class ET>
 inline bool Compare_Sc_Prod(ApproxLatticePoint<ET,false,-1> const & arg1, ApproxLatticePoint<ET,false,-1> const & arg2, ApproxTypeNorm2 abslimit, int limit_exp, int dim);
-inline void Determine_Sc_Prod (ApproxTypeNorm2 len_max, ApproxTypeNorm2 len_x1, ApproxTypeNorm2 len_x2,  double & x1x2, double & px1, double & px2);
-inline double detConf (double px1, double px2, double x1x2);
+inline void Determine_Sc_Prod (ApproxTypeNorm2 len_max, ApproxTypeNorm2 len_x1, ApproxTypeNorm2 len_x2,  float & x1x2, float & px1, float & px2);
+template<class ET>
+    inline bool Compare_Sc_Prod_3red(ApproxLatticePoint<ET,false, -1> const & pApprox, ApproxLatticePoint<ET,false, -1> const & x1, int dim, float px1,  float & approx_inner_product);
+inline double detConf (float px1, float px2, float x1x2);
 }
 
 
@@ -272,6 +274,8 @@ template <class ET> //fallback version, should never be called anyway.
 
 inline LatticeApproximations::ApproxTypeNorm2 LatticeApproximations::compute_sc_prod(ApproxType const * const arg1, ApproxType const * const arg2, unsigned int len)
 {
+    
+    //syntax: inner_product(InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, T init); init accumelates the result
     return std::inner_product(arg1, arg1+len, arg2,0);
     /*
     ApproxTypeNorm2 res=0;
@@ -298,15 +302,31 @@ inline bool LatticeApproximations::Compare_Sc_Prod(ApproxLatticePoint<ET,false,-
     }
 }
 
+template<class ET>
+inline bool LatticeApproximations::Compare_Sc_Prod_3red(ApproxLatticePoint<ET,false,-1> const & pApprox, ApproxLatticePoint<ET,false,-1> const & x1, int dim, float px1, float & approx_inner_product)
+{
+    ApproxTypeNorm2 sc = abs(compute_sc_prod(pApprox.get_approx(), x1.get_approx(), dim));
+    approx_inner_product = (float)sc / (pApprox.get_approx_norm2() * x1.get_approx_norm2());
+    float eps = 0.02; // TODO: to adjust and make as input
+    
+    cout << "to_compare " << approx_inner_product << endl;
+    cout << "target " << px1 << endl;
+    
+    if (abs ( abs(approx_inner_product) - abs(px1))  > eps)
+        return true;
+    else
+        return false;
+}
+
 
 /*
-    According to Maple, given len_x1 = || x_1||^2, len_p = || p||^2, and len_x2 = ||x_2||^2, the optimal <p, x1>, <p,x2>, <x1x2> are given by (all divided by the corresp. lengthes) the formulas we compute below
+    According to Maple, given len_x1 = || x_1||^2, len_p = || p||^2, and len_x2 = ||x_2||^2, the optimal <p, x1>, <p,x2>, <x1x2> (all divided by the corresp. lengthes) are given by  the formulas we compute below
  
     These formulas assume p = max {x1, x2, p};  The order of {x1, x2} does not matter. The total order of the triple is assumed to be correct (sieve should know it).
  
     
 */
-inline void LatticeApproximations::Determine_Sc_Prod (LatticeApproximations::ApproxTypeNorm2 const len_max, LatticeApproximations::ApproxTypeNorm2 const len_x1, LatticeApproximations::ApproxTypeNorm2 const len_x2, double & x1x2, double & px1, double & px2)
+inline void LatticeApproximations::Determine_Sc_Prod (LatticeApproximations::ApproxTypeNorm2 const len_max, LatticeApproximations::ApproxTypeNorm2 const len_x1, LatticeApproximations::ApproxTypeNorm2 const len_x2, float & x1x2, float & px1, float & px2)
 {
     
     //LatticeApproximations:: ApproxTypeNorm2 len_max_quad= len_max * len_max;
@@ -371,6 +391,7 @@ inline void LatticeApproximations::Determine_Sc_Prod (LatticeApproximations::App
     
     
 }
+
 
 
 // OLD IMPLEMENTATION
@@ -480,7 +501,7 @@ Computes the determinant of
                 [px2 x1x2 1]
  
 */
-inline double LatticeApproximations::detConf (double px1, double px2, double x1x2)
+inline double LatticeApproximations::detConf (float px1, float px2, float x1x2)
 {
     return 2 * px1 * px2 * x1x2 - px1 * px1 - px2 * px2 - x1x2 * x1x2 + 1;
 }

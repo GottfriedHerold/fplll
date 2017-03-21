@@ -171,8 +171,7 @@ int main(int argc, char **argv)
     int32_t inner_prod = LatticeApproximations::compute_sc_prod(X.get_approx(), p.get_approx(), dim);
 
     //cout << inner_prod << endl;
-    FilteredPoint<Z_NR<mpz_t>> l (X, inner_prod);
-//    EllipticSampler<Z_NR<mpz_t>,false> SamplerTest; //to make sure template is instantiated.
+
     //cout << "A point from a filtered list: " << l.getApproxVector() << " sc_prod: " << l.get_sc_prod() << endl;
 
     //cout << X;

@@ -105,7 +105,7 @@ public:
     using MainListType     = GaussList<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
     using LatticeBasisType = ZZ_mat<typename ET::underlying_data_type>;
     using SamplerType      = KleinSampler<typename ET::underlying_data_type, FP_NR<double>> *; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
-    using FilteredListType = std::vector<FilteredPoint<ET>>; //queue is also fine for our purposes
+    using FilteredListType = std::vector<FilteredPoint<ET, float>>; //queue is also fine for our purposes; scalar products are not of type ET, two-templates; float for now; may be changed.
     using TermCondType     = TerminationCondition<ET,GAUSS_SIEVE_IS_MULTI_THREADED> *;
 
 public:
