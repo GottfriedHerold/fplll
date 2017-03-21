@@ -307,13 +307,14 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                 ++number_of_mispredictions;
 
             //detC = LatticeApproximations::detConf(px1, px2, x1x2);
-            //if(detC > threshold) //decide if we look inside the blocks at all
+            //if(detC > threshold) //decide if we look inside the current block at all
 
 
             // check if <p, it> is close to px1
 
-            float true_inner_product = .0;
-            predict = LatticeApproximations::Compare_Sc_Prod_3red(pApprox, *it, n, px1, true_inner_product);
+            float true_inner_product_px1 = .0;
+            predict = LatticeApproximations::Compare_Sc_Prod_3red(pApprox, *it, n, px1, true_inner_product_px1);
+		
             //assert(false);
             if(!predict) continue;
 
@@ -322,11 +323,20 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
             for (auto it_filter = filtered_list.cbegin(); it_filter != filtered_list.cend(); ++it_filter)
             {
 
+		//now check if <x1, x2> are close to the target x1x2 -- do we need to check it?
+		float true_inner_product_x1x2 = .0;
+		cout << *it_filter->getApproxVector() << endl; //arrow works, point does not. damn 
+		//predict = LatticeApproximations::Compare_Sc_Prod_3red(*(it_filter.getApproxVector()), *it, n, x1x2, true_inner_product_x1x2);
+		//if(!predict) continue;
 
+		//small issue: by now we only know inner-products of approximations, need to re-compute them for
+		
+			
+			
             }
 
             //add 'it' to filtered_list
-            FilteredPoint<ET, float> new_filtered_point(*it, true_inner_product);
+            FilteredPoint<ET, float> new_filtered_point(*it, true_inner_product_px1);
             //filtered_list.emplace_back(it);
 
 
