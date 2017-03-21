@@ -14,7 +14,9 @@ template<class ET,bool MT, class Engine, class Sseq> istream & operator>>(istrea
 enum class SamplerType
 {
     user_defined = 0,
-    elliptic_sampler= 1
+    elliptic_sampler= 1,
+    shi_sampler = 2,
+    gauss_sampler =3
 };
 template<class Engine, bool MT, class Sseq> //make separate class to allow specialisation for MT.
 class MTPRNG;                    //wrapper around (a vector of) random number engines of type Engine

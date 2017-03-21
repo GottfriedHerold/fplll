@@ -12,8 +12,8 @@ template<class ET, bool MT, class Engine, class Sseq>
 class EllipticSampler: public Sampler<ET,MT, Engine, Sseq>
 {
     public:
-    EllipticSampler(Sseq & seq, double const s=0.25, double const cutoff = 10.0)
-        :   Sampler<ET,MT,Engine,Sseq>(seq),s2pi(s*s*GaussSieve::pi),maxdeviations(s*cutoff) {};
+    EllipticSampler(Sseq & seq, double const s=0.8, double const cutoff = 10.0)
+        :   Sampler<ET,MT,Engine,Sseq>(seq),s2pi(s*s/GaussSieve::pi),maxdeviations(s*cutoff) {};
     virtual SamplerType  sampler_type() const override                          {return SamplerType::elliptic_sampler;};
     virtual ~EllipticSampler();
     virtual LatticePoint<ET> sample(int thread=0) override;
@@ -32,7 +32,7 @@ template<class ET,bool MT, class Engine, class Sseq>
 void EllipticSampler<ET,MT,Engine,Sseq>::custom_init()
 {
     current_basis = sieveptr->get_original_basis();
-    Matrix<ET> u, u_inv,g; //intentionally uninitialized.
+    Matrix<ET> u, u_inv; //intentionally uninitialized.
     MatGSO<ET, FP_NR<double> > GSO(current_basis, u, u_inv, MatGSOFlags::GSO_INT_GRAM);
     GSO.update_gso(); //todo: raise exception in case of error.
     mu = GSO.get_mu_matrix();
