@@ -5,17 +5,18 @@
 #include <random>
 #include <iostream>
 #include <cfenv>
+#include <type_traits>
 
-template<class ET, bool MT, class Engine, class Sseq = std::seed_seq>
+template<class ET, bool MT, class Engine, class Sseq>
 class Sampler;
-template<class ET,bool MT> ostream & operator<<(ostream &os, Sampler<ET,MT>* const samplerptr); //printing
-template<class ET,bool MT> istream & operator>>(istream &is, Sampler<ET,MT>* const samplerptr); //reading (may also be used by constructor from istream)
+template<class ET,bool MT, class Engine, class Sseq> ostream & operator<<(ostream &os, Sampler<ET,MT, Engine, Sseq>* const samplerptr); //printing
+template<class ET,bool MT, class Engine, class Sseq> istream & operator>>(istream &is, Sampler<ET,MT, Engine, Sseq>* const samplerptr); //reading (may also be used by constructor from istream)
 enum class SamplerType
 {
     user_defined = 0,
     elliptic_sampler= 1
 };
-template<class Engine, bool MT, class Sseq = std::seed_seq> //make separate class to allow specialisation for MT.
+template<class Engine, bool MT, class Sseq> //make separate class to allow specialisation for MT.
 class MTPRNG;                    //wrapper around (a vector of) random number engines of type Engine
 //template<class ET, bool MT, class Sseq = std::seed_seq>
 //class KleinSamplerNew;
@@ -68,49 +69,92 @@ template<class Engine, class Sseq>
 class MTPRNG<Engine,true, Sseq>
 {
     public:
-    MTPRNG(unsigned int const _num_threads) : engines(_num_threads), num_threads(_num_threads) {};
-    void reseed(Sseq & seq);
-    Engine & rnd(int const thread)            {return engines[thread];};
+    MTPRNG(Sseq & _seq = {}) : seeder(_seq), engines(0), num_threads(0)       {};
+    void reseed(Sseq & _seq);
+    void init(unsigned int const _num_threads); //will make sure at least _num_threads engines are actually running, starting new ones as desired. Will never reseed/restart already running engines. Reducing the number of threads and increasing it back saves the random state (unless we reseed).
+    Engine & rnd(unsigned int const thread)                                 {return engines[thread];};
     private:
+    std::mt19937 seeder; //seeded with initial seq and consecutively used to seed the children PRNGs.
     std::vector<Engine> engines;
-    unsigned int const num_threads;
+    unsigned int num_threads; //number of initialized engines. May differ from size of the vector. In particular, num_threads = 0 means uninitialized.
+    Sseq seq;
+    static unsigned int constexpr seed_length = 20; //number of 32bit values to use as seeds for the underlying engine. Technically, we could use state_size if the engine provides it, but not all default engines do.
 };
 
 template<class Engine, class Sseq>
-void MTPRNG<Engine,true,Sseq>::reseed(Sseq & seq)
+void MTPRNG<Engine,true,Sseq>::reseed(Sseq & _seq)
 {
-    std::vector<typename Sseq::result_type> seeds(num_threads);
-    seq.generate(seeds.begin(), seeds.end());
-    for(int i=0;i<num_threads;++i)
+    seeder.seed(_seq);
+    unsigned int old_threads=num_threads;
+    num_threads=0;
+    init(old_threads); //will restart all engines, because num_threads = 0;
+};
+
+template<class Engine, class Sseq>
+void MTPRNG<Engine,true,Sseq>::init(unsigned int const _num_threads)
+{
+    if(_num_threads<=num_threads) //no need to initalize.
     {
-        engines[i].seed(seeds[i]);
+        return;
     }
+    engines.resize(_num_threads);
+    engines.shrink_to_fit();
+    uint32_t per_engine_seed[seed_length];
+    //else initialize remaining threads
+    for(int i=num_threads;i<_num_threads;++i)
+    {
+
+        for(int j=0;j<seed_length;++j)
+        {
+            per_engine_seed[j] = seeder();
+        }
+        std::seed_seq per_engine_see_seq(per_engine_seed, per_engine_seed+seed_length);
+        engines[i].seed(per_engine_see_seq);
+    }
+    num_threads = _num_threads;
 }
 
 template<class Engine, class Sseq> //just wrapper around Engine
 class MTPRNG<Engine, false, Sseq>
 {
     public:
-    MTPRNG(int const num_threads = 1) : engine() {};
-    void reseed(Sseq & seq)                 {engine.seed(seq);};
-    Engine & rnd(int const thread = 1)      {return engine;};
+    MTPRNG(Sseq & _seq ={}) : engine()                      {reseed(_seq);};
+    void reseed(Sseq & _seq);
+    void init(unsigned int const = 1)                       {} //does nothing.
+    Engine & rnd(unsigned int const = 1)                    {return engine;}; //argument is number of threads. is ignored.
     private:
     Engine engine;
+    static unsigned int constexpr seed_length = 20; //number of 32bit values to use as seeds for the underlying engine. Technically, we could use state_size if the engine provides it, but not all default engines do.
 };      //End of MTPRNG
+
+
+template<class Engine, class Sseq>
+void MTPRNG<Engine,false,Sseq>::reseed(Sseq & _seq)
+{
+    std::mt19937 seeder(_seq);
+    uint32_t per_engine_seed[seed_length];
+    for(unsigned int j=0;j<seed_length;++j)
+    {
+        per_engine_seed[j] = seeder();
+    }
+    std::seed_seq derived_seed_seq(per_engine_seed, per_engine_seed+seed_length);
+    engine.seed(derived_seed_seq);
+};
 
 //generic Sampler. All other sampler are derived from it.
 
 template<class ET,bool MT, class Engine, class Sseq> //Sseq is supposed to satisfy the C++ concept "SeedSequence". The standard library has std::seed_seq as a canonical example.
+                                                     //Engine is supposed to satisfy the C++ concept of a "Random Number Engine". <random> provides several of those, e.g. std::mt19937_64.
 class Sampler
-//Note :    In multi-threaded environment, we only have 1 sampler object
-//          caller_thread is set to -1 if we make a single-threaded call
+//Note :    In multi-threaded environment, we only have 1 sampler object. thread-number is given to sample();
 {
     public:
     friend ostream & operator<< <ET,MT>(ostream &os, Sampler<ET,MT,Engine, Sseq>* const samplerptr);
     friend istream & operator>> <ET,MT>(istream &is, Sampler<ET,MT,Engine, Sseq>* const samplerptr);
 
-    Sampler<ET,MT,Engine,Sseq> (Sseq initial_seed) {}
-    virtual void init(Sieve<ET,MT> * const sieve, Sseq seed) {}                           //called before any points are sampled;
+    Sampler<ET,MT,Engine,Sseq> (Sseq & initial_seed): engine(initial_seed), sieveptr(nullptr)                      {}
+    //We call init first, then custom_init (via init).
+    void init(Sieve<ET,MT> * const sieve);
     virtual ~Sampler()=0; //needs to be virtual
     virtual SamplerType  sampler_type() const {return SamplerType::user_defined;};    //run-time type information.
                                                                     //This may be used to determine how to interpret a dump file.
@@ -121,16 +165,26 @@ class Sampler
     //TODO : Allow sampling in subspaces, updating basis.
 
     private:
+    virtual void custom_init()                                                                  {}         //called before any points are sampled;
     virtual ostream & dump_to_stream(ostream &os)  {return os;};    //dummy implementation of << operator.
     virtual istream & read_from_stream(istream &is){return is;};    //dummy implementation of >> operator.
-    MTPRNG<Engine, MT, Sseq> engine;
-
+    protected:
+    MTPRNG<Engine, MT, Sseq> engine; //or engines
+    Sieve<ET,MT> * sieveptr; //pointer to parent sieve.
 };
-template <class ET,bool MT, class Sseq>
-Sampler<ET,MT, Sseq>::~Sampler() {} //actually needed, even though destructor is pure virtual as the base class destructor is eventually called implicitly.
 
-template<class ET,bool MT> ostream & operator<<(ostream &os,Sampler<ET,MT>* const samplerptr){return samplerptr->dump_to_stream(os);};
-template<class ET,bool MT> istream & operator>>(istream &is,Sampler<ET,MT>* const samplerptr){return samplerptr->read_from_stream(is);};
+template <class ET,bool MT, class Engine, class Sseq>
+Sampler<ET,MT, Engine,Sseq>::~Sampler() {} //actually needed, even though destructor is pure virtual as the base class destructor is eventually called implicitly.
+
+template <class ET,bool MT, class Engine, class Sseq>
+void Sampler<ET,MT,Engine,Sseq>::init(Sieve<ET,MT> * const sieve)
+{
+    sieveptr = sieve;
+    engine.init(sieve->get_num_threads());
+}
+
+template<class ET,bool MT, class Engine, class Sseq> ostream & operator<<(ostream &os,Sampler<ET,MT,Engine,Sseq>* const samplerptr){return samplerptr->dump_to_stream(os);};
+template<class ET,bool MT, class Engine, class Sseq> istream & operator>>(istream &is,Sampler<ET,MT,Engine,Sseq>* const samplerptr){return samplerptr->read_from_stream(is);};
 
 
 
@@ -181,7 +235,7 @@ Z GaussSieve::sample_z_gaussian(double s, double const center, Engine & engine, 
 }
 
 template<class Z, class Engine>
-Z sample_z_gaussian_VMD(double const s2pi, double const center, Engine & engine, double const maxdeviation)
+Z GaussSieve::sample_z_gaussian_VMD(double const s2pi, double const center, Engine & engine, double const maxdeviation)
 {
 //Note : The following allows to access / modify floating point exceptions and modes.
 //#pragma STDC FENV_ACCESS on

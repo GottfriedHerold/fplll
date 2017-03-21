@@ -5,36 +5,33 @@
 
 #include <random>
 
-template<class ET, bool MT, class Sseq = std::seed_seq>
+template<class ET, bool MT, class Engine, class Sseq>
 class EllipticSampler;
 
-
-
-template<class ET,bool MT,  class Sseq>
-class EllipticSampler: public Sampler<ET,MT, Sseq>
+template<class ET, bool MT, class Engine, class Sseq>
+class EllipticSampler: public Sampler<ET,MT, Engine, Sseq>
 {
     public:
-    EllipticSampler(double const s=2.0, double const cutoff = 2.0) : Sampler<ET,MT,Sseq>(),s2pi(s*s*GaussSieve::pi),maxdeviations(s*cutoff) {};
-    virtual void init(Sieve<ET,MT> * const sieve, Sseq seed) override;
+    EllipticSampler(Sseq & seq, double const s=2.0, double const cutoff = 2.0)
+        :   Sampler<ET,MT,Engine,Sseq>(seq),s2pi(s*s*GaussSieve::pi),maxdeviations(s*cutoff) {};
     virtual SamplerType  sampler_type() const override                          {return SamplerType::elliptic_sampler;};
     virtual ~EllipticSampler();
     virtual LatticePoint<ET> sample(int thread=0) override;
     private:
-    Sieve<ET,MT> * sieveptr; //pointer to parent sieve.
+    virtual void custom_init() override;
     ZZ_mat<typename ET::underlying_data_type> current_basis;
     Matrix<FP_NR<double > > mu;
     double s2pi; //stores standard dev. for each dimension, already squared and multiplied by pi.
     double maxdeviations; //stores s*cutoff for each dimension.
-    unsigned int rank;
-
+    protected:
+    using Sampler<ET,MT,Engine,Sseq>::sieveptr;
+    using Sampler<ET,MT,Engine,Sseq>::engine;
 };
 
-template<class ET,bool MT, class Sseq>
-void EllipticSampler<ET,MT,Sseq>::init(Sieve<ET,MT> * const sieve, Sseq seed)
+template<class ET,bool MT, class Engine, class Sseq>
+void EllipticSampler<ET,MT,Engine,Sseq>::custom_init()
 {
-    sieveptr = sieve;
-    current_basis = sieve->get_original_basis();
-    rank = sieve->get_lattice_rank();
+    current_basis = sieveptr->get_original_basis();
     Matrix<ET> u, u_inv,g; //intentionally uninitialized.
     MatGSO<ET, FP_NR<double> > GSO(current_basis, u, u_inv, MatGSOFlags::GSO_INT_GRAM);
     GSO.update_gso(); //todo: raise exception in case of error.
@@ -47,16 +44,30 @@ void EllipticSampler<ET,MT,Sseq>::init(Sieve<ET,MT> * const sieve, Sseq seed)
 //
 
 }
-template<class ET,bool MT, class Sseq>
-EllipticSampler<ET,MT,Sseq>::~EllipticSampler()
+template<class ET,bool MT, class Engine, class Sseq>
+EllipticSampler<ET,MT,Engine, Sseq>::~EllipticSampler()
 {
 
 }
 
-template<class ET,bool MT, class Sseq>
-LatticePoint<ET> EllipticSampler<ET,MT,Sseq>::sample(int thread)
+template<class ET,bool MT, class Engine, class Sseq>
+LatticePoint<ET> EllipticSampler<ET,MT,Engine, Sseq>::sample(int thread)
 {
-
+    unsigned int const dim = sieveptr->get_ambient_dimension();
+    unsigned int const rank = sieveptr->get_lattice_rank();
+    NumVect<ET> vec(dim); vec.fill(0); //current vector built up so far.
+    vector<double> shifts(rank, 0.0); //shift, expressed in coordinates wrt the Gram-Schmidt basis.
+    for(int j=rank-1; j>=0;--j)
+    {
+        long const newcoeff = GaussSieve::sample_z_gaussian_VMD<long,Engine>(s2pi,shifts[j],engine.rnd(),maxdeviations); //coefficient of b_j in vec.
+        //vec+= current_basis[j].get_underlying_row(); //build up vector
+        vec.addmul_si(current_basis[j].get_underlying_row(), newcoeff);
+        for(int i=0;i<j;++i) //adjust shifts
+        {
+            shifts[i]-=newcoeff* (mu[j][i].get_d() );
+        }
+    }
+    return vec; //converts to LatticePoint<ET>
 }
 
 

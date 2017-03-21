@@ -13,6 +13,7 @@
 				<Option compiler="null" />
 			</Target>
 		</Build>
+		<Unit filename="EllipticSampler.h" />
 		<Unit filename="GaussQueue.h" />
 		<Unit filename="LatticePoint.h" />
 		<Unit filename="LatticePoint2.h" />

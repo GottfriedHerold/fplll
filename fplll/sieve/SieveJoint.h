@@ -152,7 +152,10 @@ public:
     #if GAUSS_SIEVE_IS_MULTI_THREADED == true
     void set_num_threads(unsigned int t);                                                            //non-thread safe, only call while suspended. In SieveMT.cpp
     unsigned int get_num_threads() const                        {return num_threads_wanted;};
+    #else
+    static unsigned int constexpr get_num_threads()             {return 1;};
     #endif // GAUSS_SIEVE_IS_MULTI_THREADED
+
     bool update_shortest_vector_found(LPType const & newvector);
     LatticeBasisType const & get_original_basis()               {return original_basis;};
 //  LPType get_shortest_vector_found() const                    {return shortest_vector_found;}; //TODO: Thread-safety

@@ -172,7 +172,7 @@ int main(int argc, char **argv)
 
     //cout << inner_prod << endl;
     FilteredPoint<Z_NR<mpz_t>> l (X, inner_prod);
-    EllipticSampler<Z_NR<mpz_t>,false> SamplerTest; //to make sure template is instantiated.
+//    EllipticSampler<Z_NR<mpz_t>,false> SamplerTest; //to make sure template is instantiated.
     //cout << "A point from a filtered list: " << l.getApproxVector() << " sc_prod: " << l.get_sc_prod() << endl;
 
     //cout << X;

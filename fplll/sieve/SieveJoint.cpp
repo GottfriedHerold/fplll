@@ -250,6 +250,7 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
     #if GAUSS_SIEVE_IS_MULTI_THREADED==true
     garbage_bins = new GarbageBin<typename MainListType::DataType>[num_threads_wanted]; //maybe init later.
     #endif
+    main_queue.sampler->init(this);
 };
 
 template<class ET>

@@ -73,6 +73,8 @@ private:
     QueueType main_queue;           //actual queue of lattice points to be processed.
     Sieve<ET,false>* gauss_sieve;   //pointer to caller object.
     //SamplerType *sampler; //controlled by the GaussSieve currently. TODO: Change that
+public:
+    Sampler<ET,false,std::mt19937_64, std::seed_seq> * sampler;
 };
 
 template<class ET> //multi-threaded version:
@@ -125,10 +127,12 @@ template<class ET>
 GaussQueue<ET,false>::GaussQueue( Sieve<ET,false> *caller_sieve)  //constructor
 :
 main_queue(),
-gauss_sieve(caller_sieve)
-//sampler(nullptr)
+gauss_sieve(caller_sieve),
+sampler(nullptr)
 {
     assert(caller_sieve!=nullptr);
+    std::seed_seq seed{1,2,4};
+    sampler = new EllipticSampler<ET,false, std::mt19937_64, std::seed_seq> (seed);
     //sampler=caller_sieve->sampler; //TODO: Remove sampler from SieveJoint.h and place it under control of the queue.
 }
 
@@ -151,7 +155,8 @@ typename GaussQueue<ET,false>::RetType GaussQueue<ET,false>::true_pop()
     {
         ++ (gauss_sieve->number_of_points_sampled);
         ++ (gauss_sieve->number_of_points_constructed);
-        return gauss_sieve->sampler->sample();
+//        return gauss_sieve->sampler->sample();
+        return sampler->sample();
     }
     else
     {
@@ -278,6 +283,7 @@ GaussQueue<ET,false>::~GaussQueue()
         #endif // USE_REGULAR_QUEUE
         main_queue.pop();
     }
+    delete sampler;
 }
 
 template<class ET> //making a second bool template argument does not work. You can not partially specialize member functions. (Workaround is possible, but its syntax is ridiculous).
