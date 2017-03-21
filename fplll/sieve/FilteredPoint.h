@@ -19,10 +19,10 @@
     This is equivalent to not using namespaces at all. -- Gotti
 */
 
-template <class ET> class FilteredPoint;
+template <class ET, class SC> class FilteredPoint;
 
 //template <class ET, bool insideMTList=false, int n_fixed=-1>
-template <class ET>
+template <class ET, class SC>
 class FilteredPoint
 {
     public:
@@ -30,18 +30,27 @@ class FilteredPoint
     FilteredPoint()=default;
     FilteredPoint(const FilteredPoint &Point) = default; // : NumVect<ET>::data(Point.data), norm2(Point.norm2) {}
     FilteredPoint(FilteredPoint &&Point) = default ;
-    FilteredPoint(ApproxLatticePoint<ET> x, ET sc)
+    FilteredPoint(ApproxLatticePoint<ET> x, SC sc)
     {
         this->point = x;
         this->sc_prod = sc;
     }
 
-    // if sc is int_32
+    
+    /*
     FilteredPoint(ApproxLatticePoint<ET> x, LatticeApproximations::ApproxTypeNorm2 sc)
     {
         this->point = x;
         this->sc_prod = sc;
     }
+    
+
+    FilteredPoint(ApproxLatticePoint<ET> x, float sc)
+    {
+        this->point = x;
+        this->sc_prod = sc;
+    }
+    */
 
 
     //FilteredPoint(ApproxLatticePoint x, ApproxLatticePoint p)
@@ -60,7 +69,7 @@ class FilteredPoint
 private:
     //members
     ApproxLatticePoint<ET> point;
-    ET sc_prod;
+    SC sc_prod;
 
 
 
