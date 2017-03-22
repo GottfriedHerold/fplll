@@ -312,7 +312,7 @@ inline bool LatticeApproximations::Compare_Sc_Prod_3red(ApproxLatticePoint<ET,fa
     //cout << "to_compare " << approx_inner_product << endl;
     //cout << "target " << px1 << endl;
     
-    if (abs ( abs(approx_inner_product) - abs(px1))  > eps)
+    if (abs ( abs(approx_inner_product) - abs(px1))  <= eps)
         return true;
     else
         return false;
