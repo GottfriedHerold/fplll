@@ -220,7 +220,7 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
 
     //the largest norm
     auto longest_v = main_list.cend();
-    LatticeApproximations::ApproxTypeNorm2 largest_norm = longest_v->get_approx_norm2();
+    LatticeApproximations::ApproxTypeNorm2 largest_norm = (--longest_v)->get_approx_norm2(); //Attention! Using operation-- here.
 
     bool outer_loop = true;
 
@@ -232,12 +232,12 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
     int NumOfBlocks = 0;
 
     //assume we have to lists LHS and RHS. Outer loop is over the blocks of the LHS list. For each block (which defines the length of x1), a corresponding filtering is applied to the RHS list. This is a 'standard' loop. The overhead is the number of blocks.
-
+    
     // loop over the blocks in LHS
     while (outer_loop) {
 
         LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_current_block_LHS =  first_element_of_LHS_block->get_approx_norm2();
-        LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_current_block_RHS =  assumed_norm_of_current_block_RHS;
+        LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_current_block_RHS =  assumed_norm_of_current_block_LHS;
 
         //max length of elements in the current block
 
@@ -250,20 +250,26 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
             max_length_of_current_block = largest_norm;
             outer_loop = false;
         }
+        
+        cout << "assumed_norm_of_current_block_LHS = " << assumed_norm_of_current_block_LHS << endl;
+        cout <<"max_length_of_current_block = " << max_length_of_current_block << endl;
 
         // compute targets <p, x1>, <p,x2> for the block (i,i); p has the largest norm
 
         LatticeApproximations::Determine_Sc_Prod(pApproxNorm, assumed_norm_of_current_block_LHS, assumed_norm_of_current_block_RHS, x1x2, px1,px2);
 
         NumOfBlocks++;
+        
+        cout << " NumOfBlocks= " <<  NumOfBlocks++ << endl;
+        cout << "------------" << endl;
 
 
         //iterate over the RHS list starting from the first_element_of_a_block
-
-        for (auto it = first_element_of_LHS_block; it!=main_list.cend(); ++it)
-        //int counter = 0;
-        //auto it = first_element_of_LHS_block;
-        //while (counter <10)
+        
+        auto it = first_element_of_LHS_block;
+        
+        bool inner_loop = true;
+        while (inner_loop || it!=main_list.cend())
         {
             if (p.norm2 < it.get_true_norm2())
             {
@@ -276,6 +282,12 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
             {
                 assumed_norm_of_current_block_RHS = it->get_approx_norm2();
                 max_length_of_current_block =floor(length_factor * assumed_norm_of_current_block_LHS + 1);
+                
+                cout << "enter the next block on the RHS " << endl;
+                
+                //cout << "assumed_norm_of_current_block_LHS = " << assumed_norm_of_current_block_LHS << endl;
+                //cout <<"max_length_of_current_block = " << max_length_of_current_block << endl;
+                
 
                 //recompute target inner-products
 
@@ -301,6 +313,8 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                 if (p.norm2!=0)
                     main_queue.push(p);
 
+                //inner_loop = false;
+                outer_loop = false;
                 break;
             }
             else
@@ -314,8 +328,10 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
 
             float true_inner_product_px1 = .0;
             predict = LatticeApproximations::Compare_Sc_Prod_3red(pApprox, *it, n, px1, true_inner_product_px1);
-		
-            //assert(false);
+            
+            cout << "px1 = " << px1;
+            cout << " true_inner_product_px1 = " << true_inner_product_px1 << endl;
+
             if(!predict) continue;
 
             //loop over all elements x2 from the filtered list to 3-reduce (p, x1, x2)
@@ -323,13 +339,30 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
             for (auto it_filter = filtered_list.cbegin(); it_filter != filtered_list.cend(); ++it_filter)
             {
 
-		//now check if <x1, x2> are close to the target x1x2 -- do we need to check it?
-		float true_inner_product_x1x2 = .0;
-		cout << *it_filter->getApproxVector() << endl; //arrow works, point does not. damn 
-		//predict = LatticeApproximations::Compare_Sc_Prod_3red(*(it_filter.getApproxVector()), *it, n, x1x2, true_inner_product_x1x2);
-		//if(!predict) continue;
+                //now check if <x1, x2> are close to the target x1x2 -- do we need to check it?
+                float true_inner_product_x1x2 = .0;
+                predict = LatticeApproximations::Compare_Sc_Prod_3red(it_filter->getApproxVector(), *it, n, x1x2, true_inner_product_x1x2);
+                if(!predict) continue;
+                
+                //from the true inner-products we need only the signs to perform 3 reduction. Assume all the approximations gave the correct signs
+                
+                float true_inner_product_px2 = it_filter->get_sc_prod();
+                
+                cout << "true_inner_product_px2 = " << true_inner_product_px2 << endl;
+                assert(false);
+                
+                //if (GaussSieve::check3_red(p, *(it.access_details()), *(it_filter->getApproxVector()).access_details(), ))
+                {
+                    //p = GaussSieve::perform3red();
+                    
+                    if(p.norm2!=0)
+                        main_queue.push(p);
+                    
+                    inner_loop = false;
+                    outer_loop = false;
+                    break;
+                }
 
-		//small issue: by now we only know inner-products of approximations, need to re-compute them for
 		
 			
 			
@@ -337,16 +370,18 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
 
             //add 'it' to filtered_list
             FilteredPoint<ET, float> new_filtered_point(*it, true_inner_product_px1);
-            //filtered_list.emplace_back(it);
+            filtered_list.emplace_back(new_filtered_point);
+            cout <<"filtered_list.size = " << filtered_list.size() << endl;
+            
+            ++it;
 
-
-        } // end of the for-loop
+        } // end of the inner while-loop
 
         // filtered list is new for a new block from the LHS
 
         filtered_list.clear();
 
-    } // end of the while-loop
+    } // end of the outer while-loop
 
 };
 

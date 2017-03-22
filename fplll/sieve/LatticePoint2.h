@@ -309,8 +309,8 @@ inline bool LatticeApproximations::Compare_Sc_Prod_3red(ApproxLatticePoint<ET,fa
     approx_inner_product = (float)sc / (pApprox.get_approx_norm2() * x1.get_approx_norm2());
     float eps = 0.02; // TODO: to adjust and make as input
     
-    cout << "to_compare " << approx_inner_product << endl;
-    cout << "target " << px1 << endl;
+    //cout << "to_compare " << approx_inner_product << endl;
+    //cout << "target " << px1 << endl;
     
     if (abs ( abs(approx_inner_product) - abs(px1))  > eps)
         return true;

@@ -111,6 +111,12 @@ LatticePoint<ET> GaussSieve::perform2red (const LatticePoint<ET> &p1, const Latt
 
 }
 
+template<class ET>
+bool GaussSieve::check3red(const LatticePoint<ET> &p, const LatticePoint<ET> &x1, const LatticePoint<ET> &x2, float px1, float px2, float x1x2)
+{
+    return false;
+}
+
 //helper function for reading in from streams. Gobbles up str from the stream (and optionally whitespace before/after).
 //If str is not on the stream, outputs an error.
 //Note that whitespace inside str is OK, as long as it is not at the beginning or end.

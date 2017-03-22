@@ -63,8 +63,8 @@ class FilteredPoint
     ~FilteredPoint() {}
 
 
-    inline LatticeApproximations::ApproxType * getApproxVector() const {return this->point.get_approx();}
-    inline ET get_sc_prod() const {return sc_prod;}
+    inline ApproxLatticePoint<ET> getApproxVector() const {return this->point;}
+    inline SC get_sc_prod() const {return sc_prod;}
 
 
 private:

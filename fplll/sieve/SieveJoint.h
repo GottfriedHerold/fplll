@@ -67,6 +67,10 @@ namespace GaussSieve //helper functions
 
     template<class ET>
     LatticePoint<ET> perform2red (const LatticePoint<ET> &p1, const LatticePoint<ET> &p2, ET const & scalar);
+    
+    template<class ET>
+    bool check3red(const LatticePoint<ET> &p, const LatticePoint<ET> &x1, const LatticePoint<ET> &x2, float px1, float px2, float x1x2);
+
 }
 
 /*INCLUDES */
