@@ -206,7 +206,7 @@ int main(int argc, char **argv)
     Sieve<Z_NR<mpz_t>, false> Test_3Sieve(B, k);
     //TerminationCondition<Z_NR<mpz_t>,false> * termcond = new MinkowskiTerminationCondition<Z_NR<mpz_t>, false>;
     Test_3Sieve.set_termination_condition(termcond); //if this is commented out, the following run segfaults
-    //Test_3Sieve.run();
+    Test_3Sieve.run();
 
 
     auto finish = std::chrono::high_resolution_clock::now();

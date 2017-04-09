@@ -212,7 +212,8 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
 
     //typename MainListType::Iterator it_comparison_flip=main_list.cend();
 
-    float length_factor = 1.15; //to be verified
+    //float length_factor = 1.15; //to be verified
+    float length_factor =10.0 //to debug the inner-loop assume we have only 1 block
 
     typename MainListType::Iterator first_element_of_LHS_block = main_list.cbegin();
     typename MainListType::Iterator first_element_of_RHS_block = main_list.cbegin();
@@ -231,9 +232,9 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
 
     int NumOfBlocks = 0;
 
-    //assume we have to lists LHS and RHS. Outer loop is over the blocks of the LHS list. For each block (which defines the length of x1), a corresponding filtering is applied to the RHS list. This is a 'standard' loop. The overhead is the number of blocks.
+    //assume we have to lists LHS and RHS. Outer loop is over the blocks of the LHS list. For each block (which defines the length of x1), a corresponding filtering is applied to the RHS list. The iteration is over all LSH block and all RHS blocks.
     
-    // loop over the blocks in LHS
+    // loop over the blocks in the 'LHS' list
     while (outer_loop) {
 
 	NumOfBlocks++;
@@ -263,12 +264,15 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
 
         LatticeApproximations::Determine_Sc_Prod(pApproxNorm, assumed_norm_of_current_block_LHS, assumed_norm_of_current_block_RHS, x1x2, px1,px2);
         
-
+	cout << "x1x2 = " << x1x3 << endl;
+	cout << "px1 = " << px1 << endl;
+	cout << "px2 = " << px2 << endl;
+	
         //iterate over the RHS list starting from the first_element_of_a_block
         
         auto it = first_element_of_LHS_block;
         
-        bool inner_loop = true;
+        bool inner_loop = true; // in case p becomes 0 we break everything
         while (inner_loop || it!=main_list.cend())
         {
             if (p.norm2 < it.get_true_norm2())
@@ -338,6 +342,7 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
             // check if <p, it> is close to px1
 
             float true_inner_product_px1 = .0;
+		// TODO: this function is wrong! DEBUG
             predict = LatticeApproximations::Compare_Sc_Prod_3red(pApprox, *it, n, px1, true_inner_product_px1);
             
             cout << "px1 = " << px1;
