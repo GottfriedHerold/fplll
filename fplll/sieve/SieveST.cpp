@@ -213,7 +213,7 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
     //typename MainListType::Iterator it_comparison_flip=main_list.cend();
 
     //float length_factor = 1.15; //to be verified
-    float length_factor =10.0 //to debug the inner-loop assume we have only 1 block
+    float length_factor =10.0; //to debug the inner-loop assume we have only 1 block
 
     typename MainListType::Iterator first_element_of_LHS_block = main_list.cbegin();
     typename MainListType::Iterator first_element_of_RHS_block = main_list.cbegin();
@@ -264,7 +264,7 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
 
         LatticeApproximations::Determine_Sc_Prod(pApproxNorm, assumed_norm_of_current_block_LHS, assumed_norm_of_current_block_RHS, x1x2, px1,px2);
         
-	cout << "x1x2 = " << x1x3 << endl;
+	cout << "x1x2 = " << x1x2 << endl;
 	cout << "px1 = " << px1 << endl;
 	cout << "px2 = " << px2 << endl;
 	
