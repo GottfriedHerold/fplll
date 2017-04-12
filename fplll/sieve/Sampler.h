@@ -48,6 +48,7 @@ namespace GaussSieve
     //We do NOT support mpz_t here! Note that the output takes the role of coefficients wrt a given basis.
     //We only support double. For sieving algorithms, there is no really good reason to support higher precision.
     //Note: if one wants to have higher precision, one also needs to adjust the PRNGs to actually output high precision.
+
     //The variant sample_z_gaussian_VMD takes s2pi = s^2 * pi and cutoff * s as parameters.
 
 

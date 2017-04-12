@@ -49,7 +49,7 @@ public:
     using QueueType =      std::queue<LPType*>;
     #endif
     using size_type = typename QueueType::size_type;
-    using SamplerType =    KleinSampler<typename ET::underlying_data_type, FP_NR<double> > ;
+    //using SamplerType =    KleinSampler<typename ET::underlying_data_type, FP_NR<double> > ;
     GaussQueue()=delete;
     GaussQueue(Sieve<ET,false> *caller_sieve); //only constructor
     GaussQueue(GaussQueue const &old) = delete;
@@ -92,7 +92,7 @@ public:
     using QueueType =      std::queue<LPType*>;
     #endif
     using size_type = typename QueueType::size_type;
-    using SamplerType =    KleinSampler<typename ET::underlying_data_type, FP_NR<double> > ;
+    //using SamplerType =    KleinSampler<typename ET::underlying_data_type, FP_NR<double> > ;
 
     GaussQueue()=delete;
     GaussQueue(Sieve<ET,true> *caller_sieve); //only constructor, not thread-safe
