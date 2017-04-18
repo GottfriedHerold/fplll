@@ -305,14 +305,22 @@ inline bool LatticeApproximations::Compare_Sc_Prod(ApproxLatticePoint<ET,false,-
 template<class ET>
 inline bool LatticeApproximations::Compare_Sc_Prod_3red(ApproxLatticePoint<ET,false,-1> const & pApprox, ApproxLatticePoint<ET,false,-1> const & x1, int dim, float px1, float & approx_inner_product)
 {
-    ApproxTypeNorm2 sc = abs(compute_sc_prod(pApprox.get_approx(), x1.get_approx(), dim));
-    approx_inner_product = (float)sc / (pApprox.get_approx_norm2() * x1.get_approx_norm2());
-    float eps = 0.02; // TODO: to adjust and make as input
+    ApproxTypeNorm2 sc = (compute_sc_prod(pApprox.get_approx(), x1.get_approx(), dim));
+    //cout << "sc = " << sc  << endl;
+    //cout << "pApproxnorm2 = " << pApprox.get_approx_norm2() << endl;
+    //cout << "x1Approxnorm2 = " << x1.get_approx_norm2() << endl;
+    //cout <<"p Length exp = " <<pApprox.get_length_exponent() << endl;
+    
+    //TODO: Make more efficient
+    approx_inner_product = (float)sc / ( (float)(pow(pApprox.get_approx_norm2(), 0.5)) * (float)(pow (x1.get_approx_norm2(), 0.5) ) ) ;
+    //cout << approx_inner_product_double << endl;(pow
+    
+    float eps = .02; // TODO: to adjust and make as input
     
     //cout << "to_compare " << approx_inner_product << endl;
     //cout << "target " << px1 << endl;
     
-    if (abs ( abs(approx_inner_product) - abs(px1))  <= eps)
+    if (abs ( abs ( approx_inner_product ) - abs(px1))  <= eps)
         return true;
     else
         return false;

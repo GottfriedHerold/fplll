@@ -111,10 +111,87 @@ LatticePoint<ET> GaussSieve::perform2red (const LatticePoint<ET> &p1, const Latt
 
 }
 
+//
+//the first argument p is assumed to have the largest norm
+// the function returns true if indeed || p \pm x1 \pm x2 || < || p ||
+// The correct signs in front of x1, x2 are deduced from the sign os the corresp. inner-products px1, px2.
+// The output p
+//
 template<class ET>
-bool GaussSieve::check3red(const LatticePoint<ET> &p, const LatticePoint<ET> &x1, const LatticePoint<ET> &x2, float px1, float px2, float x1x2)
+bool GaussSieve::check3red(const LatticePoint<ET> &p, const LatticePoint<ET> &x1, const LatticePoint<ET> &x2, float px1, float px2, float x1x2, int &sgn1, int &sgn2)
 {
-    return false;
+    //in case sgn(x1x2)*sgn(px1)*sgn(px2) = 0, we cannot produce a shorter p:
+    //  either they are all positive (clearly, no combination of \pm can result in a shorter p
+    //  or there are two inner-products with -1 and one point in common. Takeing the negative of the common vector, arrive to the first case
+    
+    //if (px1.sgn()*px2.sgn()*x1x2.sgn() == 1)
+    //    return false;
+    
+    
+    //TODO: loop-up a sign-fnct for floats
+    if (px1>0 && px2>0 && x1x2>0)
+        return false;
+    if (px1>0 && px2<0 && x1x2<0)
+        return false;
+    if (px2>0 && px1<0 && x1x2<0)
+        return false;
+    if (x1x2>0 && px1<0 && px2<0)
+        return false;
+    
+    LatticePoint<ET> res(p);
+    
+    
+    if (px1<0){
+        res = res+x1;
+        sgn1=1;
+    }
+    else {
+        res = res-x1;
+        sgn1=-1;
+    }
+    if(px2<0){
+        res = res+x2;
+        sgn2=1;
+    }
+    else{
+        res = res-x2;
+        sgn2=-1;
+    }
+    
+    if(res.norm2>=p.norm2)
+    {
+        return false;
+    }
+    
+    //cout <<"p: ";
+    //p.printLatticePoint();
+    //cout<< "res: ";
+    //res.printLatticePoint();
+    return true;
+}
+
+// return res = p +sgn1*x1+sgn2*x2; res is supposed to be shorter than p
+template<class ET>
+LatticePoint<ET> GaussSieve::perform3red (const LatticePoint<ET> &p, const LatticePoint<ET> &x1, const LatticePoint<ET> &x2, const int & sgn1, const int &sgn2)
+{
+    LatticePoint<ET> res(p);
+    if (sgn1<0)
+        res = res-x1;
+    else
+        res = res+x1;
+    
+    if(sgn2<0)
+        res = res-x2;
+    else
+        res = res+x2;
+    
+    //cout << "3 red is performed:" << endl;
+    //cout <<"p: ";
+    //p.printLatticePoint();
+    //cout<< "res: ";
+    //res.printLatticePoint();
+    return res;
+    
 }
 
 //helper function for reading in from streams. Gobbles up str from the stream (and optionally whitespace before/after).

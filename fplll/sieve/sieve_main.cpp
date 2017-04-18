@@ -204,8 +204,8 @@ int main(int argc, char **argv)
 
 
     Sieve<Z_NR<mpz_t>, false> Test_3Sieve(B, k);
-    //TerminationCondition<Z_NR<mpz_t>,false> * termcond = new MinkowskiTerminationCondition<Z_NR<mpz_t>, false>;
-    Test_3Sieve.set_termination_condition(termcond); //if this is commented out, the following run segfaults
+    //TerminationCondition<Z_NR<mpz_t>,false> * termcond2 = new MinkowskiTerminationCondition<Z_NR<mpz_t>, false>;
+    //Test_3Sieve.set_termination_condition(termcond2); //if this is commented out, the following run segfaults
     //Test_3Sieve.run();
 
 
