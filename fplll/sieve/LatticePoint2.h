@@ -10,7 +10,7 @@
 #include <numeric>
 #include <iomanip>   //to check precision in computing innder-products
 
-#define SCALENORMS 0.995
+//#define SCALENORMS 0.995
 
 //forward declarations:
 

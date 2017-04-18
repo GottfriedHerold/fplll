@@ -321,11 +321,13 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                 if ( GaussSieve::check2red_new(p, *(it.access_details()), scalar) )
                 {
                     p = GaussSieve::perform2red(p, *(it.access_details()), scalar);
+                    if (p.norm2!=0) pApprox = static_cast< ApproxLatticePoint<ET,false> >(p);
                     
                     //put p back into the queue and break
                     if (p.norm2!=0)
                         main_queue.push(p);
-                    
+                    cout << "put p of size " << p.norm2 << " into the queue " << endl;
+                    cout << "pApprox has norm2 " << pApprox.get_approx_norm2() <<  endl;
                     cout << "2-reduced p, break all the loops" << endl;
                     outer_loop_break = true;
                     outer_loop = false;
@@ -436,10 +438,15 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                     //should only pass the signs of the inner-products
                     if (GaussSieve::check3red(p, *(it.access_details()), (it_filter->getApproxVector()).get_details(), true_inner_product_px1, true_inner_product_px2, true_inner_product_x1x2, sgn1, sgn2))
                     {
+                        if(!predict)
+                        {
+                            cout << "x1x2 was wrong but check3red is still true" << endl;
+                            assert(false);
+                        }
                         //perfrom actual reduction
                         p = GaussSieve::perform3red(p, *(it.access_details()), (it_filter->getApproxVector()).get_details(), sgn1, sgn2);
                         
-                        //assert(false);
+                        if (p.norm2!=0) pApprox = static_cast< ApproxLatticePoint<ET,false> >(p);
                         
                         if(p.norm2!=0)
                             main_queue.push(p);
@@ -448,8 +455,10 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                         outer_loop = false;
                         outer_loop_break = true;
                         //restart the outer-loop from the beginning
+                        //cout << "put p of size " << p.norm2 << " into the queue " << endl;
+                        //cout << "pApprox has norm2 " << pApprox.get_approx_norm2() <<  endl;
                         cout << "must re-start SieveIteration" << endl;
-                        //outer_loop_restart = true;
+                        //assert(false);
                         break;
                     }
                     //else
@@ -489,7 +498,14 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
     }
     
     
-    //search for x's from the list to be reduced. Now x1 has always the largest norm
+    //search for x's from the list to be reduced. Now x1 has always the largest norm (blocks from LHS 'start' after p)
+    
+    //Set as fixed for now. TODO: implement the blocks
+    px1=-0.3333;
+    px2=-0.3333;
+    x1x2=-0.3333;
+    
+    
     
     
     
