@@ -200,7 +200,7 @@ int main(int argc, char **argv)
 	Test_2Sieve.run();
 	cout << "sv is " << endl;
     Test_2Sieve.get_shortest_vector_found().printLatticePoint();
-    Test_2Sieve.print_status();
+    //Test_2Sieve.print_status();
 
 
     //Sieve<Z_NR<mpz_t>, false> Test_3Sieve(B, k);

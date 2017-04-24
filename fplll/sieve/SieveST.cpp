@@ -144,6 +144,7 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might
 
     if (p.norm2 == 0) //essentially means that p was already inside the list.
 	{
+        //cout << "p has norm 2" << endl;
 		number_of_collisions++;
 		return;
 	}
