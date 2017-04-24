@@ -197,16 +197,16 @@ int main(int argc, char **argv)
         Test_2Sieve.set_termination_condition(termcond);
         cout << "Setting target norm2 to" << target_norm << endl << flush;
     }
-	Test_2Sieve.run();
-	cout << "sv is " << endl;
-    Test_2Sieve.get_shortest_vector_found().printLatticePoint();
+	//Test_2Sieve.run();
+	//cout << "sv is " << endl;
+    //Test_2Sieve.get_shortest_vector_found().printLatticePoint();
     //Test_2Sieve.print_status();
 
 
-    //Sieve<Z_NR<mpz_t>, false> Test_3Sieve(B, k);
-    //TerminationCondition<Z_NR<mpz_t>,false> * termcond2 = new MinkowskiTerminationCondition<Z_NR<mpz_t>, false>;
-    //Test_3Sieve.set_termination_condition(termcond2); //if this is commented out, the next line segfaults
-    //Test_3Sieve.run();
+    Sieve<Z_NR<mpz_t>, false> Test_3Sieve(B, k);
+    TerminationCondition<Z_NR<mpz_t>,false> * termcond2 = new MinkowskiTerminationCondition<Z_NR<mpz_t>, false>;
+    Test_3Sieve.set_termination_condition(termcond2); //if this is commented out, the next line segfaults
+    Test_3Sieve.run();
 
 
     auto finish = std::chrono::high_resolution_clock::now();

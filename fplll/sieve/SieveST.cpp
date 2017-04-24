@@ -505,7 +505,6 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
     cout << "INSERT p of norm " << p.norm2 << endl; 
     //cout << &it_comparison_flip << endl;
     main_list.insert_before(it_comparison_flip,p);
-    cout << " p is inserted " << endl; 
     ++current_list_size;
     if(update_shortest_vector_found(p))
     {
@@ -574,7 +573,7 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                         else
                         {
                             main_queue.push(reduced);
-                            cout << "list-vec is reduced " << endl;
+                            //cout << "list-vec is reduced " << endl;
                             //assert(false);
                         
                         }
@@ -585,15 +584,19 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                     }
                 }
                 
-                FilteredPoint<ET, float> new_filtered_point(*it, true_inner_product_px1);
-                filtered_list.emplace_back(new_filtered_point);
-                
-                if (!ifreduced)
+                if (!ifreduced){
+                    //put *it into filtered_list only if *it was not reduced
+                    FilteredPoint<ET, float> new_filtered_point(*it, true_inner_product_px1);
+                    filtered_list.emplace_back(new_filtered_point);
+                    //cout <<"filtered_list.size = " << filtered_list.size() << endl;
                     ++it;
+                }
+                    
                 
             }
                 
         }// end of 'predict=true'
+        
     }
     
     
