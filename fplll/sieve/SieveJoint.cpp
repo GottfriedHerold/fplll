@@ -115,7 +115,7 @@ LatticePoint<ET> GaussSieve::perform2red (const LatticePoint<ET> &p1, const Latt
 //the first argument p is assumed to have the largest norm
 // the function returns true if indeed || p \pm x1 \pm x2 || < || p ||
 // The correct signs in front of x1, x2 are deduced from the sign os the corresp. inner-products px1, px2.
-// The output p
+// The output is true if p can be reduced
 //
 template<class ET>
 bool GaussSieve::check3red(const LatticePoint<ET> &p, const LatticePoint<ET> &x1, const LatticePoint<ET> &x2, float px1, float px2, float x1x2, int &sgn1, int &sgn2)
@@ -267,7 +267,8 @@ Z_NR<mpz_t> GaussSieve::compute_mink_bound(ZZ_mat<mpz_t> const & basis)
 
     //cout << "after MinkBound_double is assigned... " << endl;
     Z_NR<mpz_t> Minkowski;
-    Minkowski.set_f(MinkBound_double); // the problem is here
+    Minkowski.set_f(MinkBound_double); 
+    cout << "Mink. bound = " << Minkowski << endl;
     return Minkowski;
 }
 

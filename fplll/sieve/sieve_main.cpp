@@ -199,13 +199,13 @@ int main(int argc, char **argv)
     }
 	Test_2Sieve.run();
 	cout << "sv is " << endl;
-    //Test_2Sieve.get_shortest_vector_found().printLatticePoint();
-    //Test_2Sieve.print_status();
+    Test_2Sieve.get_shortest_vector_found().printLatticePoint();
+    Test_2Sieve.print_status();
 
 
     //Sieve<Z_NR<mpz_t>, false> Test_3Sieve(B, k);
     //TerminationCondition<Z_NR<mpz_t>,false> * termcond2 = new MinkowskiTerminationCondition<Z_NR<mpz_t>, false>;
-    //Test_3Sieve.set_termination_condition(termcond2); //if this is commented out, the following run segfaults
+    //Test_3Sieve.set_termination_condition(termcond2); //if this is commented out, the next line segfaults
     //Test_3Sieve.run();
 
 

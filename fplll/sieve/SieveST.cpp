@@ -5,6 +5,7 @@
 #error SieveST.cpp included with wrong macro settings
 #endif
 
+class main_list;
 template<class ET>
 bool Sieve<ET,false>::update_shortest_vector_found(LPType const & newvector)
 {
@@ -43,6 +44,8 @@ void Sieve<ET,false>::run()
     //using SieveT = Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
 
     //for ( LatticePoint<ET> & x : main_list) cout << x.norm2 << endl;
+    
+    cout << "the shortest vector in the input basis has norm2 = " << (main_list.cbegin())->get_details().norm2 << endl;
     sieve_status =SieveStatus::sieve_status_running;
     int i=0;
     //int MaxIteration = 8000;
@@ -286,7 +289,7 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
         
         bool inner_loop = true; // in case p changes, we break this loop
         while (inner_loop && it!=main_list.cend())
-        {;
+        {
             if (p.norm2 < it.get_true_norm2())
             {
                 cout << "reached the position to insert p" << endl;
@@ -441,7 +444,7 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                         if(!predict)
                         {
                             cout << "x1x2 was wrong but check3red is still true" << endl;
-                            assert(false);
+                            //assert(false);
                         }
                         //perfrom actual reduction
                         p = GaussSieve::perform3red(p, *(it.access_details()), (it_filter->getApproxVector()).get_details(), sgn1, sgn2);
@@ -498,6 +501,19 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
     }
     
     
+    cout << "INSERT p of norm " << p.norm2 << endl; 
+    //cout << &it_comparison_flip << endl;
+    main_list.insert_before(it_comparison_flip,p);
+    cout << " p is inserted " << endl; 
+    ++current_list_size;
+    if(update_shortest_vector_found(p))
+    {
+        if(verbosity>=2)
+        {
+            cout << "New shortest vector found. Norm2 = " << get_best_length2() << endl;
+        }
+    }
+    
     //search for x's from the list to be reduced. Now x1 has always the largest norm (blocks from LHS 'start' after p)
     
     //Set as fixed for now. TODO: implement the blocks
@@ -507,12 +523,84 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
     
     
     
+    //Filter the list until p without checking within the filtered list
+    
+    
+    auto it = main_list.cbegin();
+    while (it !=main_list.cend())
+    {
+        // check if <p, it> is close to px1
+            
+        float true_inner_product_px1 = .0;
+        bool predict = LatticeApproximations::Compare_Sc_Prod_3red(pApprox, *it, n, px1, true_inner_product_px1);
+        
+        if(!predict)
+        {
+            ++it;
+        }
+        else
+        {
+            // in case it.norm2 <=p.norm2, only add it to filtered_list and consintue (this length-order was already checked
+            if (it.get_true_norm2() <=p.norm2)
+            {
+                FilteredPoint<ET, float> new_filtered_point(*it, true_inner_product_px1);
+                filtered_list.emplace_back(new_filtered_point);
+                ++it;
+            }
+            //otherwise loop over filtered_list to reduce *it
+            else
+            {
+                bool ifreduced = false;
+                for (auto it_filter = filtered_list.cbegin(); it_filter != filtered_list.cend(); ++it_filter)
+                {
+                    float true_inner_product_x1x2 = .0;
+                    predict = LatticeApproximations::Compare_Sc_Prod_3red(it_filter->getApproxVector(), *it, n, x1x2, true_inner_product_x1x2);
+                    
+                    //if(!predict)
+                    float true_inner_product_px2 = it_filter->get_sc_prod();
+                    
+                    int sgn1=0;
+                    int sgn2=0;
+                    
+                    //the first arg of check3red has the largest norm
+                    if (GaussSieve::check3red(*(it.access_details()), p, (it_filter->getApproxVector()).get_details(), true_inner_product_px1, true_inner_product_x1x2, true_inner_product_px2,  sgn1, sgn2))
+                    {
+                        //the first arg of perform3red is the one to be reduced
+                        LatticePoint<ET> reduced = GaussSieve::perform3red(*(it.access_details()), p, (it_filter->getApproxVector()).get_details(), sgn1, sgn2);
+                    
+                        if (reduced.norm2 == 0) //Note : this cannot happen unless the list contains a non-trivial multiple of p (because the collision would have triggered before).
+                            number_of_collisions++;
+                        else
+                        {
+                            main_queue.push(reduced);
+                            cout << "list-vec is reduced " << endl;
+                            //assert(false);
+                        
+                        }
+                        it = main_list.erase(it); //also makes ++it
+                        --current_list_size;
+                        ifreduced = true;
+                        break; //the it_filter-loop
+                    }
+                }
+                
+                FilteredPoint<ET, float> new_filtered_point(*it, true_inner_product_px1);
+                filtered_list.emplace_back(new_filtered_point);
+                
+                if (!ifreduced)
+                    ++it;
+                
+            }
+                
+        }// end of 'predict=true'
+    }
     
     
     //insert p into main_list;
-    cout << "INSERT p of norm " << p.norm2 << endl; 
+    /*cout << "INSERT p of norm " << p.norm2 << endl; 
+    //cout << &it_comparison_flip << endl;
     main_list.insert_before(it_comparison_flip,p);
-    
+    cout << " p is inserted " << endl; 
     ++current_list_size;
     if(update_shortest_vector_found(p))
     {
@@ -520,7 +608,7 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
         {
             cout << "New shortest vector found. Norm2 = " << get_best_length2() << endl;
         }
-    }
+    }*/
     
     /* print for debugging */
     //for (auto it1 = main_list.cbegin(); it1!=main_list.cend(); ++it1) {
