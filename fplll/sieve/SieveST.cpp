@@ -62,8 +62,8 @@ void Sieve<ET,false>::run()
         if (sieve_k==2)
             SieveIteration2(p);
         else if (sieve_k==3)
-
-            SieveIteration3(p);
+            SieveIteration3New(p);
+            //SieveIteration3(p);
 
 
         //cout << i <<  " list size" << current_list_size << " Queue: " << main_queue.size() << endl << flush;
@@ -619,7 +619,12 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
     //	cout << (*it1) << endl;
     //}
     
-};
+}
+
+template<class ET>
+void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
+{
+}
 
 //currently unused diagnostic code.
 /*

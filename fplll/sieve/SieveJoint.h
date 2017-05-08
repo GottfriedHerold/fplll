@@ -54,6 +54,12 @@ class IsLongerVector_class; //class wrapper to compare vectors by length
 template<class ET, bool MultiThreaded>
 class Sieve;
 
+
+class CompareFilteredPoint {
+  bool operator() (pair <LatticeApproximations::ApproxTypeNorm2, float> & el1, pair <LatticeApproximations::ApproxTypeNorm2, float> & el2) const
+  {return get<1>(el1) < get<1>(el2);}
+};
+
 namespace GaussSieve //helper functions
 {
     bool string_consume(istream &is, std::string const & str, bool elim_ws= true, bool verbose=true); //helper function for dumping/reading
@@ -100,6 +106,9 @@ GO HERE.
 
 //The following may be included once or twice (with different values for GAUSS_SIEVE_IS_MULTI_THREADED)
 
+//bool CompareFilteredPoint (pair <LatticeApproximations::ApproxTypeNorm2, float> el1, pair <LatticeApproximations::ApproxTypeNorm2, float> el2) 
+//{return get<1>(el1) < get<1>(el2);}
+
 template<class ET>
 class Sieve<ET, GAUSS_SIEVE_IS_MULTI_THREADED >
 {
@@ -111,6 +120,7 @@ public:
     using LatticeBasisType = ZZ_mat<typename ET::underlying_data_type>;
     using SamplerType      = KleinSampler<typename ET::underlying_data_type, FP_NR<double>> *; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
     using FilteredListType = std::vector<FilteredPoint<ET, float>>; //queue is also fine for our purposes; scalar products are not of type ET, two-templates; float for now; may be changed.
+    using FilteredListType2 = std::map<pair <LatticeApproximations::ApproxTypeNorm2, float>, FilteredPoint<ET, float>, CompareFilteredPoint>;
     using TermCondType     = TerminationCondition<ET,GAUSS_SIEVE_IS_MULTI_THREADED> *;
 
 public:
@@ -136,6 +146,7 @@ public:
     void run_sieve(int k); //runs k-sieve
     void SieveIteration2 (LatticePoint<ET> &p); //one run through the main_list (of 2-sieve)
     void SieveIteration3 (LatticePoint<ET> &p); //one run through the main_list (of 3-sieve)
+    void SieveIteration3New (LatticePoint<ET> &p); //new run through the main_list (of 3-sieve)
     #if GAUSS_SIEVE_IS_MULTI_THREADED == true
     void sieve_2_thread(int const thread_id);   //function for worker threads
     #endif
@@ -191,6 +202,7 @@ private:
     //MainListType3 main_list_test;
     MainQueueType main_queue;
     FilteredListType filtered_list;
+    FilteredListType2 filtered_list2;
 
 //information about lattice and algorithm we are using
 
