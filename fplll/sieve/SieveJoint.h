@@ -55,8 +55,8 @@ template<class ET, bool MultiThreaded>
 class Sieve;
 
 
-class CompareFilteredPoint {
-  bool operator() (pair <LatticeApproximations::ApproxTypeNorm2, float> & el1, pair <LatticeApproximations::ApproxTypeNorm2, float> & el2) const
+struct CompareFilteredPoint {
+  bool operator() (const pair <LatticeApproximations::ApproxTypeNorm2, float> & el1, const pair <LatticeApproximations::ApproxTypeNorm2, float> & el2) const
   {return get<1>(el1) < get<1>(el2);}
 };
 
@@ -106,9 +106,6 @@ GO HERE.
 
 //The following may be included once or twice (with different values for GAUSS_SIEVE_IS_MULTI_THREADED)
 
-//bool CompareFilteredPoint (pair <LatticeApproximations::ApproxTypeNorm2, float> el1, pair <LatticeApproximations::ApproxTypeNorm2, float> el2) 
-//{return get<1>(el1) < get<1>(el2);}
-
 template<class ET>
 class Sieve<ET, GAUSS_SIEVE_IS_MULTI_THREADED >
 {
@@ -121,6 +118,7 @@ public:
     using SamplerType      = KleinSampler<typename ET::underlying_data_type, FP_NR<double>> *; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
     using FilteredListType = std::vector<FilteredPoint<ET, float>>; //queue is also fine for our purposes; scalar products are not of type ET, two-templates; float for now; may be changed.
     using FilteredListType2 = std::map<pair <LatticeApproximations::ApproxTypeNorm2, float>, FilteredPoint<ET, float>, CompareFilteredPoint>;
+    //using FilteredListTest  =  std::map<char,int,classcomp>;        
     using TermCondType     = TerminationCondition<ET,GAUSS_SIEVE_IS_MULTI_THREADED> *;
 
 public:
@@ -202,7 +200,7 @@ private:
     //MainListType3 main_list_test;
     MainQueueType main_queue;
     FilteredListType filtered_list;
-    FilteredListType2 filtered_list2;
+    FilteredListType2 filtered_list2;       
 
 //information about lattice and algorithm we are using
 

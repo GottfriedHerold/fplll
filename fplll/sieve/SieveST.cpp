@@ -624,6 +624,143 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
 template<class ET>
 void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
 {
+    if (p.norm2==0) return;
+    ApproxLatticePoint<ET,false> pApprox (p);
+    
+    cout << "------------" << endl;
+    cout << "Run iteration on p of approx norm " << pApprox.get_approx_norm2() << endl;
+    
+    int const n = get_ambient_dimension();
+    
+    ET scalar;
+    
+    typename MainListType::Iterator it_comparison_flip=main_list.cend();
+    
+    //float length_factor = 1.15; //to be verified
+    float length_factor =10.0; //to debug the inner-loop assume we have only 1 block
+    
+    typename MainListType::Iterator first_block_element = main_list.cbegin();
+    
+    // store target inner-products
+    float px1=.0;
+    float px2=.0;
+    float x1x2=.0;
+    
+    int NumOfBlocks = 0;
+    
+    auto it = main_list.cbegin();
+    
+    typename MainListType::Iterator first_element_of_the_block = main_list.cbegin();
+    LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_the_current_block =  first_element_of_the_block->get_approx_norm2();
+    LatticeApproximations::ApproxTypeNorm2 max_length_of_the_current_block = floor(length_factor * assumed_norm_of_the_current_block + 1);
+        
+    bool inner_loop = true; // in case p changes, we break this loop
+    while (inner_loop && it!=main_list.cend())
+    {
+        
+        //check if p is still of max. length
+        if (p.norm2 < it.get_true_norm2())
+        {
+            cout << "reached the position to insert p" << endl;
+            it_comparison_flip = it;
+            break;
+        }
+        
+        
+        // check if 2-red is possible
+        ++number_of_scprods;
+        bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n   );
+            
+        // preform 2-reduction
+        if(predict){
+
+                
+        ++number_of_exact_scprods;
+        if ( GaussSieve::check2red_new(p, *(it.access_details()), scalar) )
+            {
+                p = GaussSieve::perform2red(p, *(it.access_details()), scalar);
+                if (p.norm2!=0) pApprox = static_cast< ApproxLatticePoint<ET,false> >(p);
+                
+                //put p back into the queue and break
+                if (p.norm2!=0)
+                    main_queue.push(p);
+                cout << "put p of size " << p.norm2 << " into the queue " << endl;
+                cout << "pApprox has norm2 " << pApprox.get_approx_norm2() <<  endl;
+                cout << "2-reduced p, break all the loops" << endl;
+                inner_loop = false;
+                break;
+            }
+            else
+                ++number_of_mispredictions;
+        }
+        
+        
+        //-------------------3-red-------------------------------
+        
+        //check if we reached the next block; if yes, re-compute max_length_of_the_current_block
+        if (it->get_approx_norm2() > max_length_of_the_current_block)
+        {
+                assumed_norm_of_the_current_block = it->get_approx_norm2();
+                max_length_of_the_current_block =floor(length_factor * assumed_norm_of_the_current_block + 1);
+                
+                cout << "enter the next block" << endl;
+                cout << "assumed_norm_of_current_block = " << assumed_norm_of_the_current_block << endl;
+                cout <<"max_length_of_current_block = " << max_length_of_the_current_block << endl;
+            
+        }
+        
+        float true_inner_product_px1 = .0;
+            
+        // TODO: this function is wrong! DEBUG. DEBUGED. Seems ok.
+        predict = LatticeApproximations::Compare_Sc_Prod_3red(pApprox, *it, n, px1, true_inner_product_px1);
+
+    
+        //not sure about this code
+        /*
+        if(abs(true_inner_product_px1) >.5)
+        {
+            cout << "missed 2-red" << endl;
+            cout << " true_inner_product_px1 " << true_inner_product_px1 << endl;
+            cout << pApprox << endl;
+            //p.printLatticePoint();
+            //cout << *it << endl;
+            cout << LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n ) <<  endl;
+            cout << GaussSieve::check2red_new(p, *(it.access_details()), scalar) << endl;
+            //cout << scalar << endl;
+            
+            assert(false);
+        }
+        */
+        
+         //lower bounds (in the abs. values) of the inner-product px1 that should ever be put in the filtered_list2
+        float  px1bound = 0.05; // TO ADJUST
+    
+        //if abs(true_inner_product_px1) is large enough, first, compare with everything that is already there, and put it into the filtered_list2
+        
+        if (abs(true_inner_product_px1)>px1bound)
+        {
+            
+            //loop over all elements x2 from the filtered list to 3-reduce (p, x1, x2)
+                
+            for (auto it_filter = filtered_list2.cbegin(); it_filter != filtered_list2.cend(); ++it_filter)
+            {
+                    
+            }
+            
+            //insert it into filtered_list2
+            FilteredPoint<ET, float> new_filtered_point(*it, true_inner_product_px1);
+            pair <LatticeApproximations::ApproxTypeNorm2, float> new_key_pair;
+            new_key_pair = make_pair(assumed_norm_of_the_current_block, true_inner_product_px1);
+            filtered_list2.emplace(new_key_pair, new_filtered_point);
+            
+            
+        }
+    
+        
+            
+        ++it;
+    }
+    
 }
 
 //currently unused diagnostic code.
