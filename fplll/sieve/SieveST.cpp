@@ -741,10 +741,22 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
         {
             
             //loop over all elements x2 from the filtered list to 3-reduce (p, x1, x2)
-                
-            for (auto it_filter = filtered_list2.cbegin(); it_filter != filtered_list2.cend(); ++it_filter)
+            auto it_filter = filtered_list2.cbegin();
+            
+            bool filter_loop = true;
+            while ( filter_loop && it_filter != filtered_list2.cend())
             {
-                    
+                LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_x1 = get<0>(it_filter->first);
+                
+                x1x2 = -0.3333; //TO ADJUST
+                
+                //with the above value on x1x2, known approximataions ||x1||, ||x2||, px2, compute an upper-bound on px1 s.t. we can reduce p
+                px1 = Compute_px1_bound(assumed_norm_of_x1, assumed_norm_of_the_current_block, true_inner_product_px1, x1x2);
+                
+                
+                
+                
+                ++it_filter;
             }
             
             //insert it into filtered_list2

@@ -400,7 +400,11 @@ inline void LatticeApproximations::Determine_Sc_Prod (LatticeApproximations::App
     
 }
 
-
+//want: x1x2/(x1_len * x2_len) <=  (-px2/(x1_len * x2_len) - x1_len/(2* x2_len) - x2_len/(2* x1_len))  - px1/(x1_len * x2_len)  (also with different signs)
+float Compute_px1_bound(LatticeApproximations::ApproxTypeNorm2 x1_len, LatticeApproximations::ApproxTypeNorm2 x2_len, float px2, float x1x2)
+{
+    
+}
 
 // OLD IMPLEMENTATION
 /*
