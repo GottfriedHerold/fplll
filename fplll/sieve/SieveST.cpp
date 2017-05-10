@@ -748,9 +748,11 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
             {
                 LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_x1 = get<0>(it_filter->first);
                 
-                x1x2 = -0.3333; //TO ADJUST
+                x1x2 = 0.29; //abs value; TO ADJUST
                 
-                //with the above value on x1x2, known approximataions ||x1||, ||x2||, px2, compute an upper-bound on px1 s.t. we can reduce p
+                //with the above value on x1x2, known approximataions ||x1||, ||x2||, px2, compute a bound on px1 s.t. we can reduce p
+                // it can be either upper- or lower-bound depending on the sign-configuration
+                
                 px1 = Compute_px1_bound(assumed_norm_of_x1, assumed_norm_of_the_current_block, true_inner_product_px1, x1x2);
                 
                 
@@ -759,7 +761,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                 ++it_filter;
             }
             
-            //insert it into filtered_list2
+            //insert *it into filtered_list2
             FilteredPoint<ET, float> new_filtered_point(*it, true_inner_product_px1);
             pair <LatticeApproximations::ApproxTypeNorm2, float> new_key_pair;
             new_key_pair = make_pair(assumed_norm_of_the_current_block, true_inner_product_px1);

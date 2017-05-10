@@ -128,7 +128,7 @@ bool GaussSieve::check3red(const LatticePoint<ET> &p, const LatticePoint<ET> &x1
     //    return false;
     
     
-    //TODO: loop-up a sign-fnct for floats
+    //TODO: look-up a sign-fnct for floats
     if (px1>0 && px2>0 && x1x2>0)
         return false;
     if (px1>0 && px2<0 && x1x2<0)
