@@ -761,7 +761,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                 typename FilteredListType2:: iterator itlow, itup;
                 
                 // if the bounds are too large, consider the next length-block
-                // otherwise find itup s.t. all inner-products after itup are larger than res_up. Iterate up until itup;
+                // otherwise find itup s.t. all inner-products after itup are larger than res_upper. Iterate up until itup;
                 if (res_upper < -0.5)
                 {
                     
@@ -770,7 +770,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                     
                 }
                 
-                // find itlow s.t. all inner-products before itlow are less  tahn res_low. Iterate from res_lower until the end of this block
+                // find itlow s.t. all inner-products before itlow are less  than res_low. Iterate from res_lower until the end of this block
                 if (res_lower > 0.5)
                 {
                     //itlow =

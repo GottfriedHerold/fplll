@@ -438,7 +438,7 @@ void Compute_px1_bound(LatticeApproximations::ApproxTypeNorm2 x1_len, LatticeApp
             res_lower = abs_limit;
             
         
-        //assume x1x2>0. Then px1 < 0
+        //assume x1x2<0. Then px1 < 0
         res_upper = x1x2 * len_sqrt_x1x2 - px2 - ((float)x1_len) / 2 - ((float)x2_len) /2;
         res_upper = res_upper / len_sqrt_x1x2;
         if (res_upper > 0)
