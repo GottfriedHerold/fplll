@@ -446,7 +446,7 @@ void Compute_px1_bound(LatticeApproximations::ApproxTypeNorm2 x1_len, LatticeApp
         
     }
     
-    cout << "px2 = " << px2 << " res_upper = " << res_upper << " res_lower = " << res_lower << endl;
+    //cout << "px2 = " << px2 << " res_upper = " << res_upper << " res_lower = " << res_lower << endl;
 }
 
 // OLD IMPLEMENTATION
