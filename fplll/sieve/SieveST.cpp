@@ -753,11 +753,40 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                 //with the above value on x1x2, known approximataions ||x1||, ||x2||, px2, compute a bound on px1 s.t. we can reduce p
                 // it can be either upper- or lower-bound depending on the sign-configuration
                 
-                px1 = Compute_px1_bound(assumed_norm_of_x1, assumed_norm_of_the_current_block, true_inner_product_px1, x1x2);
+                float res_upper, res_lower;
+                
+                Compute_px1_bound(assumed_norm_of_x1, assumed_norm_of_the_current_block, true_inner_product_px1, x1x2, res_upper, res_lower);
+                cout <<  " res_upper = " << res_upper << " res_lower = " << res_lower << endl;
+                
+                typename FilteredListType2:: iterator itlow, itup;
+                
+                // if the bounds are too large, consider the next length-block
+                // otherwise find itup s.t. all inner-products after itup are larger than res_up. Iterate up until itup;
+                if (res_upper < -0.5)
+                {
+                    
+                    itup = filtered_list2.lower_bound( make_pair(assumed_norm_of_the_current_block, res_upper) );
+                    
+                    
+                }
+                
+                // find itlow s.t. all inner-products before itlow are less  tahn res_low. Iterate from res_lower until the end of this block
+                if (res_lower > 0.5)
+                {
+                    //itlow =
+                }
+                
+                // go to the end of this block
+                else
+                {
+                    
+                }
                 
                 
                 
+                assert(false);
                 
+                //this should bring us to the next block
                 ++it_filter;
             }
             

@@ -57,7 +57,11 @@ class Sieve;
 
 struct CompareFilteredPoint {
   bool operator() (const pair <LatticeApproximations::ApproxTypeNorm2, float> & el1, const pair <LatticeApproximations::ApproxTypeNorm2, float> & el2) const
-  {return get<1>(el1) < get<1>(el2);}
+  { if (get<0>(el1)==get<0>(el2))
+        return get<1>(el1) < get<1>(el2);
+    else
+        return get<0>(el1) < get<0>(el2);
+  }
 };
 
 namespace GaussSieve //helper functions

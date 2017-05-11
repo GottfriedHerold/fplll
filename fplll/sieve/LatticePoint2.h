@@ -401,9 +401,52 @@ inline void LatticeApproximations::Determine_Sc_Prod (LatticeApproximations::App
 }
 
 //want: x1x2/(x1_len * x2_len) <=  (-px2/(x1_len * x2_len) - x1_len/(2* x2_len) - x2_len/(2* x1_len))  - px1/(x1_len * x2_len)  (also with different signs)
-float Compute_px1_bound(LatticeApproximations::ApproxTypeNorm2 x1_len, LatticeApproximations::ApproxTypeNorm2 x2_len, float px2, float x1x2)
+// NOTE: x1x2 stores the assumed absolute value ('promissingness'). Consider both signs of x1x2
+// NOTE: we require sgn(px1) * sgn(px2) * sgn(x1x2) =-1
+void Compute_px1_bound(LatticeApproximations::ApproxTypeNorm2 x1_len, LatticeApproximations::ApproxTypeNorm2 x2_len, float px2, float x1x2, float & res_upper, float & res_lower)
 {
     
+    //float res_upper, res_lower;
+    float abs_limit = 0.05; //TO ADJUST Should be the same as px1bound
+    
+    float x1_len_sqrt = sqrt((float) x1_len);
+    float x2_len_sqrt = sqrt((float) x2_len);
+    float len_sqrt_x1x2 = x1_len_sqrt * x2_len_sqrt;
+    
+    
+    if (px2>0)
+    {
+        //assume x1x2>0. Then px1 < 0
+        res_upper = x1x2 * len_sqrt_x1x2 + px2 - ((float)x1_len) / 2 - ((float)x2_len) /2;
+        res_upper = res_upper / len_sqrt_x1x2;
+        if (res_upper > 0)
+            res_upper = - abs_limit;
+        
+        //assume x1x2<0. Then px1 > 0
+        res_lower = x1x2 * len_sqrt_x1x2 + px2 + ((float)x1_len) / 2 + ((float)x2_len) /2;
+        res_lower = res_lower / len_sqrt_x1x2;
+        if (res_lower < 0)
+            res_lower = abs_limit;
+            
+    }
+    else
+    {
+        //assume x1x2>0. Then px1 > 0
+        res_lower = -x1x2 * len_sqrt_x1x2 - px2 + ((float)x1_len) / 2 + ((float)x2_len) /2;
+        res_lower = res_lower / len_sqrt_x1x2;
+        if (res_lower < 0 )
+            res_lower = abs_limit;
+            
+        
+        //assume x1x2>0. Then px1 < 0
+        res_upper = x1x2 * len_sqrt_x1x2 - px2 - ((float)x1_len) / 2 - ((float)x2_len) /2;
+        res_upper = res_upper / len_sqrt_x1x2;
+        if (res_upper > 0)
+            res_upper = - abs_limit;
+        
+    }
+    
+    cout << "px2 = " << px2 << " res_upper = " << res_upper << " res_lower = " << res_lower << endl;
 }
 
 // OLD IMPLEMENTATION
