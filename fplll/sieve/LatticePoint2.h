@@ -413,6 +413,11 @@ void Compute_px1_bound(LatticeApproximations::ApproxTypeNorm2 x1_len, LatticeApp
     float x2_len_sqrt = sqrt((float) x2_len);
     float len_sqrt_x1x2 = x1_len_sqrt * x2_len_sqrt;
     
+    cout << "---- in Compute_px1_bound ---- " << endl;
+    cout << "x2_len " << x2_len << endl;
+    cout << "x1_len_sqrt = " << x1_len_sqrt << " x2_len_sqrt = " << x2_len_sqrt << " px2 = " << px2 << endl;
+    cout << "---- ---- " << endl;
+    
     
     if (px2>0)
     {
@@ -433,7 +438,9 @@ void Compute_px1_bound(LatticeApproximations::ApproxTypeNorm2 x1_len, LatticeApp
     {
         //assume x1x2>0. Then px1 > 0
         res_lower = -x1x2 * len_sqrt_x1x2 - px2 + ((float)x1_len) / 2 + ((float)x2_len) /2;
+        cout << "res_lower before the division = " << res_lower << endl;
         res_lower = res_lower / len_sqrt_x1x2;
+        cout << "float res_lower after the division = " << res_lower << endl;
         if (res_lower < 0 )
             res_lower = abs_limit;
             
@@ -446,7 +453,6 @@ void Compute_px1_bound(LatticeApproximations::ApproxTypeNorm2 x1_len, LatticeApp
         
     }
     
-    //cout << "px2 = " << px2 << " res_upper = " << res_upper << " res_lower = " << res_lower << endl;
 }
 
 // OLD IMPLEMENTATION

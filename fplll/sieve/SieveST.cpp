@@ -601,7 +601,7 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
     
     
     //insert p into main_list;
-    /*cout << "INSERT p of norm " << p.norm2 << endl; 
+    /*cout << "INSERT p of norm " << p.norm2 << endl;
     //cout << &it_comparison_flip << endl;
     main_list.insert_before(it_comparison_flip,p);
     cout << " p is inserted " << endl; 
@@ -658,6 +658,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
     while (inner_loop && it!=main_list.cend())
     {
         
+        cout << "consider a list element of approx norm = " << it->get_approx_norm2() << endl;
         //check if p is still of max. length
         if (p.norm2 < it.get_true_norm2())
         {
@@ -733,7 +734,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
         */
         
          //lower bounds (in the abs. values) of the inner-product px1 that should ever be put in the filtered_list2
-        float  px1bound = 0.05; // TO ADJUST
+        float  px1bound = 0.15; // TO ADJUST
     
         //if abs(true_inner_product_px1) is large enough, first, compare with everything that is already there, and put it into the filtered_list2
         
@@ -755,8 +756,11 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                 //with the above value on x1x2, known approximataions ||x1||, ||x2||, px2, compute a bound on px1 s.t. we can reduce p
                 // it can be either upper- or lower-bound depending on the sign-configuration
                 
-                float res_upper, res_lower;
+                float res_upper = 0.0;
+                float res_lower = 0.0;
                 
+                
+                // as the second argument pass the value assumed_norm_of_the_current_block
                 Compute_px1_bound(assumed_norm_of_x1, assumed_norm_of_the_current_block, true_inner_product_px1, x1x2, res_upper, res_lower);
                 cout <<  " res_upper = " << res_upper << " res_lower = " << res_lower << endl;
                 
@@ -825,6 +829,19 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
         
             
         ++it;
+    }
+    
+    
+    cout << "INSERT p of norm " << p.norm2 << endl;
+    //cout << &it_comparison_flip << endl;
+    main_list.insert_before(it_comparison_flip,p);
+    ++current_list_size;
+    if(update_shortest_vector_found(p))
+    {
+        if(verbosity>=2)
+        {
+            cout << "New shortest vector found. Norm2 = " << get_best_length2() << endl;
+        }
     }
     
 }
