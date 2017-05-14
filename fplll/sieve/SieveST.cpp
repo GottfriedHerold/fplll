@@ -474,7 +474,7 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                     break;
                 
                 //add 'it' to filtered_list
-                FilteredPoint<ET, float> new_filtered_point(*it, true_inner_product_px1);
+                FilteredPoint<ET, float> new_filtered_point(*it, true_inner_product_px1, false);
                 filtered_list.emplace_back(new_filtered_point);
                 cout <<"filtered_list.size = " << filtered_list.size() << endl;
                 ++it;
@@ -688,8 +688,9 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                 cout << "put p of size " << p.norm2 << " into the queue " << endl;
                 cout << "pApprox has norm2 " << pApprox.get_approx_norm2() <<  endl;
                 cout << "2-reduced p, break all the loops" << endl;
-                inner_loop = false;
-                break;
+                return;
+                //inner_loop = false;
+                //break;
             }
             else
                 ++number_of_mispredictions;
@@ -773,6 +774,10 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                 {
                     
                     itup = filtered_list2.lower_bound( make_pair(assumed_norm_of_the_current_block, res_upper) );
+                    cout << "itup = " << (itup->second).getApproxVector() << endl;
+                    
+                    if (itup == filtered_list2.end())
+                        cout << "itup is the last one" << endl;
                     
                     float true_inner_product_x1x2 = .0;
                     while (it_filter != itup || it_filter != filtered_list2.end())
@@ -783,11 +788,18 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                     
                         cout << "x1x2 = " << x1x2 << endl;
                         cout << " true_inner_product_x1x2 = " << true_inner_product_x1x2 << endl;
-                        
-                        assert(false);
+                        //cout << predict << endl;
+
+                        if (predict)
+                        {
+                                //check if reduction
+                            
+                        }
+                        cout << "it_filter = " << (it_filter->second).getApproxVector() << endl;
                         ++it_filter;
-                        
                     }
+                    
+                    cout << "quit if" << endl;
                     
                 }
                 else
@@ -810,15 +822,26 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                 
                 
                 //this should bring us to the next block, unlsee we've already reached it
-                if (it_filter!=filtered_list2.end())
+                if (it_filter!=filtered_list2.cend())
                     ++it_filter;
             } // end of while-loop
             
+            cout << "filter while-loop is finished "<< endl;
+            
             //insert *it into filtered_list2
-            FilteredPoint<ET, float> new_filtered_point(*it, true_inner_product_px1);
+            
+            bool px1_sign;
+            if (true_inner_product_px1>0)
+                px1_sign = true;
+            else
+                px1_sign = false;
+                
+            FilteredPoint<ET, float> new_filtered_point(*it, true_inner_product_px1, px1_sign);
             pair <LatticeApproximations::ApproxTypeNorm2, float> new_key_pair;
             new_key_pair = make_pair(assumed_norm_of_the_current_block, true_inner_product_px1);
             filtered_list2.emplace(new_key_pair, new_filtered_point);
+            
+            
             cout << "input x with px = " << true_inner_product_px1 << endl;
             cout <<"filtered_list.size = " << filtered_list2.size() << endl;
             if (filtered_list2.size() > 5)

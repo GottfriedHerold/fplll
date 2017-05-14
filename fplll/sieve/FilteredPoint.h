@@ -30,10 +30,11 @@ class FilteredPoint
     FilteredPoint()=default;
     FilteredPoint(const FilteredPoint &Point) = default; // : NumVect<ET>::data(Point.data), norm2(Point.norm2) {}
     FilteredPoint(FilteredPoint &&Point) = default ;
-    FilteredPoint(ApproxLatticePoint<ET> x, SC sc)
+    FilteredPoint(ApproxLatticePoint<ET> x, SC sc, bool sign)
     {
         this->point = x;
         this->sc_prod = sc;
+        this->minus = sign;
     }
 
     
@@ -70,7 +71,13 @@ class FilteredPoint
 private:
     //members
     ApproxLatticePoint<ET> point;
+    
+    // always positive
     SC sc_prod;
+    
+    //true is sc_prod is correct for point
+    // false if for -point
+    bool minus;
 
 
 

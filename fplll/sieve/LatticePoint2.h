@@ -418,17 +418,20 @@ void Compute_px1_bound(LatticeApproximations::ApproxTypeNorm2 x1_len, LatticeApp
     cout << "x1_len_sqrt = " << x1_len_sqrt << " x2_len_sqrt = " << x2_len_sqrt << " px2 = " << px2 << endl;
     cout << "---- ---- " << endl;
     
+    res_upper = abs(x1x2 * len_sqrt_x1x2 - px2* len_sqrt_x1x2 + ((float)x1_len) / 2 + ((float)x2_len) /2);
     
-    if (px2>0)
+    
+    
+    /*if (px2>0)
     {
         //assume x1x2>0. Then px1 < 0
-        res_upper = x1x2 * len_sqrt_x1x2 + px2 - ((float)x1_len) / 2 - ((float)x2_len) /2;
+        res_upper = x1x2 * len_sqrt_x1x2 + px2* len_sqrt_x1x2 - ((float)x1_len) / 2 - ((float)x2_len) /2;
         res_upper = res_upper / len_sqrt_x1x2;
         if (res_upper > 0)
             res_upper = - abs_limit;
         
         //assume x1x2<0. Then px1 > 0
-        res_lower = x1x2 * len_sqrt_x1x2 + px2 + ((float)x1_len) / 2 + ((float)x2_len) /2;
+        res_lower = x1x2 * len_sqrt_x1x2 + px2* len_sqrt_x1x2 + ((float)x1_len) / 2 + ((float)x2_len) /2;
         res_lower = res_lower / len_sqrt_x1x2;
         if (res_lower < 0)
             res_lower = abs_limit;
@@ -437,21 +440,19 @@ void Compute_px1_bound(LatticeApproximations::ApproxTypeNorm2 x1_len, LatticeApp
     else
     {
         //assume x1x2>0. Then px1 > 0
-        res_lower = -x1x2 * len_sqrt_x1x2 - px2 + ((float)x1_len) / 2 + ((float)x2_len) /2;
-        cout << "res_lower before the division = " << res_lower << endl;
+        res_lower = -x1x2 * len_sqrt_x1x2 - px2 * len_sqrt_x1x2 + ((float)x1_len) / 2 + ((float)x2_len) /2;
         res_lower = res_lower / len_sqrt_x1x2;
-        cout << "float res_lower after the division = " << res_lower << endl;
         if (res_lower < 0 )
             res_lower = abs_limit;
             
         
         //assume x1x2<0. Then px1 < 0
-        res_upper = x1x2 * len_sqrt_x1x2 - px2 - ((float)x1_len) / 2 - ((float)x2_len) /2;
+        res_upper = x1x2 * len_sqrt_x1x2 - px2 * len_sqrt_x1x2 - ((float)x1_len) / 2 - ((float)x2_len) /2;
         res_upper = res_upper / len_sqrt_x1x2;
         if (res_upper > 0)
             res_upper = - abs_limit;
         
-    }
+    }*/
     
 }
 
