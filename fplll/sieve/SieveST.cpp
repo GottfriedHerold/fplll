@@ -5,6 +5,8 @@
 #error SieveST.cpp included with wrong macro settings
 #endif
 
+using namespace LatticeApproximations; // to be able to use ApproxTypeNorm2 to store inner-produces scaled by length
+
 class main_list;
 template<class ET>
 bool Sieve<ET,false>::update_shortest_vector_found(LPType const & newvector)
@@ -379,7 +381,7 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
             
             // check if <p, it> is close to px1
             
-            float true_inner_product_px1 = .0;
+            ApproxTypeNorm2 true_inner_product_px1 = .0;
             // TODO: this function is wrong! DEBUG. DEBUGED. Seems ok.
             predict = LatticeApproximations::Compare_Sc_Prod_3red(pApprox, *it, n, px1, true_inner_product_px1);
             
@@ -419,7 +421,7 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                     
                     //now check if <x1, x2> are close to the target x1x2
                     
-                    float true_inner_product_x1x2 = .0;
+                    ApproxTypeNorm2 true_inner_product_x1x2 = .0;
                     predict = LatticeApproximations::Compare_Sc_Prod_3red(it_filter->getApproxVector(), *it, n, x1x2, true_inner_product_x1x2);
                     
                     cout << "x1x2 = " << x1x2 << endl;
@@ -531,7 +533,7 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
     {
         // check if <p, it> is close to px1
             
-        float true_inner_product_px1 = .0;
+        ApproxTypeNorm2 true_inner_product_px1 = .0;
         bool predict = LatticeApproximations::Compare_Sc_Prod_3red(pApprox, *it, n, px1, true_inner_product_px1);
         
         if(!predict)
@@ -553,7 +555,7 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                 bool ifreduced = false;
                 for (auto it_filter = filtered_list.cbegin(); it_filter != filtered_list.cend(); ++it_filter)
                 {
-                    float true_inner_product_x1x2 = .0;
+                    ApproxTypeNorm2 true_inner_product_x1x2 = .0;
                     predict = LatticeApproximations::Compare_Sc_Prod_3red(it_filter->getApproxVector(), *it, n, x1x2, true_inner_product_x1x2);
                     
                     //if(!predict)
@@ -711,10 +713,8 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
             
         }
         
-        float true_inner_product_px1 = .0;
-            
-        // TODO: this function is wrong! DEBUG. DEBUGED. Seems ok.
-        predict = LatticeApproximations::Compare_Sc_Prod_3red(pApprox, *it, n, px1, true_inner_product_px1);
+        ApproxTypeNorm2 true_inner_product_px1 = compute_sc_prod(pApprox.get_approx(), it->get_approx(), n);
+        
 
     
         //not sure about this code
@@ -735,11 +735,14 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
         */
         
          //lower bounds (in the abs. values) of the inner-product px1 that should ever be put in the filtered_list2
+        float scale = (float)(pow(pApprox.get_approx_norm2(), 0.5)) * (float)(pow (it->get_approx_norm2(), 0.5));
         float  px1bound = 0.15; // TO ADJUST
+        //cout  << "true_inner_product_px1 / scale " << (float)true_inner_product_px1 / scale << endl;
+        
     
         //if abs(true_inner_product_px1) is large enough, first, compare with everything that is already there, and put it into the filtered_list2
         
-        if (abs(true_inner_product_px1)>px1bound)
+        if (abs((float)true_inner_product_px1 / scale)>px1bound)
         {
             
             //loop over all elements x2 from the filtered list to 3-reduce (p, x1, x2)
@@ -758,28 +761,25 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                 // it can be either upper- or lower-bound depending on the sign-configuration
                 
                 float res_upper = 0.0;
-                float res_lower = 0.0;
                 
                 
                 // as the second argument pass the value assumed_norm_of_the_current_block
-                Compute_px1_bound(assumed_norm_of_x1, assumed_norm_of_the_current_block, true_inner_product_px1, x1x2, res_upper, res_lower);
-                cout <<  " res_upper = " << res_upper << " res_lower = " << res_lower << endl;
+                Compute_px1_bound(assumed_norm_of_x1, assumed_norm_of_the_current_block, true_inner_product_px1, x1x2, res_upper);
+                cout <<  " res_upper = " << res_upper << endl;
                 
                 typename FilteredListType2:: iterator itlow, itup;
                 
                 // if the bounds are too large, consider the next length-block
-                // otherwise find itup s.t. all inner-products after itup are larger than res_upper. Iterate up until itup;
+                // otherwise find itup s.t. all inner-products after itup are smaller (i.e. worse) than res_upper. Iterate up until itup;
                 // it_filter should point to the element with the smallest inner-product within this block
-                if (abs(res_upper) < 0.5)
-                {
-                    
-                    itup = filtered_list2.lower_bound( make_pair(assumed_norm_of_the_current_block, res_upper) );
+
+                    itup = filtered_list2.upper_bound( make_pair(assumed_norm_of_the_current_block, res_upper) );
                     cout << "itup = " << (itup->second).getApproxVector() << endl;
                     
                     if (itup == filtered_list2.end())
                         cout << "itup is the last one" << endl;
                     
-                    float true_inner_product_x1x2 = .0;
+                    ApproxTypeNorm2 true_inner_product_x1x2;
                     while (it_filter != itup || it_filter != filtered_list2.end())
                     {
                         //retrieve x2 and compare x1x2
@@ -800,25 +800,8 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                     }
                     
                     cout << "quit if" << endl;
-                    
-                }
-                else
-                {
-                    cout << "res_upper > -0.5 " << endl;
-                }
-                
-                // find itlow s.t. all inner-products before itlow are less  than res_low. Iterate from res_lower until the end of this block
-                if (res_lower < 0.5 && res_lower > 0)
-                {
-                    //itlow =
-                     assert(false);
-                }
-                
-                // go to the end of this block
-                else
-                {
-                    
-                }
+
+
                 
                 
                 //this should bring us to the next block, unlsee we've already reached it

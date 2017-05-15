@@ -58,7 +58,7 @@ template<class ET>
 inline bool Compare_Sc_Prod(ApproxLatticePoint<ET,false,-1> const & arg1, ApproxLatticePoint<ET,false,-1> const & arg2, ApproxTypeNorm2 abslimit, int limit_exp, int dim);
 inline void Determine_Sc_Prod (ApproxTypeNorm2 len_max, ApproxTypeNorm2 len_x1, ApproxTypeNorm2 len_x2,  float & x1x2, float & px1, float & px2);
 template<class ET>
-    inline bool Compare_Sc_Prod_3red(ApproxLatticePoint<ET,false, -1> const & pApprox, ApproxLatticePoint<ET,false, -1> const & x1, int dim, float px1,  float & approx_inner_product);
+    inline bool Compare_Sc_Prod_3red(ApproxLatticePoint<ET,false, -1> const & pApprox, ApproxLatticePoint<ET,false, -1> const & x1, int dim, float px1,  ApproxTypeNorm2 & approx_inner_product);
 inline double detConf (float px1, float px2, float x1x2);
 }
 
@@ -303,16 +303,16 @@ inline bool LatticeApproximations::Compare_Sc_Prod(ApproxLatticePoint<ET,false,-
 }
 
 template<class ET>
-inline bool LatticeApproximations::Compare_Sc_Prod_3red(ApproxLatticePoint<ET,false,-1> const & pApprox, ApproxLatticePoint<ET,false,-1> const & x1, int dim, float px1, float & approx_inner_product)
+inline bool LatticeApproximations::Compare_Sc_Prod_3red(ApproxLatticePoint<ET,false,-1> const & pApprox, ApproxLatticePoint<ET,false,-1> const & x1, int dim, float px1, ApproxTypeNorm2 & approx_inner_product)
 {
-    ApproxTypeNorm2 sc = (compute_sc_prod(pApprox.get_approx(), x1.get_approx(), dim));
+    approx_inner_product = (compute_sc_prod(pApprox.get_approx(), x1.get_approx(), dim));
     //cout << "sc = " << sc  << endl;
     //cout << "pApproxnorm2 = " << pApprox.get_approx_norm2() << endl;
     //cout << "x1Approxnorm2 = " << x1.get_approx_norm2() << endl;
     //cout <<"p Length exp = " <<pApprox.get_length_exponent() << endl;
     
     //TODO: Make more efficient
-    approx_inner_product = (float)sc / ( (float)(pow(pApprox.get_approx_norm2(), 0.5)) * (float)(pow (x1.get_approx_norm2(), 0.5) ) ) ;
+    float approx_inner_product_sc = (float)approx_inner_product / ( (float)(pow(pApprox.get_approx_norm2(), 0.5)) * (float)(pow (x1.get_approx_norm2(), 0.5) ) ) ;
     //cout << approx_inner_product_double << endl;(pow
     
     float eps = .02; // TODO: to adjust and make as input
@@ -320,7 +320,7 @@ inline bool LatticeApproximations::Compare_Sc_Prod_3red(ApproxLatticePoint<ET,fa
     //cout << "to_compare " << approx_inner_product << endl;
     //cout << "target " << px1 << endl;
     
-    if (abs ( abs ( approx_inner_product ) - abs(px1))  <= eps)
+    if (abs ( abs ( approx_inner_product_sc ) - abs(px1))  <= eps)
         return true;
     else
         return false;
@@ -403,7 +403,7 @@ inline void LatticeApproximations::Determine_Sc_Prod (LatticeApproximations::App
 //want: x1x2/(x1_len * x2_len) <=  (-px2/(x1_len * x2_len) - x1_len/(2* x2_len) - x2_len/(2* x1_len))  - px1/(x1_len * x2_len)  (also with different signs)
 // NOTE: x1x2 stores the assumed absolute value ('promissingness'). Consider both signs of x1x2
 // NOTE: we require sgn(px1) * sgn(px2) * sgn(x1x2) =-1
-void Compute_px1_bound(LatticeApproximations::ApproxTypeNorm2 x1_len, LatticeApproximations::ApproxTypeNorm2 x2_len, float px2, float x1x2, float & res_upper, float & res_lower)
+void Compute_px1_bound(LatticeApproximations::ApproxTypeNorm2 x1_len, LatticeApproximations::ApproxTypeNorm2 x2_len, LatticeApproximations::ApproxTypeNorm2 px2, float x1x2_scaled, float & res_upper)
 {
     
     //float res_upper, res_lower;
@@ -418,41 +418,7 @@ void Compute_px1_bound(LatticeApproximations::ApproxTypeNorm2 x1_len, LatticeApp
     cout << "x1_len_sqrt = " << x1_len_sqrt << " x2_len_sqrt = " << x2_len_sqrt << " px2 = " << px2 << endl;
     cout << "---- ---- " << endl;
     
-    res_upper = abs(x1x2 * len_sqrt_x1x2 - px2* len_sqrt_x1x2 + ((float)x1_len) / 2 + ((float)x2_len) /2);
-    
-    
-    
-    /*if (px2>0)
-    {
-        //assume x1x2>0. Then px1 < 0
-        res_upper = x1x2 * len_sqrt_x1x2 + px2* len_sqrt_x1x2 - ((float)x1_len) / 2 - ((float)x2_len) /2;
-        res_upper = res_upper / len_sqrt_x1x2;
-        if (res_upper > 0)
-            res_upper = - abs_limit;
-        
-        //assume x1x2<0. Then px1 > 0
-        res_lower = x1x2 * len_sqrt_x1x2 + px2* len_sqrt_x1x2 + ((float)x1_len) / 2 + ((float)x2_len) /2;
-        res_lower = res_lower / len_sqrt_x1x2;
-        if (res_lower < 0)
-            res_lower = abs_limit;
-            
-    }
-    else
-    {
-        //assume x1x2>0. Then px1 > 0
-        res_lower = -x1x2 * len_sqrt_x1x2 - px2 * len_sqrt_x1x2 + ((float)x1_len) / 2 + ((float)x2_len) /2;
-        res_lower = res_lower / len_sqrt_x1x2;
-        if (res_lower < 0 )
-            res_lower = abs_limit;
-            
-        
-        //assume x1x2<0. Then px1 < 0
-        res_upper = x1x2 * len_sqrt_x1x2 - px2 * len_sqrt_x1x2 - ((float)x1_len) / 2 - ((float)x2_len) /2;
-        res_upper = res_upper / len_sqrt_x1x2;
-        if (res_upper > 0)
-            res_upper = - abs_limit;
-        
-    }*/
+    res_upper = abs(x1x2_scaled * len_sqrt_x1x2 - px2 - ((float)x1_len) / 2 - ((float)x2_len) /2);
     
 }
 
