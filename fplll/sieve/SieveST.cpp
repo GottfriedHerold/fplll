@@ -748,8 +748,8 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
             //loop over all elements x2 from the filtered list to 3-reduce (p, x1, x2)
             auto it_filter = filtered_list2.cbegin();
             
-            bool filter_loop = true;
-            while ( filter_loop && it_filter != filtered_list2.end())
+            //bool filter_loop = true;
+            while ( it_filter != filtered_list2.cend())
             {
                 LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_x1 = get<0>(it_filter->first);
                 
@@ -757,57 +757,73 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                 
                 x1x2 = 0.29; //abs value; TO ADJUST
                 
-                //with the above value on x1x2, known approximataions ||x1||, ||x2||, px2, compute a bound on px1 s.t. we can reduce p
-                // it can be either upper- or lower-bound depending on the sign-configuration
-                
                 float res_upper = 0.0;
                 
                 
                 // as the second argument pass the value assumed_norm_of_the_current_block
-                Compute_px1_bound(assumed_norm_of_x1, assumed_norm_of_the_current_block, true_inner_product_px1, x1x2, res_upper);
-                cout <<  " res_upper = " << res_upper << endl;
+                //Compute_px1_bound(assumed_norm_of_x1, assumed_norm_of_the_current_block, true_inner_product_px1, x1x2, res_upper);
+                //cout <<  " res_upper = " << res_upper << endl;
                 
-                typename FilteredListType2:: iterator itlow, itup;
+                Compute_px1_bound(assumed_norm_of_x1, it->get_approx_norm2(), true_inner_product_px1, x1x2, res_upper);
+                
+                
+                typename FilteredListType2:: iterator itup;
                 
                 // if the bounds are too large, consider the next length-block
                 // otherwise find itup s.t. all inner-products after itup are smaller (i.e. worse) than res_upper. Iterate up until itup;
                 // it_filter should point to the element with the smallest inner-product within this block
 
-                    itup = filtered_list2.upper_bound( make_pair(assumed_norm_of_the_current_block, res_upper) );
-                    cout << "itup = " << (itup->second).getApproxVector() << endl;
+                pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> new_key_pair_bound;
+                new_key_pair_bound = make_pair(assumed_norm_of_the_current_block, (LatticeApproximations::ApproxTypeNorm2)res_upper); 
+                itup = filtered_list2.upper_bound(new_key_pair_bound );
+                //itup = filtered_list2.end();
+                
                     
-                    if (itup == filtered_list2.end())
-                        cout << "itup is the last one" << endl;
+                if (itup == filtered_list2.end())
+                {
+                    cout << "itup is the last one" << endl;
                     
+                    // go the next block
+                    new_key_pair_bound = make_pair(assumed_norm_of_the_current_block+1, (LatticeApproximations::ApproxTypeNorm2)res_upper);
+                    it_filter = filtered_list2.upper_bound(new_key_pair_bound );
+                    cout << "go to length " << get<0>(it_filter->first) << endl; 
+                }
+                else
+                {
+                    
+                    //debugging
+                    
+                    for (auto it1 = filtered_list2.cbegin(); it1!=filtered_list2.cend(); ++it1)
+                        cout << get<1>(it1->first) << endl;
+                        
+                    cout << "itup = " << get<1>(itup->first) << endl;
+                    cout << "it_filter = " << get<1>(it_filter->first) << endl;
                     ApproxTypeNorm2 true_inner_product_x1x2;
-                    while (it_filter != itup || it_filter != filtered_list2.end())
+                    while (it_filter != itup )
                     {
                         //retrieve x2 and compare x1x2
-                        
-                        predict = LatticeApproximations::Compare_Sc_Prod_3red((it_filter->second).getApproxVector(), *it, n, x1x2, true_inner_product_x1x2);
                     
-                        cout << "x1x2 = " << x1x2 << endl;
+                        predict = LatticeApproximations::Compare_Sc_Prod_3red((it_filter->second).getApproxVector(), *it, n, x1x2, true_inner_product_x1x2);
+                
                         cout << " true_inner_product_x1x2 = " << true_inner_product_x1x2 << endl;
-                        //cout << predict << endl;
+                       
 
                         if (predict)
                         {
-                                //check if reduction
-                            
+                            cout << "REDUCTION" << endl;
+                            assert(false);
+                            //check if reduction
+                        
                         }
-                        cout << "it_filter = " << (it_filter->second).getApproxVector() << endl;
+                        //cout << "it_filter = " << (it_filter->second).getApproxVector() << endl;
                         ++it_filter;
                     }
-                    
-                    cout << "quit if" << endl;
-
-
-                
-                
-                //this should bring us to the next block, unlsee we've already reached it
-                if (it_filter!=filtered_list2.cend())
+                    cout << "reached it_up" << endl;
                     ++it_filter;
+                }   
+                    
             } // end of while-loop
+            
             
             cout << "filter while-loop is finished "<< endl;
             
@@ -819,9 +835,9 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
             else
                 px1_sign = false;
                 
-            FilteredPoint<ET, float> new_filtered_point(*it, true_inner_product_px1, px1_sign);
-            pair <LatticeApproximations::ApproxTypeNorm2, float> new_key_pair;
-            new_key_pair = make_pair(assumed_norm_of_the_current_block, true_inner_product_px1);
+            FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> new_filtered_point(*it, abs(true_inner_product_px1), px1_sign);
+            pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> new_key_pair;
+            new_key_pair = make_pair(assumed_norm_of_the_current_block, abs(true_inner_product_px1));
             filtered_list2.emplace(new_key_pair, new_filtered_point);
             
             
@@ -830,6 +846,11 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
             if (filtered_list2.size() > 5)
                 assert(false);
             
+        }
+        
+        else
+        {
+            cout << "scaled px1 = " <<  (float)true_inner_product_px1 / scale << " smaller than " << px1bound << endl;
         }
     
         

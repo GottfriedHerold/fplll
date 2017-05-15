@@ -56,11 +56,11 @@ class Sieve;
 
 
 struct CompareFilteredPoint {
-  bool operator() (const pair <LatticeApproximations::ApproxTypeNorm2, float> & el1, const pair <LatticeApproximations::ApproxTypeNorm2, float> & el2) const
+  bool operator() (const pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> & el1, const pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> & el2) const
   { if (get<0>(el1)==get<0>(el2))
-        return get<1>(el1) < get<1>(el2);
+        return get<1>(el1) > get<1>(el2);  // inner products are in the decreasing order
     else
-        return get<0>(el1) < get<0>(el2);
+        return get<0>(el1) < get<0>(el2); //length is in the increasing order
   }
 };
 
@@ -121,7 +121,7 @@ public:
     using LatticeBasisType = ZZ_mat<typename ET::underlying_data_type>;
     using SamplerType      = KleinSampler<typename ET::underlying_data_type, FP_NR<double>> *; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
     using FilteredListType = std::vector<FilteredPoint<ET, float>>; //queue is also fine for our purposes; scalar products are not of type ET, two-templates; float for now; may be changed.
-    using FilteredListType2 = std::map<pair <LatticeApproximations::ApproxTypeNorm2, float>, FilteredPoint<ET, float>, CompareFilteredPoint>;
+    using FilteredListType2 = std::map<pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2>, FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2>, CompareFilteredPoint>;
     //using FilteredListTest  =  std::map<char,int,classcomp>;        
     using TermCondType     = TerminationCondition<ET,GAUSS_SIEVE_IS_MULTI_THREADED> *;
 
