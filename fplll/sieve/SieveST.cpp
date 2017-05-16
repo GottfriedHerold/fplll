@@ -904,8 +904,8 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
             
             cout << "input x with px = " << true_inner_product_px1  << " and px1_sign = " << px1_sign << endl;
             cout <<"filtered_list.size = " << filtered_list2.size() << endl;
-            if (filtered_list2.size() > 22)
-                assert(false);
+            //if (filtered_list2.size() > 22)
+            //    assert(false);
             
         }
         
@@ -942,11 +942,77 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
     it =it_comparison_flip; //points to the next after p list-element
 
     
+    cout << "start the lower part of the list" << endl;
     
+    assumed_norm_of_the_current_block = it->get_approx_norm2();
+    max_length_of_the_current_block =floor(length_factor * assumed_norm_of_the_current_block + 1);
+    
+    
+    //now we are reducing *it
     while (it!=main_list.cend())
         
     {
         cout << "consider a list element of approx norm = " << it->get_approx_norm2() << endl;
+        //assert(false);
+        
+        
+        // check if 2-red is possible
+        ++number_of_scprods;
+        bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n   );
+            
+        // preform 2-reduction
+        if(predict){
+
+                
+        ++number_of_exact_scprods;
+        if ( GaussSieve::check2red_new(p, *(it.access_details()), scalar) )
+        {
+                LatticePoint<ET> reduced = GaussSieve::perform2red(p, *(it.access_details()), scalar);
+                
+                //put reduced back into the queue
+                if (reduced.norm2!=0)
+                    main_queue.push(reduced);
+                    
+                    
+                cout << "put v of size " << reduced.norm2 << " into the queue " << endl;
+                
+                it = main_list.erase(it); //also makes ++it
+                --current_list_size;
+        }
+        else
+                ++number_of_mispredictions;
+        }
+        
+        
+        //--------------------------------3-red-------------------------------
+        
+        //check if we reached the next block; if yes, re-compute max_length_of_the_current_block
+        if (it->get_approx_norm2() > max_length_of_the_current_block)
+        {
+                assumed_norm_of_the_current_block = it->get_approx_norm2();
+                max_length_of_the_current_block =floor(length_factor * assumed_norm_of_the_current_block + 1);
+                
+                cout << "enter the next block" << endl;
+                cout << "assumed_norm_of_current_block = " << assumed_norm_of_the_current_block << endl;
+                cout <<"max_length_of_current_block = " << max_length_of_the_current_block << endl;
+                cout << "filtered_list is:" << endl;
+            
+                for (auto it1 = filtered_list2.cbegin(); it1!=filtered_list2.cend(); ++it1)
+                    cout << get<0>(it1->first) << " " << get<1>(it1->first) << endl;
+            
+                cout << endl;
+            
+            
+        }
+        
+        ApproxTypeNorm2 true_inner_product_px1 = compute_sc_prod(pApprox.get_approx(), it->get_approx(), n);
+        float scale = (float)(pow(pApprox.get_approx_norm2(), 0.5)) * (float)(pow (it->get_approx_norm2(), 0.5));
+        float  px1bound = 0.22; // TO ADJUST
+        
+        if (abs((float)true_inner_product_px1 / scale)>px1bound)
+        {
+            
+        }
         
         ++it;
     }
