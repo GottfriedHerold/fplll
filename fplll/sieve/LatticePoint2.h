@@ -317,8 +317,8 @@ inline bool LatticeApproximations::Compare_Sc_Prod_3red(ApproxLatticePoint<ET,fa
     
     float eps = .05; // TODO: to adjust and make as input
     
-    cout << "to_compare " << approx_inner_product_sc << endl;
-    cout << "target " << px1 << endl;
+    //cout << "to_compare " << approx_inner_product_sc << endl;
+    //cout << "target " << px1 << endl;
     
     //TODO: delete the or-condition
     if (abs ( abs ( approx_inner_product_sc ) - abs(px1))  <= eps || abs(approx_inner_product_sc) > 0.37 )
@@ -414,9 +414,9 @@ void Compute_px1_bound(LatticeApproximations::ApproxTypeNorm2 x1_len, LatticeApp
     float x2_len_sqrt = sqrt((float) x2_len);
     float len_sqrt_x1x2 = x1_len_sqrt * x2_len_sqrt;
     
-    cout << "---- in Compute_px1_bound ---- " << endl;
-    cout << "x2_len " << x2_len << endl;
-    cout << "x1_len_sqrt = " << x1_len_sqrt << " x2_len_sqrt = " << x2_len_sqrt << " px2 = " << px2 << endl;
+    //cout << "---- in Compute_px1_bound ---- " << endl;
+    //cout << "x2_len " << x2_len << endl;
+    //cout << "x1_len_sqrt = " << x1_len_sqrt << " x2_len_sqrt = " << x2_len_sqrt << " px2 = " << px2 << endl;
    
     
     if (px2>=0)
@@ -424,7 +424,7 @@ void Compute_px1_bound(LatticeApproximations::ApproxTypeNorm2 x1_len, LatticeApp
     else
         res_upper = abs(x1x2_scaled * len_sqrt_x1x2 - px2 - ((float)x1_len) / 2 - ((float)x2_len) /2);
     
-    cout << "--------------" << endl;
+    //cout << "--------------" << endl;
     
 }
 

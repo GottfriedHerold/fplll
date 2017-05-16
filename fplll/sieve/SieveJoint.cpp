@@ -213,6 +213,7 @@ bool GaussSieve::check3red_signs(const LatticePoint<ET> &p, const LatticePoint<E
     
     if(res.norm2>=p.norm2)
     {
+        cout << "res = " <<  res << " res.norm2 = " << res.norm2 <<  "p.norm2 = " << p.norm2 << endl;
         return false;
     }
     
