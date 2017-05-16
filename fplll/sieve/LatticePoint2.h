@@ -315,13 +315,13 @@ inline bool LatticeApproximations::Compare_Sc_Prod_3red(ApproxLatticePoint<ET,fa
     float approx_inner_product_sc = (float)approx_inner_product / ( (float)(pow(pApprox.get_approx_norm2(), 0.5)) * (float)(pow (x1.get_approx_norm2(), 0.5) ) ) ;
     //cout << approx_inner_product_double << endl;(pow
     
-    float eps = .02; // TODO: to adjust and make as input
+    float eps = .05; // TODO: to adjust and make as input
     
     cout << "to_compare " << approx_inner_product_sc << endl;
     cout << "target " << px1 << endl;
     
-    
-    if (abs ( abs ( approx_inner_product_sc ) - abs(px1))  <= eps)
+    //TODO: delete the or-condition
+    if (abs ( abs ( approx_inner_product_sc ) - abs(px1))  <= eps || abs(approx_inner_product_sc) > 0.37 )
         return true;
     else
         return false;
@@ -424,8 +424,6 @@ void Compute_px1_bound(LatticeApproximations::ApproxTypeNorm2 x1_len, LatticeApp
     else
         res_upper = abs(x1x2_scaled * len_sqrt_x1x2 - px2 - ((float)x1_len) / 2 - ((float)x2_len) /2);
     
-        
-    cout <<  " res_upper  = " << res_upper << endl;   
     cout << "--------------" << endl;
     
 }
