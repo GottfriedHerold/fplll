@@ -273,7 +273,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                     main_queue.push(p);
                 //cout << "put p of size " << p.norm2 << " into the queue " << endl;
                 //cout << "pApprox has norm2 " << pApprox.get_approx_norm2() <<  endl;
-                cout << "2-reduced p, break all the loops" << endl;
+                //cout << "2-reduced p, break all the loops" << endl;
                 return;
                 //inner_loop = false;
                 //break;
@@ -445,7 +445,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                                 if(p.norm2!=0)
                                     main_queue.push(p);
                                 
-                                cout << "reduced p: RE-START with p on norm2 = " << p.norm2 << endl;
+                                //cout << "reduced p: RE-START with p on norm2 = " << p.norm2 << endl;
                                 //assert(false);
                                 return;
                 
@@ -481,12 +481,12 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
             FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> new_filtered_point(*it, abs(true_inner_product_px1), px1_sign);
             pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> new_key_pair;
             new_key_pair = make_pair(assumed_norm_of_the_current_block, abs(true_inner_product_px1));
-            cout << "about to insert into filtered_list" << endl;
+            //cout << "about to insert into filtered_list" << endl;
             filtered_list2.emplace(new_key_pair, new_filtered_point);
             
             
             //cout << "input x with px = " << true_inner_product_px1  << " and px1_sign = " << px1_sign << endl;
-            cout <<"filtered_list.size = " << filtered_list2.size() << endl;
+            //cout <<"filtered_list.size = " << filtered_list2.size() << endl;
             //if (filtered_list2.size() > 22)
             //    assert(false);
             
@@ -503,11 +503,11 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
     }
     
     
-    cout << "INSERT p of norm " << p.norm2 << endl;
+    //cout << "INSERT p of norm " << p.norm2 << endl;
     //cout << &it_comparison_flip << endl;
     main_list.insert_before(it_comparison_flip,p);
     ++current_list_size;
-    cout << "list_size = " <<current_list_size << endl;
+    //cout << "list_size = " <<current_list_size << endl;
     if(update_shortest_vector_found(p))
     {
         if(verbosity>=2)
@@ -584,7 +584,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                 //for (auto it1 = filtered_list2.cbegin(); it1!=filtered_list2.cend(); ++it1)
                 //    cout << get<0>(it1->first) << " " << get<1>(it1->first) << endl;
             
-                cout << endl;
+                //cout << endl;
             
             
         }
@@ -593,10 +593,13 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
         float scale = (float)(pow(pApprox.get_approx_norm2(), 0.5)) * (float)(pow (it->get_approx_norm2(), 0.5));
         float  px1bound = 0.22; // TO ADJUST
         
+        bool reduced_x1 = false;
+        
         if (abs((float)true_inner_product_px1 / scale)>px1bound)
         {
                 auto it_filter = filtered_list2.cbegin();
-                while ( it_filter != filtered_list2.cend())
+            
+                while ( it_filter != filtered_list2.cend() && !reduced_x1 )
                 {
                     LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_x1 = get<0>(it_filter->first);
                     pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> new_key_pair_bound = make_pair(assumed_norm_of_x1+1, 0);
@@ -681,7 +684,10 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                                     it = main_list.erase(it); //also makes ++it
                                     --current_list_size;
                                     
+                                    
                                     //break both while-loops and set the flag not to insert *it into filtered_list
+                                    reduced_x1 = true;
+                                    break;
                                     
                                     //cout << "reduced x1:  now  x1 is if norm2 = " << p.norm2 << endl;
                                     //assert(false);
@@ -700,17 +706,21 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                 }
             
                 //cout << "filter while-loop is finished "<< endl;
-                bool px1_sign;
-                if (true_inner_product_px1>0)
-                    px1_sign = true;
-                else
-                    px1_sign = false;
+                if (!reduced_x1)
+                {
+                    bool px1_sign;
+                    if (true_inner_product_px1>0)
+                        px1_sign = true;
+                    else
+                        px1_sign = false;
             
-                FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> new_filtered_point(*it, abs(true_inner_product_px1), px1_sign);
-                pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> new_key_pair;
-                new_key_pair = make_pair(assumed_norm_of_the_current_block, abs(true_inner_product_px1));
-                cout << "about to insert into filtered_list from lower-part" << endl;
-                filtered_list2.emplace(new_key_pair, new_filtered_point);
+                    FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> new_filtered_point(*it, abs(true_inner_product_px1), px1_sign);
+                    pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> new_key_pair;
+                    new_key_pair = make_pair(assumed_norm_of_the_current_block, abs(true_inner_product_px1));
+                    //cout << "about to insert into filtered_list from lower-part" << endl;
+                    filtered_list2.emplace(new_key_pair, new_filtered_point);
+                    
+                }
         
         } //if
         
