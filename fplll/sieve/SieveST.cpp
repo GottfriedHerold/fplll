@@ -222,7 +222,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
     
     typename MainListType::Iterator it_comparison_flip=main_list.cend();
     
-    float length_factor = 1.3; //to be verified
+    float length_factor = 1.8; //to be verified
     //float length_factor =10.0; //to debug the inner-loop assume we have only 1 block
     
     typename MainListType::Iterator first_block_element = main_list.cbegin();
@@ -327,7 +327,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
         
          //lower bounds (in the abs. values) of the inner-product px1 that should ever be put in the filtered_list2
         float scale = (float)(pow(pApprox.get_approx_norm2(), 0.5)) * (float)(pow (it->get_approx_norm2(), 0.5));
-        float  px1bound = 0.22; // TO ADJUST
+        float  px1bound = 0.31; // TO ADJUST
         //cout  << "true_inner_product_px1 / scale " << (float)true_inner_product_px1 / scale << endl;
         
     
@@ -445,8 +445,14 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                                 if(p.norm2!=0)
                                     main_queue.push(p);
                                 
+                                //if(get_best_length2() == 3135573)
+                                //{
+                                //    cout << "reduced p: RE-START with p on norm2 = " << p.norm2 << endl;
+                                    
+                                //}
                                 //cout << "reduced p: RE-START with p on norm2 = " << p.norm2 << endl;
                                 //assert(false);
+                                filtered_list2.clear();
                                 return;
                 
                             }
@@ -486,7 +492,11 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
             
             
             //cout << "input x with px = " << true_inner_product_px1  << " and px1_sign = " << px1_sign << endl;
-            //cout <<"filtered_list.size = " << filtered_list2.size() << endl;
+            
+            //if(get_best_length2() == 3135573)
+            //{
+            //    cout <<"filtered_list.size = " << filtered_list2.size() << endl;
+            //}
             //if (filtered_list2.size() > 22)
             //    assert(false);
             
@@ -502,7 +512,10 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
         ++it;
     }
     
-    
+    //if(get_best_length2() == 3135573)
+   //{
+      //  cout << "INSERT p of norm " << p.norm2 << endl;
+    //}
     //cout << "INSERT p of norm " << p.norm2 << endl;
     //cout << &it_comparison_flip << endl;
     main_list.insert_before(it_comparison_flip,p);
@@ -591,7 +604,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
         
         ApproxTypeNorm2 true_inner_product_px1 = compute_sc_prod(pApprox.get_approx(), it->get_approx(), n);
         float scale = (float)(pow(pApprox.get_approx_norm2(), 0.5)) * (float)(pow (it->get_approx_norm2(), 0.5));
-        float  px1bound = 0.22; // TO ADJUST
+        float  px1bound = 0.31; // TO ADJUST
         
         bool reduced_x1 = false;
         
@@ -717,8 +730,17 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                     FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> new_filtered_point(*it, abs(true_inner_product_px1), px1_sign);
                     pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> new_key_pair;
                     new_key_pair = make_pair(assumed_norm_of_the_current_block, abs(true_inner_product_px1));
-                    //cout << "about to insert into filtered_list from lower-part" << endl;
+                    
+                    //if(get_best_length2() == 3135573)
+                    //{
+                    //    cout << get<0>(new_key_pair) << " " << get<1>(new_key_pair) << endl;
+                    //    cout << "about to insert into filtered_list from lower-part" << endl;
+                        
+                    //}
+                    
                     filtered_list2.emplace(new_key_pair, new_filtered_point);
+                    //cout << "filtered_list2.size" << filtered_list2.size() << endl;
+
                     
                 }
         
@@ -726,7 +748,10 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
         
         else
         {
-            //cout << "scaled px1 = " <<  (float)true_inner_product_px1 / scale << " is smaller than " << px1bound << endl;
+            //if(get_best_length2() == 3135573)
+            //{
+            //    cout << "scaled px1 = " <<  (float)true_inner_product_px1 / scale << " is smaller than " << px1bound << endl;
+            //}
         }
         
         ++it;
