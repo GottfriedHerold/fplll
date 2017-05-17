@@ -206,6 +206,530 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might
 
 }
 
+
+template<class ET>
+void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
+{
+    if (p.norm2==0) return;
+    ApproxLatticePoint<ET,false> pApprox (p);
+    
+    //cout << "------------" << endl;
+    //cout << "Run iteration on p of approx norm " << pApprox.get_approx_norm2() << endl;
+    
+    int const n = get_ambient_dimension();
+    
+    ET scalar;
+    
+    typename MainListType::Iterator it_comparison_flip=main_list.cend();
+    
+    float length_factor = 1.3; //to be verified
+    //float length_factor =10.0; //to debug the inner-loop assume we have only 1 block
+    
+    typename MainListType::Iterator first_block_element = main_list.cbegin();
+    
+    // store target inner-products
+    float px1=.0;
+    float px2=.0;
+    float x1x2=.0;
+    
+    int NumOfBlocks = 0;
+    
+    auto it = main_list.cbegin();
+    
+    typename MainListType::Iterator first_element_of_the_block = main_list.cbegin();
+    LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_the_current_block =  first_element_of_the_block->get_approx_norm2();
+    LatticeApproximations::ApproxTypeNorm2 max_length_of_the_current_block = floor(length_factor * assumed_norm_of_the_current_block + 1);
+        
+    bool inner_loop = true; // in case p changes, we break this loop
+    while (inner_loop && it!=main_list.cend())
+    {
+        
+        //cout << "consider a list element of approx norm = " << it->get_approx_norm2() << endl;
+        //check if p is still of max. length
+        if (p.norm2 < it.get_true_norm2())
+        {
+            //cout << "reached the position to insert p" << endl;
+            it_comparison_flip = it;
+            break;
+        }
+        
+        
+        // check if 2-red is possible
+        ++number_of_scprods;
+        bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n   );
+            
+        // preform 2-reduction
+        if(predict){
+
+                
+        ++number_of_exact_scprods;
+        if ( GaussSieve::check2red_new(p, *(it.access_details()), scalar) )
+            {
+                p = GaussSieve::perform2red(p, *(it.access_details()), scalar);
+                if (p.norm2!=0) pApprox = static_cast< ApproxLatticePoint<ET,false> >(p);
+                
+                //put p back into the queue and break
+                if (p.norm2!=0)
+                    main_queue.push(p);
+                //cout << "put p of size " << p.norm2 << " into the queue " << endl;
+                //cout << "pApprox has norm2 " << pApprox.get_approx_norm2() <<  endl;
+                cout << "2-reduced p, break all the loops" << endl;
+                return;
+                //inner_loop = false;
+                //break;
+            }
+            else
+                ++number_of_mispredictions;
+        }
+        
+        
+        //--------------------------------3-red-------------------------------
+        
+        //check if we reached the next block; if yes, re-compute max_length_of_the_current_block
+        if (it->get_approx_norm2() > max_length_of_the_current_block)
+        {
+                assumed_norm_of_the_current_block = it->get_approx_norm2();
+                max_length_of_the_current_block =floor(length_factor * assumed_norm_of_the_current_block + 1);
+                
+                //cout << "enter the next block" << endl;
+                //cout << "assumed_norm_of_current_block = " << assumed_norm_of_the_current_block << endl;
+                //cout <<"max_length_of_current_block = " << max_length_of_the_current_block << endl;
+                //cout << "filtered_list is:" << endl;
+            
+                //for (auto it1 = filtered_list2.cbegin(); it1!=filtered_list2.cend(); ++it1)
+                //    cout << get<0>(it1->first) << " " << get<1>(it1->first) << endl;
+            
+                //cout << endl;
+            
+            
+        }
+        
+        ApproxTypeNorm2 true_inner_product_px1 = compute_sc_prod(pApprox.get_approx(), it->get_approx(), n);
+        
+
+    
+        //not sure about this code
+        /*
+        if(abs(true_inner_product_px1) >.5)
+        {
+            cout << "missed 2-red" << endl;
+            cout << " true_inner_product_px1 " << true_inner_product_px1 << endl;
+            cout << pApprox << endl;
+            //p.printLatticePoint();
+            //cout << *it << endl;
+            cout << LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n ) <<  endl;
+            cout << GaussSieve::check2red_new(p, *(it.access_details()), scalar) << endl;
+            //cout << scalar << endl;
+            
+            assert(false);
+        }
+        */
+        
+         //lower bounds (in the abs. values) of the inner-product px1 that should ever be put in the filtered_list2
+        float scale = (float)(pow(pApprox.get_approx_norm2(), 0.5)) * (float)(pow (it->get_approx_norm2(), 0.5));
+        float  px1bound = 0.22; // TO ADJUST
+        //cout  << "true_inner_product_px1 / scale " << (float)true_inner_product_px1 / scale << endl;
+        
+    
+        //if abs(true_inner_product_px1) is large enough, first, compare with everything that is already in the filtered_list, and put it into the filtered_list2
+        
+        if (abs((float)true_inner_product_px1 / scale)>px1bound)
+        {
+            
+            //loop over all elements x2 from the filtered list to 3-reduce (p, x1, x2)
+            auto it_filter = filtered_list2.cbegin();
+            
+            //bool filter_loop = true;
+            while ( it_filter != filtered_list2.cend())
+            {
+                LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_x1 = get<0>(it_filter->first);
+                
+                
+                pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> new_key_pair_bound = make_pair(assumed_norm_of_x1+1, 0);
+                
+                typename FilteredListType2:: iterator next_block = filtered_list2.lower_bound(new_key_pair_bound );
+                
+                //returns garbadge if there is only one block in the filtered list
+                LatticeApproximations::ApproxTypeNorm2 norm_of_the_next_block = get<0>(next_block->first);
+                
+                //cout << "in filter: " << "block-len = " <<  assumed_norm_of_x1 << " next_block = " << norm_of_the_next_block << endl;
+                
+                
+                x1x2 = 0.29; //abs value; TO ADJUST
+                
+                float res_upper = 0.0;
+                
+                
+                // as the second argument pass the value assumed_norm_of_the_current_block
+                //Compute_px1_bound(assumed_norm_of_x1, assumed_norm_of_the_current_block, true_inner_product_px1, x1x2, res_upper)
+                Compute_px1_bound(assumed_norm_of_x1, it->get_approx_norm2(), true_inner_product_px1, x1x2, res_upper);
+                //cout <<  " res_upper = " << (LatticeApproximations::ApproxTypeNorm2)res_upper << endl;
+                
+                typename FilteredListType2:: iterator itup;
+                auto it_tmp = it_filter;
+                
+                // if the bounds are too large, consider the next length-block
+                // otherwise find itup s.t. all inner-products after itup are smaller (i.e. worse) than res_upper. Iterate up until itup;
+                // it_filter should point to the element with the smallest inner-product within this block
+
+                
+                new_key_pair_bound = make_pair(assumed_norm_of_x1, (LatticeApproximations::ApproxTypeNorm2)res_upper);
+                itup = filtered_list2.upper_bound(new_key_pair_bound );
+                
+                
+                if (it_tmp->first == itup->first )
+                {
+                    //cout << "itup = " << get<1>(itup->first) << endl;
+                    
+                    //for (auto it1 = filtered_list2.cbegin(); it1!=filtered_list2.cend(); ++it1)
+                    //    cout << get<0>(it1->first) << " " << get<1>(it1->first) << endl;
+                    
+                    //cout << "itup is equal to it_filter, no iteration" << endl;
+                    
+                }
+                else
+                {
+                    
+                    //TODO: should be 'OR until the next block'
+                    //if (itup ==filtered_list2.cend())
+                    //   cout << "RUN UNTIL THE END OF THE BLOCK" << endl;
+                    //debugging
+                    
+                    //for (auto it1 = filtered_list2.cbegin(); it1!=filtered_list2.cend(); ++it1)
+                    //    cout << get<0>(it1->first) << " " << get<1>(it1->first) << endl;
+                        
+                    //cout << "itup = " << get<1>(itup->first) << endl;
+                    //cout << "it_filter = " << get<1>(it_filter->first) << endl;
+                    ApproxTypeNorm2 true_inner_product_x1x2;
+                    
+                    //TODO: change filtered_list2.cend() to the end_of_the_block
+                    while (it_filter != itup && it_filter!=filtered_list2.cend())
+                    {
+                        //retrieve x2 and compare x1x2
+                        //cout << "it_filter = " << get<1>(it_filter->first) << endl;
+                        predict = LatticeApproximations::Compare_Sc_Prod_3red((it_filter->second).getApproxVector(), *it, n, x1x2, true_inner_product_x1x2);
+                
+                       // cout << " true_inner_product_x1x2 = " << true_inner_product_x1x2 << endl;
+
+                        if (predict)
+                        {
+                            //cout << "REDUCTION" << endl;
+                            
+                            int sgn1 = 0;
+                            int sgn2 = 0;
+                            
+                            int sgn_px1 = 1;
+                            int sgn_px2 = 1 ;
+                            int sgn_x1x2 = 1;
+                            
+                            
+                            if (true_inner_product_px1 < 0 ) sgn_px1 = -1;
+                            if (!(it_filter->second).get_sign()) sgn_px2 = -1;
+                            if (true_inner_product_x1x2 < 0 ) sgn_x1x2 = -1;
+                            
+                            // check
+                            //cout << "true_inner_product_px1 " << true_inner_product_px1 << " sgn_px1 " << sgn_px1 << endl;
+                            //cout << "true_inner_product_px2 " << (it_filter->second).get_sign() << " sgn_px2 " << sgn_px2 << endl;
+                            //cout << "true_inner_product_x1x2 " << true_inner_product_x1x2 << " sgn_x1x2 " << sgn_x1x2 << endl;
+                            
+                            
+                            //check if reduction
+                            if (GaussSieve::check3red_signs(p, *(it.access_details()), ((it_filter->second).getApproxVector()).get_details(), sgn_px1, sgn_px2, sgn_x1x2, sgn1, sgn2))
+                            {
+                               
+                                //perfrom actual reduction
+                                p = GaussSieve::perform3red(p, *(it.access_details()), ((it_filter->second).getApproxVector()).get_details(), sgn1, sgn2);
+                                
+                                if (p.norm2!=0) pApprox = static_cast< ApproxLatticePoint<ET,false> >(p);
+                                
+                                if(p.norm2!=0)
+                                    main_queue.push(p);
+                                
+                                cout << "reduced p: RE-START with p on norm2 = " << p.norm2 << endl;
+                                //assert(false);
+                                return;
+                
+                            }
+                        
+                        }
+                        
+                        ++it_filter;
+                    }   //while -loop over one length-block
+                    
+                    //cout << "reached it_up" << endl;
+                    
+                } //else-condition
+                
+                //go the next length_block
+                
+                it_filter = next_block;
+                //cout << "go to length " << get<0>(it_filter->first) << endl;
+                
+            } // end of while it_filter - loop
+            
+            
+            //cout << "filter while-loop is finished "<< endl;
+            
+            //insert *it into filtered_list2
+            
+            bool px1_sign;
+            if (true_inner_product_px1>0)
+                px1_sign = true;
+            else
+                px1_sign = false;
+                
+            FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> new_filtered_point(*it, abs(true_inner_product_px1), px1_sign);
+            pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> new_key_pair;
+            new_key_pair = make_pair(assumed_norm_of_the_current_block, abs(true_inner_product_px1));
+            cout << "about to insert into filtered_list" << endl;
+            filtered_list2.emplace(new_key_pair, new_filtered_point);
+            
+            
+            //cout << "input x with px = " << true_inner_product_px1  << " and px1_sign = " << px1_sign << endl;
+            cout <<"filtered_list.size = " << filtered_list2.size() << endl;
+            //if (filtered_list2.size() > 22)
+            //    assert(false);
+            
+        }
+        
+        else
+        {
+            //cout << "scaled px1 = " <<  (float)true_inner_product_px1 / scale << " is smaller than " << px1bound << endl;
+        }
+    
+        
+            
+        ++it;
+    }
+    
+    
+    cout << "INSERT p of norm " << p.norm2 << endl;
+    //cout << &it_comparison_flip << endl;
+    main_list.insert_before(it_comparison_flip,p);
+    ++current_list_size;
+    cout << "list_size = " <<current_list_size << endl;
+    if(update_shortest_vector_found(p))
+    {
+        if(verbosity>=2)
+        {
+            cout << "New shortest vector found. Norm2 = " << get_best_length2() << endl;
+        }
+    }
+    
+    
+    
+    //filtered_list2.clear();
+    
+    //keep the old filtered_list2
+    //start iteration from it_comparison_flip
+    
+    it =it_comparison_flip; //points to the next after p list-element
+
+    
+    //cout << "start the lower part of the list" << endl;
+    
+    assumed_norm_of_the_current_block = it->get_approx_norm2();
+    max_length_of_the_current_block =floor(length_factor * assumed_norm_of_the_current_block + 1);
+    
+    
+    //now we are reducing *it
+    while (it!=main_list.cend())
+        
+    {
+        //cout << "consider a list element of approx norm = " << it->get_approx_norm2() << endl;
+        //assert(false);
+        
+        
+        // check if 2-red is possible
+        ++number_of_scprods;
+        bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n   );
+            
+        // preform 2-reduction
+        if(predict){
+
+                
+        ++number_of_exact_scprods;
+        if ( GaussSieve::check2red_new(p, *(it.access_details()), scalar) )
+        {
+                LatticePoint<ET> reduced = GaussSieve::perform2red(p, *(it.access_details()), scalar);
+                
+                //put reduced back into the queue
+                if (reduced.norm2!=0)
+                    main_queue.push(reduced);
+                    
+                    
+                //cout << "put v of size " << reduced.norm2 << " into the queue " << endl;
+                
+                it = main_list.erase(it); //also makes ++it
+                --current_list_size;
+        }
+        else
+                ++number_of_mispredictions;
+        }
+        
+        
+        //--------------------------------3-red-------------------------------
+        
+        //check if we reached the next block; if yes, re-compute max_length_of_the_current_block
+        if (it->get_approx_norm2() > max_length_of_the_current_block)
+        {
+                assumed_norm_of_the_current_block = it->get_approx_norm2();
+                max_length_of_the_current_block =floor(length_factor * assumed_norm_of_the_current_block + 1);
+                
+                //cout << "enter the next block" << endl;
+                //cout << "assumed_norm_of_current_block = " << assumed_norm_of_the_current_block << endl;
+                //cout <<"max_length_of_current_block = " << max_length_of_the_current_block << endl;
+                //cout << "filtered_list is:" << endl;
+            
+                //for (auto it1 = filtered_list2.cbegin(); it1!=filtered_list2.cend(); ++it1)
+                //    cout << get<0>(it1->first) << " " << get<1>(it1->first) << endl;
+            
+                cout << endl;
+            
+            
+        }
+        
+        ApproxTypeNorm2 true_inner_product_px1 = compute_sc_prod(pApprox.get_approx(), it->get_approx(), n);
+        float scale = (float)(pow(pApprox.get_approx_norm2(), 0.5)) * (float)(pow (it->get_approx_norm2(), 0.5));
+        float  px1bound = 0.22; // TO ADJUST
+        
+        if (abs((float)true_inner_product_px1 / scale)>px1bound)
+        {
+                auto it_filter = filtered_list2.cbegin();
+                while ( it_filter != filtered_list2.cend())
+                {
+                    LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_x1 = get<0>(it_filter->first);
+                    pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> new_key_pair_bound = make_pair(assumed_norm_of_x1+1, 0);
+                    
+                    typename FilteredListType2:: iterator next_block = filtered_list2.lower_bound(new_key_pair_bound );
+                    
+                    //returns garbadge if there is only one block in the filtered list
+                    LatticeApproximations::ApproxTypeNorm2 norm_of_the_next_block = get<0>(next_block->first);
+                    //cout << "in filter: " << "block-len = " <<  assumed_norm_of_x1 << " next_block = " << norm_of_the_next_block << endl;
+                    
+                    x1x2 = 0.29; //abs value; TO ADJUST
+                    
+                    float res_upper = 0.0;
+                    
+                    // as the second argument pass the value assumed_norm_of_the_current_block
+                    //Compute_px1_bound(assumed_norm_of_x1, assumed_norm_of_the_current_block, true_inner_product_px1, x1x2, res_upper)
+                    Compute_px1_bound(pApprox.get_approx_norm2(), assumed_norm_of_x1, true_inner_product_px1, x1x2, res_upper);
+                    //cout <<  " res_upper = " << (LatticeApproximations::ApproxTypeNorm2)res_upper << endl;
+                    
+                    typename FilteredListType2:: iterator itup;
+                    auto it_tmp = it_filter;
+                    
+                    new_key_pair_bound = make_pair(assumed_norm_of_x1, (LatticeApproximations::ApproxTypeNorm2)res_upper);
+                    itup = filtered_list2.upper_bound(new_key_pair_bound );
+                    
+                    if (it_tmp->first == itup->first )
+                    {
+                        //cout << "itup = " << get<1>(itup->first) << endl;
+                        
+                        //for (auto it1 = filtered_list2.cbegin(); it1!=filtered_list2.cend(); ++it1)
+                        //    cout << get<0>(it1->first) << " " << get<1>(it1->first) << endl;
+                        
+                        //cout << "itup is equal to it_filter, no iteration" << endl;
+                        
+                    }
+                    else
+                    {
+                        //for (auto it1 = filtered_list2.cbegin(); it1!=filtered_list2.cend(); ++it1)
+                        //    cout << get<0>(it1->first) << " " << get<1>(it1->first) << endl;
+                        
+                        //cout << "itup = " << get<1>(itup->first) << endl;
+                        //cout << "it_filter = " << get<1>(it_filter->first) << endl;
+                        ApproxTypeNorm2 true_inner_product_x1x2;
+                        
+                        //TODO: change filtered_list2.cend() to the end_of_the_block
+                        while (it_filter != itup && it_filter!=filtered_list2.cend())
+                        {
+                            predict = LatticeApproximations::Compare_Sc_Prod_3red((it_filter->second).getApproxVector(), *it, n, x1x2, true_inner_product_x1x2);
+                            
+                            if (predict)
+                            {
+                                //cout << "REDUCTION FOR x1" << endl;
+                                
+                                int sgn1 = 0;
+                                int sgn2 = 0;
+                                
+                                int sgn_px1 = 1;
+                                int sgn_px2 = 1 ;
+                                int sgn_x1x2 = 1;
+                                
+                                
+                                if (true_inner_product_px1 < 0 ) sgn_px1 = -1;
+                                if (!(it_filter->second).get_sign()) sgn_px2 = -1;
+                                if (true_inner_product_x1x2 < 0 ) sgn_x1x2 = -1;
+                                
+                                // check
+                                //cout << "true_inner_product_px1 " << true_inner_product_px1 << " sgn_px1 " << sgn_px1 << endl;
+                                //cout << "true_inner_product_px2 " << (it_filter->second).get_sign() << " sgn_px2 " << sgn_px2 << endl;
+                                //cout << "true_inner_product_x1x2 " << true_inner_product_x1x2 << " sgn_x1x2 " << sgn_x1x2 << endl;
+                                
+                                
+                                //check if reduction
+                                if (GaussSieve::check3red_signs(*(it.access_details()), p, ((it_filter->second).getApproxVector()).get_details(), sgn_px1, sgn_x1x2, sgn_px2, sgn1, sgn2))
+                                {
+                                    
+                                    //perfrom actual reduction
+                                    LatticePoint<ET> reduced = GaussSieve::perform3red(*(it.access_details()), p, ((it_filter->second).getApproxVector()).get_details(), sgn1, sgn2);
+                                    
+                                    if(reduced.norm2!=0)
+                                        main_queue.push(reduced);
+                                    
+                                    it = main_list.erase(it); //also makes ++it
+                                    --current_list_size;
+                                    
+                                    //break both while-loops and set the flag not to insert *it into filtered_list
+                                    
+                                    //cout << "reduced x1:  now  x1 is if norm2 = " << p.norm2 << endl;
+                                    //assert(false);
+                                    
+                                }
+                            
+                            } //if(predict)
+                            
+                            ++it_filter;
+                        } //while -loop over one length-block
+                    }//else
+                    
+                    it_filter = next_block;
+                    //cout << "go to length " << get<0>(it_filter->first) << endl;
+
+                }
+            
+                //cout << "filter while-loop is finished "<< endl;
+                bool px1_sign;
+                if (true_inner_product_px1>0)
+                    px1_sign = true;
+                else
+                    px1_sign = false;
+            
+                FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> new_filtered_point(*it, abs(true_inner_product_px1), px1_sign);
+                pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> new_key_pair;
+                new_key_pair = make_pair(assumed_norm_of_the_current_block, abs(true_inner_product_px1));
+                cout << "about to insert into filtered_list from lower-part" << endl;
+                filtered_list2.emplace(new_key_pair, new_filtered_point);
+        
+        } //if
+        
+        else
+        {
+            //cout << "scaled px1 = " <<  (float)true_inner_product_px1 / scale << " is smaller than " << px1bound << endl;
+        }
+        
+        ++it;
+    }
+    
+    filtered_list2.clear();
+    
+}
+
+/*-------------------------*/
+//old 3-tuple Sieve Iteration
+
+
 template<class ET>
 void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
 {
@@ -504,7 +1028,7 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
     }
     
     
-    cout << "INSERT p of norm " << p.norm2 << endl; 
+    cout << "INSERT p of norm " << p.norm2 << endl;
     //cout << &it_comparison_flip << endl;
     main_list.insert_before(it_comparison_flip,p);
     ++current_list_size;
@@ -532,7 +1056,7 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
     while (it !=main_list.cend())
     {
         // check if <p, it> is close to px1
-            
+        
         ApproxTypeNorm2 true_inner_product_px1 = .0;
         bool predict = LatticeApproximations::Compare_Sc_Prod_3red(pApprox, *it, n, px1, true_inner_product_px1);
         
@@ -569,7 +1093,7 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                     {
                         //the first arg of perform3red is the one to be reduced
                         LatticePoint<ET> reduced = GaussSieve::perform3red(*(it.access_details()), p, (it_filter->getApproxVector()).get_details(), sgn1, sgn2);
-                    
+                        
                         if (reduced.norm2 == 0) //Note : this cannot happen unless the list contains a non-trivial multiple of p (because the collision would have triggered before).
                             number_of_collisions++;
                         else
@@ -577,7 +1101,7 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                             main_queue.push(reduced);
                             //cout << "list-vec is reduced " << endl;
                             //assert(false);
-                        
+                            
                         }
                         it = main_list.erase(it); //also makes ++it
                         --current_list_size;
@@ -593,10 +1117,10 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                     //cout <<"filtered_list.size = " << filtered_list.size() << endl;
                     ++it;
                 }
-                    
+                
                 
             }
-                
+            
         }// end of 'predict=true'
         
     }
@@ -604,17 +1128,17 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
     
     //insert p into main_list;
     /*cout << "INSERT p of norm " << p.norm2 << endl;
-    //cout << &it_comparison_flip << endl;
-    main_list.insert_before(it_comparison_flip,p);
-    cout << " p is inserted " << endl; 
-    ++current_list_size;
-    if(update_shortest_vector_found(p))
-    {
-        if(verbosity>=2)
-        {
-            cout << "New shortest vector found. Norm2 = " << get_best_length2() << endl;
-        }
-    }*/
+     //cout << &it_comparison_flip << endl;
+     main_list.insert_before(it_comparison_flip,p);
+     cout << " p is inserted " << endl;
+     ++current_list_size;
+     if(update_shortest_vector_found(p))
+     {
+     if(verbosity>=2)
+     {
+     cout << "New shortest vector found. Norm2 = " << get_best_length2() << endl;
+     }
+     }*/
     
     /* print for debugging */
     //for (auto it1 = main_list.cbegin(); it1!=main_list.cend(); ++it1) {
@@ -623,403 +1147,6 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
     
 }
 
-template<class ET>
-void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
-{
-    if (p.norm2==0) return;
-    ApproxLatticePoint<ET,false> pApprox (p);
-    
-    cout << "------------" << endl;
-    cout << "Run iteration on p of approx norm " << pApprox.get_approx_norm2() << endl;
-    
-    int const n = get_ambient_dimension();
-    
-    ET scalar;
-    
-    typename MainListType::Iterator it_comparison_flip=main_list.cend();
-    
-    float length_factor = 1.3; //to be verified
-    //float length_factor =10.0; //to debug the inner-loop assume we have only 1 block
-    
-    typename MainListType::Iterator first_block_element = main_list.cbegin();
-    
-    // store target inner-products
-    float px1=.0;
-    float px2=.0;
-    float x1x2=.0;
-    
-    int NumOfBlocks = 0;
-    
-    auto it = main_list.cbegin();
-    
-    typename MainListType::Iterator first_element_of_the_block = main_list.cbegin();
-    LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_the_current_block =  first_element_of_the_block->get_approx_norm2();
-    LatticeApproximations::ApproxTypeNorm2 max_length_of_the_current_block = floor(length_factor * assumed_norm_of_the_current_block + 1);
-        
-    bool inner_loop = true; // in case p changes, we break this loop
-    while (inner_loop && it!=main_list.cend())
-    {
-        
-        cout << "consider a list element of approx norm = " << it->get_approx_norm2() << endl;
-        //check if p is still of max. length
-        if (p.norm2 < it.get_true_norm2())
-        {
-            cout << "reached the position to insert p" << endl;
-            it_comparison_flip = it;
-            break;
-        }
-        
-        
-        // check if 2-red is possible
-        ++number_of_scprods;
-        bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n   );
-            
-        // preform 2-reduction
-        if(predict){
-
-                
-        ++number_of_exact_scprods;
-        if ( GaussSieve::check2red_new(p, *(it.access_details()), scalar) )
-            {
-                p = GaussSieve::perform2red(p, *(it.access_details()), scalar);
-                if (p.norm2!=0) pApprox = static_cast< ApproxLatticePoint<ET,false> >(p);
-                
-                //put p back into the queue and break
-                if (p.norm2!=0)
-                    main_queue.push(p);
-                cout << "put p of size " << p.norm2 << " into the queue " << endl;
-                cout << "pApprox has norm2 " << pApprox.get_approx_norm2() <<  endl;
-                cout << "2-reduced p, break all the loops" << endl;
-                return;
-                //inner_loop = false;
-                //break;
-            }
-            else
-                ++number_of_mispredictions;
-        }
-        
-        
-        //--------------------------------3-red-------------------------------
-        
-        //check if we reached the next block; if yes, re-compute max_length_of_the_current_block
-        if (it->get_approx_norm2() > max_length_of_the_current_block)
-        {
-                assumed_norm_of_the_current_block = it->get_approx_norm2();
-                max_length_of_the_current_block =floor(length_factor * assumed_norm_of_the_current_block + 1);
-                
-                cout << "enter the next block" << endl;
-                cout << "assumed_norm_of_current_block = " << assumed_norm_of_the_current_block << endl;
-                cout <<"max_length_of_current_block = " << max_length_of_the_current_block << endl;
-                cout << "filtered_list is:" << endl;
-            
-                for (auto it1 = filtered_list2.cbegin(); it1!=filtered_list2.cend(); ++it1)
-                    cout << get<0>(it1->first) << " " << get<1>(it1->first) << endl;
-            
-                cout << endl;
-            
-            
-        }
-        
-        ApproxTypeNorm2 true_inner_product_px1 = compute_sc_prod(pApprox.get_approx(), it->get_approx(), n);
-        
-
-    
-        //not sure about this code
-        /*
-        if(abs(true_inner_product_px1) >.5)
-        {
-            cout << "missed 2-red" << endl;
-            cout << " true_inner_product_px1 " << true_inner_product_px1 << endl;
-            cout << pApprox << endl;
-            //p.printLatticePoint();
-            //cout << *it << endl;
-            cout << LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n ) <<  endl;
-            cout << GaussSieve::check2red_new(p, *(it.access_details()), scalar) << endl;
-            //cout << scalar << endl;
-            
-            assert(false);
-        }
-        */
-        
-         //lower bounds (in the abs. values) of the inner-product px1 that should ever be put in the filtered_list2
-        float scale = (float)(pow(pApprox.get_approx_norm2(), 0.5)) * (float)(pow (it->get_approx_norm2(), 0.5));
-        float  px1bound = 0.22; // TO ADJUST
-        //cout  << "true_inner_product_px1 / scale " << (float)true_inner_product_px1 / scale << endl;
-        
-    
-        //if abs(true_inner_product_px1) is large enough, first, compare with everything that is already there, and put it into the filtered_list2
-        
-        if (abs((float)true_inner_product_px1 / scale)>px1bound)
-        {
-            
-            //loop over all elements x2 from the filtered list to 3-reduce (p, x1, x2)
-            auto it_filter = filtered_list2.cbegin();
-            
-            //bool filter_loop = true;
-            while ( it_filter != filtered_list2.cend())
-            {
-                LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_x1 = get<0>(it_filter->first);
-                
-                
-                pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> new_key_pair_bound;
-                
-                new_key_pair_bound = make_pair(assumed_norm_of_x1+1, 0);
-                
-                typename FilteredListType2:: iterator next_block = filtered_list2.lower_bound(new_key_pair_bound );
-                
-                //returns garbadge if there is only one block in the filtered list
-                LatticeApproximations::ApproxTypeNorm2 norm_of_the_next_block = get<0>(next_block->first);
-                
-                cout << "in filter: " << "block-len = " <<  assumed_norm_of_x1 << " next_block = " << norm_of_the_next_block << endl;
-                
-                
-                x1x2 = 0.29; //abs value; TO ADJUST
-                
-                float res_upper = 0.0;
-                
-                
-                // as the second argument pass the value assumed_norm_of_the_current_block
-                //Compute_px1_bound(assumed_norm_of_x1, assumed_norm_of_the_current_block, true_inner_product_px1, x1x2, res_upper)
-                Compute_px1_bound(assumed_norm_of_x1, it->get_approx_norm2(), true_inner_product_px1, x1x2, res_upper);
-                cout <<  " res_upper = " << (LatticeApproximations::ApproxTypeNorm2)res_upper << endl;
-                
-                typename FilteredListType2:: iterator itup;
-                auto it_tmp = it_filter;
-                
-                // if the bounds are too large, consider the next length-block
-                // otherwise find itup s.t. all inner-products after itup are smaller (i.e. worse) than res_upper. Iterate up until itup;
-                // it_filter should point to the element with the smallest inner-product within this block
-
-                
-                new_key_pair_bound = make_pair(assumed_norm_of_x1, (LatticeApproximations::ApproxTypeNorm2)res_upper);
-                //cout << "new_key_pair_bound = " << get<0>(new_key_pair_bound) << " " << get<1>(new_key_pair_bound) << endl;
-                itup = filtered_list2.upper_bound(new_key_pair_bound );
-                
-                
-                if (it_tmp->first == itup->first )
-                {
-                    cout << "itup = " << get<1>(itup->first) << endl;
-                    
-                    //for (auto it1 = filtered_list2.cbegin(); it1!=filtered_list2.cend(); ++it1)
-                    //    cout << get<0>(it1->first) << " " << get<1>(it1->first) << endl;
-                    
-                    cout << "itup is equal to it_filter, no iteration" << endl;
-                    
-                }
-                else
-                {
-                    
-                    if (itup ==filtered_list2.cend())
-                        cout << "RUN UNTIL THE END OF THE BLOCK" << endl;
-                    //debugging
-                    
-                    //for (auto it1 = filtered_list2.cbegin(); it1!=filtered_list2.cend(); ++it1)
-                    //    cout << get<0>(it1->first) << " " << get<1>(it1->first) << endl;
-                        
-                    cout << "itup = " << get<1>(itup->first) << endl;
-                    cout << "it_filter = " << get<1>(it_filter->first) << endl;
-                    ApproxTypeNorm2 true_inner_product_x1x2;
-                    
-                    //TODO: change filtered_list2.cend() to the end_of_the_block
-                    while (it_filter != itup && it_filter!=filtered_list2.cend())
-                    {
-                        //retrieve x2 and compare x1x2
-                        //cout << "it_filter = " << get<1>(it_filter->first) << endl;
-                        predict = LatticeApproximations::Compare_Sc_Prod_3red((it_filter->second).getApproxVector(), *it, n, x1x2, true_inner_product_x1x2);
-                
-                       // cout << " true_inner_product_x1x2 = " << true_inner_product_x1x2 << endl;
-
-                        if (predict)
-                        {
-                            cout << "REDUCTION" << endl;
-                            
-                            int sgn1 = 0;
-                            int sgn2 = 0;
-                            
-                            int sgn_px1 = 1;
-                            int sgn_px2 = 1 ;
-                            int sgn_x1x2 = 1;
-                            
-                            
-                            if (true_inner_product_px1 < 0 ) sgn_px1 = -1;
-                            if (!(it_filter->second).get_sign()) sgn_px2 = -1;
-                            if (true_inner_product_x1x2 < 0 ) sgn_x1x2 = -1;
-                            
-                            // check
-                            //cout << "true_inner_product_px1 " << true_inner_product_px1 << " sgn_px1 " << sgn_px1 << endl;
-                            //cout << "true_inner_product_px2 " << (it_filter->second).get_sign() << " sgn_px2 " << sgn_px2 << endl;
-                            //cout << "true_inner_product_x1x2 " << true_inner_product_x1x2 << " sgn_x1x2 " << sgn_x1x2 << endl;
-                            
-                            
-                            //check if reduction
-                            if (GaussSieve::check3red_signs(p, *(it.access_details()), ((it_filter->second).getApproxVector()).get_details(), sgn_px1, sgn_px2, sgn_x1x2, sgn1, sgn2))
-                            {
-                               
-                                //perfrom actual reduction
-                                p = GaussSieve::perform3red(p, *(it.access_details()), ((it_filter->second).getApproxVector()).get_details(), sgn1, sgn2);
-                                
-                                if (p.norm2!=0) pApprox = static_cast< ApproxLatticePoint<ET,false> >(p);
-                                
-                                if(p.norm2!=0)
-                                    main_queue.push(p);
-                                
-                                cout << "reduced p: RE-START with p on norm2 = " << p.norm2 << endl;
-                                //assert(false);
-                                return;
-                
-                            }
-                            
-                        
-                        }
-                        
-                        ++it_filter;
-                    }
-                    cout << "reached it_up" << endl;
-                    
-                }
-                
-                //go the next length_block
-                
-                it_filter = next_block;
-                cout << "go to length " << get<0>(it_filter->first) << endl;
-                
-            } // end of while it_filter - loop
-            
-            
-            cout << "filter while-loop is finished "<< endl;
-            
-            //insert *it into filtered_list2
-            
-            bool px1_sign;
-            if (true_inner_product_px1>0)
-                px1_sign = true;
-            else
-                px1_sign = false;
-                
-            FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> new_filtered_point(*it, abs(true_inner_product_px1), px1_sign);
-            pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> new_key_pair;
-            new_key_pair = make_pair(assumed_norm_of_the_current_block, abs(true_inner_product_px1));
-            filtered_list2.emplace(new_key_pair, new_filtered_point);
-            
-            
-            cout << "input x with px = " << true_inner_product_px1  << " and px1_sign = " << px1_sign << endl;
-            cout <<"filtered_list.size = " << filtered_list2.size() << endl;
-            //if (filtered_list2.size() > 22)
-            //    assert(false);
-            
-        }
-        
-        else
-        {
-            cout << "scaled px1 = " <<  (float)true_inner_product_px1 / scale << " is smaller than " << px1bound << endl;
-        }
-    
-        
-            
-        ++it;
-    }
-    
-    
-    cout << "INSERT p of norm " << p.norm2 << endl;
-    //cout << &it_comparison_flip << endl;
-    main_list.insert_before(it_comparison_flip,p);
-    ++current_list_size;
-    if(update_shortest_vector_found(p))
-    {
-        if(verbosity>=2)
-        {
-            cout << "New shortest vector found. Norm2 = " << get_best_length2() << endl;
-        }
-    }
-    
-    
-    
-    //filtered_list2.clear();
-    
-    //keep the old filtered_list2
-    //start iteration from it_comparison_flip
-    
-    it =it_comparison_flip; //points to the next after p list-element
-
-    
-    cout << "start the lower part of the list" << endl;
-    
-    assumed_norm_of_the_current_block = it->get_approx_norm2();
-    max_length_of_the_current_block =floor(length_factor * assumed_norm_of_the_current_block + 1);
-    
-    
-    //now we are reducing *it
-    while (it!=main_list.cend())
-        
-    {
-        cout << "consider a list element of approx norm = " << it->get_approx_norm2() << endl;
-        //assert(false);
-        
-        
-        // check if 2-red is possible
-        ++number_of_scprods;
-        bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n   );
-            
-        // preform 2-reduction
-        if(predict){
-
-                
-        ++number_of_exact_scprods;
-        if ( GaussSieve::check2red_new(p, *(it.access_details()), scalar) )
-        {
-                LatticePoint<ET> reduced = GaussSieve::perform2red(p, *(it.access_details()), scalar);
-                
-                //put reduced back into the queue
-                if (reduced.norm2!=0)
-                    main_queue.push(reduced);
-                    
-                    
-                cout << "put v of size " << reduced.norm2 << " into the queue " << endl;
-                
-                it = main_list.erase(it); //also makes ++it
-                --current_list_size;
-        }
-        else
-                ++number_of_mispredictions;
-        }
-        
-        
-        //--------------------------------3-red-------------------------------
-        
-        //check if we reached the next block; if yes, re-compute max_length_of_the_current_block
-        if (it->get_approx_norm2() > max_length_of_the_current_block)
-        {
-                assumed_norm_of_the_current_block = it->get_approx_norm2();
-                max_length_of_the_current_block =floor(length_factor * assumed_norm_of_the_current_block + 1);
-                
-                cout << "enter the next block" << endl;
-                cout << "assumed_norm_of_current_block = " << assumed_norm_of_the_current_block << endl;
-                cout <<"max_length_of_current_block = " << max_length_of_the_current_block << endl;
-                cout << "filtered_list is:" << endl;
-            
-                for (auto it1 = filtered_list2.cbegin(); it1!=filtered_list2.cend(); ++it1)
-                    cout << get<0>(it1->first) << " " << get<1>(it1->first) << endl;
-            
-                cout << endl;
-            
-            
-        }
-        
-        ApproxTypeNorm2 true_inner_product_px1 = compute_sc_prod(pApprox.get_approx(), it->get_approx(), n);
-        float scale = (float)(pow(pApprox.get_approx_norm2(), 0.5)) * (float)(pow (it->get_approx_norm2(), 0.5));
-        float  px1bound = 0.22; // TO ADJUST
-        
-        if (abs((float)true_inner_product_px1 / scale)>px1bound)
-        {
-            
-        }
-        
-        ++it;
-    }
-    
-    
-    
-}
 
 //currently unused diagnostic code.
 /*
