@@ -244,11 +244,11 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
     LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_the_current_block =  first_element_of_the_block->get_approx_norm2();
     LatticeApproximations::ApproxTypeNorm2 max_length_of_the_current_block = floor(length_factor * assumed_norm_of_the_current_block + 1);
         
-    bool inner_loop = true; // in case p changes, we break this loop
-    while (inner_loop && it!=main_list.cend())
+    //bool inner_loop = true; // in case p changes, we break this loop
+    while (it!=main_list.cend())
     {
         
-        //cout << "consider a list element of approx norm = " << it->get_approx_norm2() << endl;
+        //cout << "1: consider a list element of approx norm = " << it->get_approx_norm2() << endl;
         //check if p is still of max. length
         if (p.norm2 < it.get_true_norm2())
         {
@@ -294,7 +294,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
         {
                 assumed_norm_of_the_current_block = it->get_approx_norm2();
                 max_length_of_the_current_block =floor(length_factor * assumed_norm_of_the_current_block + 1);
-                //NumOfBlocks++;
+                NumOfBlocks++;
             
                 //cout << "enter the next block" << endl;
                 //cout << "assumed_norm_of_current_block = " << assumed_norm_of_the_current_block << endl;
@@ -449,7 +449,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                                 
                                 //if(get_best_length2() == 3135573)
                                 //{
-                                //    cout << "reduced p: RE-START with p on norm2 = " << p.norm2 << endl;
+                                    //cout << "reduced p: RE-START with p on norm2 = " << p.norm2 << endl;
                                     
                                 //}
                                 //cout << "reduced p: RE-START with p on norm2 = " << p.norm2 << endl;
@@ -506,7 +506,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
         
         else
         {
-            //cout << "scaled px1 = " <<  (float)true_inner_product_px1 / scale << " is smaller than " << px1bound << endl;
+            //cout << "1: scaled px1 = " <<  (float)true_inner_product_px1 / scale << " is smaller than " << px1bound << endl;
         }
     
         
@@ -546,12 +546,14 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
     assumed_norm_of_the_current_block = it->get_approx_norm2();
     max_length_of_the_current_block =floor(length_factor * assumed_norm_of_the_current_block + 1);
     
+    bool reduced_x1 = false;
     
     //now we are reducing *it
     while (it!=main_list.cend())
         
     {
-        //cout << "consider a list element of approx norm = " << it->get_approx_norm2() << endl;
+        reduced_x1 = false;
+        //cout << "2: consider a list element of approx norm = " << it->get_approx_norm2() << endl;
         //assert(false);
         
         
@@ -573,10 +575,11 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                     main_queue.push(reduced);
                     
                     
-                //cout << "put v of size " << reduced.norm2 << " into the queue " << endl;
+                //cout << "put x1 of size " << reduced.norm2 << " into the queue " << endl;
                 
                 it = main_list.erase(it); //also makes ++it
                 --current_list_size;
+                reduced_x1 = true;
         }
         else
                 ++number_of_mispredictions;
@@ -590,7 +593,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
         {
                 assumed_norm_of_the_current_block = it->get_approx_norm2();
                 max_length_of_the_current_block =floor(length_factor * assumed_norm_of_the_current_block + 1);
-                //NumOfBlocks++;
+                NumOfBlocks++;
                 //cout << "enter the next block" << endl;
                 //cout << "assumed_norm_of_current_block = " << assumed_norm_of_the_current_block << endl;
                 //cout <<"max_length_of_current_block = " << max_length_of_the_current_block << endl;
@@ -607,7 +610,6 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
         ApproxTypeNorm2 true_inner_product_px1 = compute_sc_prod(pApprox.get_approx(), it->get_approx(), n);
         float scale = (float)(pow(pApprox.get_approx_norm2(), 0.5)) * (float)(pow (it->get_approx_norm2(), 0.5));
         
-        bool reduced_x1 = false;
         
         if (abs((float)true_inner_product_px1 / scale)>px1bound)
         {
@@ -734,7 +736,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                     //if(get_best_length2() == 3135573)
                     //{
                     //    cout << get<0>(new_key_pair) << " " << get<1>(new_key_pair) << endl;
-                        cout << "about to insert into filtered_list from lower-part" << endl;
+                        //cout << "about to insert into filtered_list from lower-part" << endl;
                         
                     //}
                     
@@ -750,13 +752,15 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
         {
             //if(get_best_length2() == 3135573)
             //{
-            //    cout << "scaled px1 = " <<  (float)true_inner_product_px1 / scale << " is smaller than " << px1bound << endl;
+                //cout << "scaled px1 = " <<  (float)true_inner_product_px1 / scale << " is smaller than " << px1bound << endl;
             //}
         }
         
-        ++it;
+        //otherwise ++it was already performed during main_list.erase();
+        if (!reduced_x1)
+            ++it;
     }
-    
+    //cout << "finish the main while-loop, clean filtered_list" << endl;
     filtered_list2.clear();
     
 }
