@@ -222,17 +222,21 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
     
     typename MainListType::Iterator it_comparison_flip=main_list.cend();
     
-    float length_factor = 3.0; //to be verified
+    //if abs( <p, x1> / (|p||x1|) ) < px1bound, do not put it in the filtered_list
+    float  px1bound = 0.29; // TO ADJUST
+    
+    //'promissingness'
+    float x1x2=.33;
+
+    float length_factor = 1.5; //TO ADJUST
     //float length_factor =10.0; //to debug the inner-loop assume we have only 1 block
     
-    typename MainListType::Iterator first_block_element = main_list.cbegin();
     
     // store target inner-products
-    float px1=.0;
-    float px2=.0;
-    float x1x2=.0;
+    //float px1=.0;
+    //float px2=.0;
     
-    int NumOfBlocks = 0;
+    int NumOfBlocks = 1;
     
     auto it = main_list.cbegin();
     
@@ -290,7 +294,8 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
         {
                 assumed_norm_of_the_current_block = it->get_approx_norm2();
                 max_length_of_the_current_block =floor(length_factor * assumed_norm_of_the_current_block + 1);
-                
+                //NumOfBlocks++;
+            
                 //cout << "enter the next block" << endl;
                 //cout << "assumed_norm_of_current_block = " << assumed_norm_of_the_current_block << endl;
                 //cout <<"max_length_of_current_block = " << max_length_of_the_current_block << endl;
@@ -327,7 +332,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
         
          //lower bounds (in the abs. values) of the inner-product px1 that should ever be put in the filtered_list2
         float scale = (float)(pow(pApprox.get_approx_norm2(), 0.5)) * (float)(pow (it->get_approx_norm2(), 0.5));
-        float  px1bound = 0.36; // TO ADJUST
+        
         //cout  << "true_inner_product_px1 / scale " << (float)true_inner_product_px1 / scale << endl;
         
     
@@ -350,12 +355,9 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                 typename FilteredListType2:: iterator next_block = filtered_list2.lower_bound(new_key_pair_bound );
                 
                 //returns garbadge if there is only one block in the filtered list
-                LatticeApproximations::ApproxTypeNorm2 norm_of_the_next_block = get<0>(next_block->first);
-                
+                //LatticeApproximations::ApproxTypeNorm2 norm_of_the_next_block = get<0>(next_block->first);
                 //cout << "in filter: " << "block-len = " <<  assumed_norm_of_x1 << " next_block = " << norm_of_the_next_block << endl;
                 
-                
-                x1x2 = 0.33; //abs value; TO ADJUST
                 
                 float res_upper = 0.0;
                 
@@ -588,7 +590,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
         {
                 assumed_norm_of_the_current_block = it->get_approx_norm2();
                 max_length_of_the_current_block =floor(length_factor * assumed_norm_of_the_current_block + 1);
-                
+                //NumOfBlocks++;
                 //cout << "enter the next block" << endl;
                 //cout << "assumed_norm_of_current_block = " << assumed_norm_of_the_current_block << endl;
                 //cout <<"max_length_of_current_block = " << max_length_of_the_current_block << endl;
@@ -604,7 +606,6 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
         
         ApproxTypeNorm2 true_inner_product_px1 = compute_sc_prod(pApprox.get_approx(), it->get_approx(), n);
         float scale = (float)(pow(pApprox.get_approx_norm2(), 0.5)) * (float)(pow (it->get_approx_norm2(), 0.5));
-        float  px1bound = 0.36; // TO ADJUST
         
         bool reduced_x1 = false;
         
@@ -620,10 +621,9 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                     typename FilteredListType2:: iterator next_block = filtered_list2.lower_bound(new_key_pair_bound );
                     
                     //returns garbadge if there is only one block in the filtered list
-                    LatticeApproximations::ApproxTypeNorm2 norm_of_the_next_block = get<0>(next_block->first);
+                    //LatticeApproximations::ApproxTypeNorm2 norm_of_the_next_block = get<0>(next_block->first);
                     //cout << "in filter: " << "block-len = " <<  assumed_norm_of_x1 << " next_block = " << norm_of_the_next_block << endl;
                     
-                    x1x2 = 0.33; //abs value; TO ADJUST
                     
                     float res_upper = 0.0;
                     
@@ -734,7 +734,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                     //if(get_best_length2() == 3135573)
                     //{
                     //    cout << get<0>(new_key_pair) << " " << get<1>(new_key_pair) << endl;
-                    //    cout << "about to insert into filtered_list from lower-part" << endl;
+                        cout << "about to insert into filtered_list from lower-part" << endl;
                         
                     //}
                     

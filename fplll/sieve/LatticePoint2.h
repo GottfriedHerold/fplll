@@ -407,8 +407,6 @@ inline void LatticeApproximations::Determine_Sc_Prod (LatticeApproximations::App
 void Compute_px1_bound(LatticeApproximations::ApproxTypeNorm2 x1_len, LatticeApproximations::ApproxTypeNorm2 x2_len, LatticeApproximations::ApproxTypeNorm2 px2, float x1x2_scaled, float & res_upper)
 {
     
-    //float res_upper, res_lower;
-    float abs_limit = 0.05; //TO ADJUST Should be the same as px1bound
     
     float x1_len_sqrt = sqrt((float) x1_len);
     float x2_len_sqrt = sqrt((float) x2_len);
