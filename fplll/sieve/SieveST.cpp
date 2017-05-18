@@ -222,7 +222,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
     
     typename MainListType::Iterator it_comparison_flip=main_list.cend();
     
-    float length_factor = 1.5; //to be verified
+    float length_factor = 3.0; //to be verified
     //float length_factor =10.0; //to debug the inner-loop assume we have only 1 block
     
     typename MainListType::Iterator first_block_element = main_list.cbegin();
@@ -327,7 +327,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
         
          //lower bounds (in the abs. values) of the inner-product px1 that should ever be put in the filtered_list2
         float scale = (float)(pow(pApprox.get_approx_norm2(), 0.5)) * (float)(pow (it->get_approx_norm2(), 0.5));
-        float  px1bound = 0.33; // TO ADJUST
+        float  px1bound = 0.36; // TO ADJUST
         //cout  << "true_inner_product_px1 / scale " << (float)true_inner_product_px1 / scale << endl;
         
     
@@ -355,7 +355,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                 //cout << "in filter: " << "block-len = " <<  assumed_norm_of_x1 << " next_block = " << norm_of_the_next_block << endl;
                 
                 
-                x1x2 = 0.31; //abs value; TO ADJUST
+                x1x2 = 0.33; //abs value; TO ADJUST
                 
                 float res_upper = 0.0;
                 
@@ -604,7 +604,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
         
         ApproxTypeNorm2 true_inner_product_px1 = compute_sc_prod(pApprox.get_approx(), it->get_approx(), n);
         float scale = (float)(pow(pApprox.get_approx_norm2(), 0.5)) * (float)(pow (it->get_approx_norm2(), 0.5));
-        float  px1bound = 0.33; // TO ADJUST
+        float  px1bound = 0.36; // TO ADJUST
         
         bool reduced_x1 = false;
         
@@ -623,7 +623,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                     LatticeApproximations::ApproxTypeNorm2 norm_of_the_next_block = get<0>(next_block->first);
                     //cout << "in filter: " << "block-len = " <<  assumed_norm_of_x1 << " next_block = " << norm_of_the_next_block << endl;
                     
-                    x1x2 = 0.31; //abs value; TO ADJUST
+                    x1x2 = 0.33; //abs value; TO ADJUST
                     
                     float res_upper = 0.0;
                     
@@ -780,8 +780,8 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
     
     typename MainListType::Iterator it_comparison_flip=main_list.cend();
     
-    //float length_factor = 1.15; //to be verified
-    float length_factor =10.0; //to debug the inner-loop assume we have only 1 block
+    float length_factor = 1.35; //to be verified
+    //float length_factor =10.0; //to debug the inner-loop assume we have only 1 block
     
     typename MainListType::Iterator first_element_of_LHS_block = main_list.cbegin();
     typename MainListType::Iterator first_element_of_RHS_block = main_list.cbegin();
