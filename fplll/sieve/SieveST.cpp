@@ -5,6 +5,7 @@
 #error SieveST.cpp included with wrong macro settings
 #endif
 
+class next_block;
 using namespace LatticeApproximations; // to be able to use ApproxTypeNorm2 to store inner-produces scaled by length
 
 class main_list;
@@ -223,7 +224,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
     typename MainListType::Iterator it_comparison_flip=main_list.cend();
     
     //if abs( <p, x1> / (|p||x1|) ) < px1bound, do not put it in the filtered_list
-    float  px1bound = 0.33; // TO ADJUST
+    float  px1bound = 0.29; // TO ADJUST
     
     //'promissingness'
     float x1x2=.33;
@@ -331,6 +332,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
             
             //loop over all elements x2 from the filtered list to 3-reduce (p, x1, x2)
             auto it_filter = filtered_list2.cbegin();
+            auto next_block = filtered_list2.cend();
             
             //bool filter_loop = true;
             while ( it_filter != filtered_list2.cend())
@@ -340,7 +342,8 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                 
                 pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> new_key_pair_bound = make_pair(assumed_norm_of_x1+1, 0);
                 
-                typename FilteredListType2:: iterator next_block = filtered_list2.lower_bound(new_key_pair_bound );
+                //typename FilteredListType2:: iterator next_block = filtered_list2.lower_bound(new_key_pair_bound );
+                next_block = filtered_list2.lower_bound(new_key_pair_bound );
                 
                 //returns garbadge if there is only one block in the filtered list
                 //LatticeApproximations::ApproxTypeNorm2 norm_of_the_next_block = get<0>(next_block->first);
@@ -487,7 +490,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
             
             //cout << "about to insert into filtered_list" << endl;
             //TODO: provide hint to emplace
-            filtered_list2.emplace(new_key_pair, new_filtered_point);
+            filtered_list2.emplace_hint(next_block, new_key_pair, new_filtered_point);
             
             
             //cout << "input x with px = " << true_inner_product_px1  << " and px1_sign = " << px1_sign << endl;
@@ -613,13 +616,15 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
         if (abs((float)true_inner_product_px1 / scale)>px1bound)
         {
                 auto it_filter = filtered_list2.cbegin();
+                
+                auto next_block = filtered_list2.cend();
             
                 while ( it_filter != filtered_list2.cend() && !reduced_x1 )
                 {
                     LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_x1 = get<0>(it_filter->first);
                     pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> new_key_pair_bound = make_pair(assumed_norm_of_x1+1, 0);
                     
-                    typename FilteredListType2:: iterator next_block = filtered_list2.lower_bound(new_key_pair_bound );
+                    next_block = filtered_list2.lower_bound(new_key_pair_bound );
                     
                     //returns garbadge if there is only one block in the filtered list
                     //LatticeApproximations::ApproxTypeNorm2 norm_of_the_next_block = get<0>(next_block->first);
@@ -738,7 +743,7 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
                         
                     //}
                     
-                    filtered_list2.emplace(new_key_pair, new_filtered_point);
+                    filtered_list2.emplace_hint(next_block, new_key_pair, new_filtered_point);
                     //cout << "filtered_list2.size" << filtered_list2.size() << endl;
 
                     
