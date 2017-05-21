@@ -306,7 +306,7 @@ template<class ET>
 inline bool LatticeApproximations::Compare_Sc_Prod_3red(ApproxLatticePoint<ET,false,-1> const & pApprox, ApproxLatticePoint<ET,false,-1> const & x1, int dim, float px1, ApproxTypeNorm2 & approx_inner_product)
 {
     approx_inner_product = (compute_sc_prod(pApprox.get_approx(), x1.get_approx(), dim));
-    //cout << "sc = " << sc  << endl;
+    //cout << "sc = " << approx_inner_product  << endl;
     //cout << "pApproxnorm2 = " << pApprox.get_approx_norm2() << endl;
     //cout << "x1Approxnorm2 = " << x1.get_approx_norm2() << endl;
     //cout <<"p Length exp = " <<pApprox.get_length_exponent() << endl;

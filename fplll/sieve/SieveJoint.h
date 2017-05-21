@@ -124,7 +124,10 @@ public:
     using LatticeBasisType = ZZ_mat<typename ET::underlying_data_type>;
     using SamplerType      = KleinSampler<typename ET::underlying_data_type, FP_NR<double>> *; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
     using FilteredListType = std::vector<FilteredPoint<ET, float>>; //queue is also fine for our purposes; scalar products are not of type ET, two-templates; float for now; may be changed.
+    
+    //map where a key is a pair <length_of_list_element, inner-product>
     using FilteredListType2 = std::map<pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2>, FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2>, CompareFilteredPoint>;
+    using FilteredListTypeP = std::map<pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2>, FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> *, CompareFilteredPoint>;
     //using FilteredListTest  =  std::map<char,int,classcomp>;        
     using TermCondType     = TerminationCondition<ET,GAUSS_SIEVE_IS_MULTI_THREADED> *;
 
@@ -152,6 +155,7 @@ public:
     void SieveIteration2 (LatticePoint<ET> &p); //one run through the main_list (of 2-sieve)
     void SieveIteration3 (LatticePoint<ET> &p); //one run through the main_list (of 3-sieve)
     void SieveIteration3New (LatticePoint<ET> &p); //new run through the main_list (of 3-sieve)
+    void SieveIteration3New_Pointer (LatticePoint<ET> &p);
     #if GAUSS_SIEVE_IS_MULTI_THREADED == true
     void sieve_2_thread(int const thread_id);   //function for worker threads
     #endif
@@ -207,7 +211,8 @@ private:
     //MainListType3 main_list_test;
     MainQueueType main_queue;
     FilteredListType filtered_list;
-    FilteredListType2 filtered_list2;       
+    FilteredListType2 filtered_list2;
+    FilteredListTypeP filtered_listp;
 
 //information about lattice and algorithm we are using
 

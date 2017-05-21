@@ -64,7 +64,7 @@ class FilteredPoint
     ~FilteredPoint() {}
 
 
-    inline ApproxLatticePoint<ET> getApproxVector() const {return this->point;}
+    inline ApproxLatticePoint<ET>  getApproxVector() const {return this->point;}
     inline SC get_sc_prod() const {return sc_prod;}
     inline bool get_sign() const {return minus;}
 
