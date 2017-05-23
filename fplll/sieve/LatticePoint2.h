@@ -312,7 +312,8 @@ inline bool LatticeApproximations::Compare_Sc_Prod_3red(ApproxLatticePoint<ET,fa
     //cout <<"p Length exp = " <<pApprox.get_length_exponent() << endl;
     
     //TODO: Make more efficient
-    float approx_inner_product_sc = (float)approx_inner_product / ( (float)(pow(pApprox.get_approx_norm2(), 0.5)) * (float)(pow (x1.get_approx_norm2(), 0.5) ) ) ;
+    //float approx_inner_product_sc = (float)approx_inner_product / ( (float)(pow(pApprox.get_approx_norm2(), 0.5)) * (float)(pow (x1.get_approx_norm2(), 0.5) ) ) ;
+    float approx_inner_product_sc = (float)approx_inner_product / (sqrt ( (float) pApprox.get_approx_norm2() * (float) x1.get_approx_norm2()) );
     //cout << approx_inner_product_double << endl;(pow
     
     float eps = .02; // TODO: to adjust and make as input
@@ -408,9 +409,12 @@ void Compute_px1_bound(LatticeApproximations::ApproxTypeNorm2 x1_len, LatticeApp
 {
     
     
-    float x1_len_sqrt = sqrt((float) x1_len);
-    float x2_len_sqrt = sqrt((float) x2_len);
-    float len_sqrt_x1x2 = x1_len_sqrt * x2_len_sqrt;
+    //float x1_len_sqrt = sqrt((float) x1_len);
+    //float x2_len_sqrt = sqrt((float) x2_len);
+    //float len_sqrt_x1x2 = x1_len_sqrt * x2_len_sqrt;
+    
+    float len_sqrt_x1x2 =sqrt((float) x1_len * (float) x2_len);
+    
     
     //cout << "---- in Compute_px1_bound ---- " << endl;
     //cout << "x2_len " << x2_len << endl;

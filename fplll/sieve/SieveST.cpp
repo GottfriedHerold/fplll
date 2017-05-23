@@ -326,8 +326,9 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
         ApproxTypeNorm2 true_inner_product_px1 = compute_sc_prod(pApprox.get_approx(), it->get_approx(), n);
         
         // scaling factor for <px1>: ||p|| * ||x_1||
-        float scale = (float)(pow(pApprox.get_approx_norm2(), 0.5)) * (float)(pow (it->get_approx_norm2(), 0.5));
-        
+        //float scale = (float)(pow(pApprox.get_approx_norm2(), 0.5)) * (float)(pow (it->get_approx_norm2(), 0.5));
+        float scale = sqrt ( (float)pApprox.get_approx_norm2() * (float)(it->get_approx_norm2()) );
+    
         //cout  << "true_inner_product_px1 / scale " << (float)true_inner_product_px1 / scale << endl;
         
         //if true_inner_product_px1 is large enough, put it in filtered_list

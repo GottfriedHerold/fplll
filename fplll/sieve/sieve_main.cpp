@@ -162,13 +162,22 @@ int main(int argc, char **argv)
     //    NumVect<Z_NR<mpz_t> > sample(dim);
     //    sample = Sampler->sample();
     //    cout << sample << endl;
-
+    
     lll_reduction(B, LLL_DEF_DELTA, LLL_DEF_ETA, LM_WRAPPER);
+    
+    /* preprocessing of basis */
+    clock_t stime = clock();
+    //lll_reduction(B, 0.75, 0.51, LM_WRAPPER);
+    //bkzReduction(B, 20, BKZ_DEFAULT, FT_DEFAULT, 0);
+    
+    clock_t etime = clock();
+    double secs = (etime - stime) / (double) CLOCKS_PER_SEC;
+    cout << "# [info] LLL took time " << secs << " s" << endl;
+    
+    //ApproxLatticePoint<Z_NR<mpz_t>,false,-1> X ( conv_matrixrow_to_lattice_point(B[0]) );
 
-    ApproxLatticePoint<Z_NR<mpz_t>,false,-1> X ( conv_matrixrow_to_lattice_point(B[0]) );
-
-    ApproxLatticePoint<Z_NR<mpz_t>,false,-1> p ( conv_matrixrow_to_lattice_point(B[1]) );
-    int32_t inner_prod = LatticeApproximations::compute_sc_prod(X.get_approx(), p.get_approx(), dim);
+    //ApproxLatticePoint<Z_NR<mpz_t>,false,-1> p ( conv_matrixrow_to_lattice_point(B[1]) );
+    //int32_t inner_prod = LatticeApproximations::compute_sc_prod(X.get_approx(), p.get_approx(), dim);
 
     //cout << inner_prod << endl;
 
@@ -197,10 +206,14 @@ int main(int argc, char **argv)
         Test_2Sieve.set_termination_condition(termcond);
         cout << "Setting target norm2 to" << target_norm << endl << flush;
     }
-	//Test_2Sieve.run();
+	
+    
+    //Test_2Sieve.run();
 	//cout << "sv is " << endl;
     //Test_2Sieve.get_shortest_vector_found().printLatticePoint();
     //Test_2Sieve.print_status();
+    
+    
 
 
     Sieve<Z_NR<mpz_t>, false> Test_3Sieve(B, k);
