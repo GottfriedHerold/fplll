@@ -114,15 +114,16 @@ GO HERE.
 
 //The following may be included once or twice (with different values for GAUSS_SIEVE_IS_MULTI_THREADED)
 
-/*
+
 template<class ET>
-struct CompareQueue{
+class CompareQueue{
+    public:
      bool operator() (const FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> & el1, const FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> & el2) const
      {
         return el1.get_sc_prod() > el2.get_sc_prod();  // inner products are in the decreasing order
     }
 };
- */
+ 
 
 template<class ET>
 class Sieve<ET, GAUSS_SIEVE_IS_MULTI_THREADED >
