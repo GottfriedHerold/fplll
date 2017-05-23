@@ -213,6 +213,110 @@ void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might
 
 
 template<class ET>
+void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
+{
+    if (p.norm2==0) return;
+    ApproxLatticePoint<ET,false> pApprox (p);
+    
+    int const n = get_ambient_dimension();
+    typename MainListType::Iterator it_comparison_flip=main_list.cend();
+    
+    //if abs( <p, x1> / (|p||x1|) ) < px1bound, do not put it in the filtered_list
+    float  px1bound = 0.29; // TO ADJUST
+    
+    //'promissingness'
+    float x1x2=.33;
+
+    // length_factor determines the difference (mult) between the legnth of the i-th and (i+1)-st blocks
+    float length_factor = 2.0; //TO ADJUST
+    
+    //number of blocks
+    int NumOfBlocks = 1;
+    
+    auto it = main_list.cbegin();
+    
+    typename MainListType::Iterator first_element_of_the_block = main_list.cbegin();
+    LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_the_current_block =  first_element_of_the_block->get_approx_norm2();
+    LatticeApproximations::ApproxTypeNorm2 max_length_of_the_current_block = floor(length_factor * assumed_norm_of_the_current_block + 1);
+    
+    while (it!=main_list.cend())
+    {
+        
+        //cout << "1: consider a list element of approx norm = " << it->get_approx_norm2() << endl;
+        //check if p is still of max. length
+        if (p.norm2 < it.get_true_norm2())
+        {
+            //cout << "reached the position to insert p" << endl;
+            it_comparison_flip = it;
+            break;
+        }
+        
+        
+         //--------------------------------2-red-------------------------------
+         
+        //check 2-red
+        ++number_of_scprods;
+        bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n   );
+        ET scalar;    
+       
+        if(predict){
+
+                
+        ++number_of_exact_scprods;
+        
+         // preform 2-reduction
+        if ( GaussSieve::check2red_new(p, *(it.access_details()), scalar) )
+            {
+                p = GaussSieve::perform2red(p, *(it.access_details()), scalar);
+                if (p.norm2!=0) pApprox = static_cast< ApproxLatticePoint<ET,false> >(p);
+                
+                //put p back into the queue and break
+                if (p.norm2!=0)
+                    main_queue.push(p);
+                //cout << "put p of size " << p.norm2 << " into the queue " << endl;
+                //cout << "pApprox has norm2 " << pApprox.get_approx_norm2() <<  endl;
+                //cout << "2-reduced p, break all the loops" << endl;
+                return;
+                //inner_loop = false;
+                //break;
+            }
+            else
+                ++number_of_mispredictions;
+        }
+        
+        
+        //--------------------------------3-red-------------------------------
+        
+        //check if we reached the next block; if yes, re-compute max_length_of_the_current_block
+        if (it->get_approx_norm2() > max_length_of_the_current_block)
+        {
+                assumed_norm_of_the_current_block = it->get_approx_norm2();
+                max_length_of_the_current_block =floor(length_factor * assumed_norm_of_the_current_block + 1);
+                NumOfBlocks++;
+        }
+        
+        ApproxTypeNorm2 true_inner_product_px1 = compute_sc_prod(pApprox.get_approx(), it->get_approx(), n);
+        
+        // scaling factor for <px1>: ||p|| * ||x_1||
+        //float scale = (float)(pow(pApprox.get_approx_norm2(), 0.5)) * (float)(pow (it->get_approx_norm2(), 0.5));
+        float scale = sqrt ( (float)pApprox.get_approx_norm2() * (float)(it->get_approx_norm2()) );
+    
+        //cout  << "true_inner_product_px1 / scale " << (float)true_inner_product_px1 / scale << endl;
+        
+        //if true_inner_product_px1 is large enough, put it in filtered_list
+        if (abs((float)true_inner_product_px1 / scale)>px1bound)
+        {
+            
+        }
+        
+    }
+        
+        
+    
+    
+}
+
+template<class ET>
 void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
 {
     if (p.norm2==0) return;

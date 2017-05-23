@@ -64,6 +64,7 @@ struct CompareFilteredPoint {
   }
 };
 
+
 namespace GaussSieve //helper functions
 {
     bool string_consume(istream &is, std::string const & str, bool elim_ws= true, bool verbose=true); //helper function for dumping/reading
@@ -113,6 +114,16 @@ GO HERE.
 
 //The following may be included once or twice (with different values for GAUSS_SIEVE_IS_MULTI_THREADED)
 
+/*
+template<class ET>
+struct CompareQueue{
+     bool operator() (const FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> & el1, const FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> & el2) const
+     {
+        return el1.get_sc_prod() > el2.get_sc_prod();  // inner products are in the decreasing order
+    }
+};
+ */
+
 template<class ET>
 class Sieve<ET, GAUSS_SIEVE_IS_MULTI_THREADED >
 {
@@ -123,7 +134,12 @@ public:
     using MainListType     = GaussList<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
     using LatticeBasisType = ZZ_mat<typename ET::underlying_data_type>;
     using SamplerType      = KleinSampler<typename ET::underlying_data_type, FP_NR<double>> *; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
-    using FilteredListType = std::vector<FilteredPoint<ET, float>>; //queue is also fine for our purposes; scalar products are not of type ET, two-templates; float for now; may be changed.
+    //using FilteredListType = std::vector<FilteredPoint<ET, float>>; //queue is also fine for our purposes; scalar products are not of type ET, two-templates; float for now; may be changed.
+    using FilteredListType = std::list<FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2>>;
+    using BlockDivisionType  = std::vector<FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> * > ;
+    //using AppendiciesType = std::vector <priority_queue<FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2>, CompareQueue > >; 
+   
+    
     
     //map where a key is a pair <length_of_list_element, inner-product>
     using FilteredListType2 = std::map<pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2>, FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2>, CompareFilteredPoint>;
