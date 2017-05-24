@@ -48,12 +48,14 @@ NEED TO GO HERE OR TO SieveGauss.h:
   These go before includes to allow cyclic dependencies
 */
 
+template<class ET,bool MultiThreaded>
+class CompareQueue;
+
 template<class T>
 class IsLongerVector_class; //class wrapper to compare vectors by length
 
 template<class ET, bool MultiThreaded>
 class Sieve;
-
 
 struct CompareFilteredPoint {
   bool operator() (const pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> & el1, const pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> & el2) const
@@ -78,13 +80,13 @@ namespace GaussSieve //helper functions
 
     template<class ET>
     LatticePoint<ET> perform2red (const LatticePoint<ET> &p1, const LatticePoint<ET> &p2, ET const & scalar);
-    
+
     template<class ET>
     bool check3red(const LatticePoint<ET> &p, const LatticePoint<ET> &x1, const LatticePoint<ET> &x2, float px1, float px2, float x1x2, int & sgn1, int & sgn2);
-    
+
     template<class ET>
     bool check3red_signs(const LatticePoint<ET> &p, const LatticePoint<ET> &x1, const LatticePoint<ET> &x2, int px1, int px2, int x1x2, int &sgn1, int &sgn2);
-    
+
     template<class ET>
     LatticePoint<ET> perform3red (const LatticePoint<ET> &p, const LatticePoint<ET> &x1, const LatticePoint<ET> &x2, const int & sgn1, const int &sgn2);
 }
@@ -116,14 +118,14 @@ GO HERE.
 
 
 template<class ET>
-class CompareQueue{
+class CompareQueue<ET, GAUSS_SIEVE_IS_MULTI_THREADED>{
     public:
      bool operator() (const FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> & el1, const FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> & el2) const
      {
         return el1.get_sc_prod() > el2.get_sc_prod();  // inner products are in the decreasing order
     }
 };
- 
+
 
 template<class ET>
 class Sieve<ET, GAUSS_SIEVE_IS_MULTI_THREADED >
@@ -138,14 +140,14 @@ public:
     //using FilteredListType = std::vector<FilteredPoint<ET, float>>; //queue is also fine for our purposes; scalar products are not of type ET, two-templates; float for now; may be changed.
     using FilteredListType = std::list<FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2>>;
     using BlockDivisionType  = std::vector<FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> * > ;
-    //using AppendiciesType = std::vector <priority_queue<FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2>, CompareQueue > >; 
-   
-    
-    
+    using AppendixType =  std::priority_queue<FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2>, std::vector<FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> >,  CompareQueue<ET,GAUSS_SIEVE_IS_MULTI_THREADED> >;
+
+
+
     //map where a key is a pair <length_of_list_element, inner-product>
     using FilteredListType2 = std::map<pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2>, FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2>, CompareFilteredPoint>;
     using FilteredListTypeP = std::map<pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2>, FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> *, CompareFilteredPoint>;
-    //using FilteredListTest  =  std::map<char,int,classcomp>;        
+    //using FilteredListTest  =  std::map<char,int,classcomp>;
     using TermCondType     = TerminationCondition<ET,GAUSS_SIEVE_IS_MULTI_THREADED> *;
 
 public:
