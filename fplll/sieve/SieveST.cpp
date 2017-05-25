@@ -68,8 +68,8 @@ void Sieve<ET,false>::run()
         {
             
             //SieveIteration3New_Pointer(p); //DOES NOT WORK
-            SieveIteration3New(p);
-            //SieveIteration3(p);
+            //SieveIteration3New(p);
+            SieveIteration3(p);
         }
 
 
@@ -231,13 +231,19 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
     float length_factor = 2.0; //TO ADJUST
     
     //number of blocks
-    int NumOfBlocks = 1;
+    int NumOfBlocks = 0;
     
     auto it = main_list.cbegin();
     
     typename MainListType::Iterator first_element_of_the_block = main_list.cbegin();
     LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_the_current_block =  first_element_of_the_block->get_approx_norm2();
     LatticeApproximations::ApproxTypeNorm2 max_length_of_the_current_block = floor(length_factor * assumed_norm_of_the_current_block + 1);
+    
+    
+    BlockDivisionType BlockPointers;
+    //ApproxLatticePoint<ET,false> first_block_element =*it;
+    //BlockPointers[NumOfBlocks] = &first_block_element;
+    BlockPointers[NumOfBlocks] = *it;
     
     while (it!=main_list.cend())
     {
@@ -287,13 +293,21 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
         
         //--------------------------------3-red-------------------------------
         
+        
         //check if we reached the next block; if yes, re-compute max_length_of_the_current_block
         if (it->get_approx_norm2() > max_length_of_the_current_block)
         {
                 assumed_norm_of_the_current_block = it->get_approx_norm2();
                 max_length_of_the_current_block =floor(length_factor * assumed_norm_of_the_current_block + 1);
                 NumOfBlocks++;
+                //BlockPointers[NumOfBlocks] = it;
+                
         }
+        
+        
+        // the same number of appendices as the number of blocks
+        std::array<AppendixType, 100> Appendices;
+        FilteredListType filtered_list;
         
         ApproxTypeNorm2 true_inner_product_px1 = compute_sc_prod(pApprox.get_approx(), it->get_approx(), n);
         
@@ -307,6 +321,37 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
         if (abs((float)true_inner_product_px1 / scale)>px1bound)
         {
             
+            //loop over all elements x2 from the filtered list to 3-reduce (p, x1, x2)
+            auto it_filter = filtered_list.cbegin();
+            auto next_block = filtered_list.cend();
+            
+            //bool filter_loop = true;
+            int appendixCounter = 0;
+            while ( it_filter != filtered_list.cend())
+            {
+    
+                LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_x1 = (it_filter->getApproxVector()).get_approx_norm2();
+
+                //in res_upper, we store the upper bound on the inner-product of px2 for x2 from filtered_list
+                float res_upper = 0.0;
+                
+                //Compute_one_third_bound(assumed_norm_of_x1, assumed_norm_of_the_current_block, true_inner_product_px1, x1x2, res_upper);
+                
+                
+                //check if the top element of the relevant appendix is larger than res_upper
+                if (!Appendices[appendixCounter].empty())
+                {
+                    
+                }
+                
+                typename FilteredListType:: iterator itup;
+                ApproxTypeNorm2 true_inner_product_x1x2;
+                
+            }
+            
+            
+            
+            
         }
         
     }
@@ -316,9 +361,81 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
     
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 template<class ET>
 void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
 {
+    
     if (p.norm2==0) return;
     ApproxLatticePoint<ET,false> pApprox (p);
     
@@ -358,6 +475,8 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
     
     // main loop over main_list
     // this while-loop runs until the p is longer
+    
+    
     
     while (it!=main_list.cend())
     {
@@ -406,6 +525,8 @@ void Sieve<ET,false>::SieveIteration3New (LatticePoint<ET> &p)
         
         
         //--------------------------------3-red-------------------------------
+        
+        
         
         //check if we reached the next block; if yes, re-compute max_length_of_the_current_block
         if (it->get_approx_norm2() > max_length_of_the_current_block)

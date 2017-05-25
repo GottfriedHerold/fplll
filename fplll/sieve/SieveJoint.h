@@ -139,7 +139,7 @@ public:
     using SamplerType      = KleinSampler<typename ET::underlying_data_type, FP_NR<double>> *; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
     //using FilteredListType = std::vector<FilteredPoint<ET, float>>; //queue is also fine for our purposes; scalar products are not of type ET, two-templates; float for now; may be changed.
     using FilteredListType = std::list<FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2>>;
-    using BlockDivisionType  = std::vector<FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> * > ;
+    using BlockDivisionType  = std::array< ApproxLatticePoint<ET,GAUSS_SIEVE_IS_MULTI_THREADED> , 100> ;
     using AppendixType =  std::priority_queue<FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2>, std::vector<FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> >,  CompareQueue<ET,GAUSS_SIEVE_IS_MULTI_THREADED> >;
 
 
@@ -173,7 +173,7 @@ public:
     void run_sieve(int k); //runs k-sieve
     void SieveIteration2 (LatticePoint<ET> &p); //one run through the main_list (of 2-sieve)
     void SieveIteration3 (LatticePoint<ET> &p); //one run through the main_list (of 3-sieve)
-    void SieveIteration3New (LatticePoint<ET> &p); //new run through the main_list (of 3-sieve)
+    void SieveIteration3New (LatticePoint<ET> &p); //new run through the main_list (of 3-sieve) usign map for filtered_list
     void SieveIteration3New_Pointer (LatticePoint<ET> &p);
     #if GAUSS_SIEVE_IS_MULTI_THREADED == true
     void sieve_2_thread(int const thread_id);   //function for worker threads

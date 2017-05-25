@@ -430,6 +430,11 @@ void Compute_px1_bound(LatticeApproximations::ApproxTypeNorm2 x1_len, LatticeApp
     
 }
 
+void Compute_one_third_bound(LatticeApproximations::ApproxTypeNorm2 x1_len, LatticeApproximations::ApproxTypeNorm2 x2_len, LatticeApproximations::ApproxTypeNorm2 px2, float x1x2_scaled, float & res_upper)
+{
+    
+}
+
 // OLD IMPLEMENTATION
 /*
 inline void Compare_Sc_Prod_p (LatticeApproximations::ApproxTypeNorm2 len_p, LatticeApproximations::ApproxTypeNorm2 len_x1, LatticeApproximations::ApproxTypeNorm2 len_x2, double x1x2, double px1, double px2)
