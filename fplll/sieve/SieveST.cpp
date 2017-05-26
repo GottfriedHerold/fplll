@@ -222,12 +222,12 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
     typename MainListType::Iterator it_comparison_flip=main_list.cend();
     
     //if abs( <p, x1> / (|p||x1|) ) < px1bound, do not put it in the filtered_list
-    float  px1bound = 0.29; // TO ADJUST
+    float  px1bound = 0.33; // TO ADJUST
     
     //'promissingness'
     float x1x2=.33;
 
-    // length_factor determines the difference (mult) between the legnth of the i-th and (i+1)-st blocks
+    // length_factor determines the difference (multiplicatively) between the legnth of the i-th and (i+1)-st blocks
     float length_factor = 2.0; //TO ADJUST
     
     //number of blocks
@@ -240,10 +240,20 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
     LatticeApproximations::ApproxTypeNorm2 max_length_of_the_current_block = floor(length_factor * assumed_norm_of_the_current_block + 1);
     
     
-    BlockDivisionType BlockPointers;
+    //BlockDivisionType BlockPointers;
     //ApproxLatticePoint<ET,false> first_block_element =*it;
     //BlockPointers[NumOfBlocks] = &first_block_element;
-    BlockPointers[NumOfBlocks] = *it;
+    //BlockPointers[NumOfBlocks] = *it;
+    
+    LengthDivisionType BlockDivision;
+    BlockDivision[NumOfBlocks] = it->get_approx_norm2();
+    
+    
+    // the same number of appendices as the number of blocks
+    std::array<AppendixType, 100> appendices;
+    
+    FilteredListType filtered_list;
+    FilterDivisionType last_elements;
     
     while (it!=main_list.cend())
     {
@@ -300,14 +310,10 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                 assumed_norm_of_the_current_block = it->get_approx_norm2();
                 max_length_of_the_current_block =floor(length_factor * assumed_norm_of_the_current_block + 1);
                 NumOfBlocks++;
-                //BlockPointers[NumOfBlocks] = it;
+                BlockDivision[NumOfBlocks] = assumed_norm_of_the_current_block;
                 
         }
         
-        
-        // the same number of appendices as the number of blocks
-        std::array<AppendixType, 100> Appendices;
-        FilteredListType filtered_list;
         
         ApproxTypeNorm2 true_inner_product_px1 = compute_sc_prod(pApprox.get_approx(), it->get_approx(), n);
         
@@ -339,15 +345,22 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                 
                 
                 //check if the top element of the relevant appendix is larger than res_upper
-                if (!Appendices[appendixCounter].empty())
+                bool insertion = false;
+                if (!appendices[appendixCounter].empty())
                 {
-                    
+                    if ( (appendices[appendixCounter].top().getApproxVector()).get_approx_norm2() > res_upper )
+                        insertion = true;
                 }
                 
                 typename FilteredListType:: iterator itup;
                 ApproxTypeNorm2 true_inner_product_x1x2;
                 
-            }
+                
+                
+                
+                appendixCounter++;
+                
+            } //end of the loop over filtered_list
             
             
             
