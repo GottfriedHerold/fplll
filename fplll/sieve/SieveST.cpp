@@ -254,6 +254,8 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
     
     FilteredListType filtered_list;
     FilterDivisionType last_elements;
+    FilterNumOfElems num_of_elements;
+    num_of_elements.fill(0);
     
     while (it!=main_list.cend())
     {
@@ -327,40 +329,69 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
         if (abs((float)true_inner_product_px1 / scale)>px1bound)
         {
             
-            //loop over all elements x2 from the filtered list to 3-reduce (p, x1, x2)
-            auto it_filter = filtered_list.cbegin();
-            auto next_block = filtered_list.cend();
+            typename FilteredListType::iterator it_filter =  filtered_list.begin();
+            typename FilteredListType::iterator it_comparison_flip_filter = filtered_list.end();
             
-            //bool filter_loop = true;
             int appendixCounter = 0;
+            
+            
+            //loop over all elements x2 from the filtered list to 3-reduc (p, x1, x2)
             while ( it_filter != filtered_list.cend())
             {
     
+                // OR take the length from BlockDivision[appendixCounter]
                 LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_x1 = (it_filter->getApproxVector()).get_approx_norm2();
+
+            
 
                 //in res_upper, we store the upper bound on the inner-product of px2 for x2 from filtered_list
                 float res_upper = 0.0;
                 
                 //Compute_one_third_bound(assumed_norm_of_x1, assumed_norm_of_the_current_block, true_inner_product_px1, x1x2, res_upper);
                 
-                
-                //check if the top element of the relevant appendix is larger than res_upper
-                bool insertion = false;
-                if (!appendices[appendixCounter].empty())
+                //check if we even need to iterate over the current block of filtered_list
+                if (it_filter->get_sc_prod() > res_upper)
                 {
-                    if ( (appendices[appendixCounter].top().getApproxVector()).get_approx_norm2() > res_upper )
-                        insertion = true;
+                
+                    //check if the top element of the relevant appendix is larger than res_upper
+                    bool insertion = false;
+                    if (!appendices[appendixCounter].empty())
+                    {
+                        if ( (appendices[appendixCounter].top().getApproxVector()).get_approx_norm2() > res_upper )
+                            insertion = true;
+                    }
+                
+                
+                    ApproxTypeNorm2 true_inner_product_x1x2;
+                    
+                    
                 }
-                
-                typename FilteredListType:: iterator itup;
-                ApproxTypeNorm2 true_inner_product_x1x2;
-                
-                
-                
-                
+                   
+                it_filter = last_elements[appendixCounter];
                 appendixCounter++;
-                
+                it_filter++;
+        
             } //end of the loop over filtered_list
+            
+            //once insert (the insertion happend only into the last block), check if we need to update last_elements[appendixCounter]
+            
+            bool px1_sign;
+            if (true_inner_product_px1>0)
+                px1_sign = true;
+            else
+                px1_sign = false;
+                
+            FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> new_filtered_point(*it, abs(true_inner_product_px1), px1_sign);
+            filtered_list.insert(it_comparison_flip_filter,new_filtered_point);
+           
+            
+        
+            if (num_of_elements[appendixCounter] == 0)
+                last_elements[appendixCounter] = it_filter;
+            else if ( (last_elements[appendixCounter]->getApproxVector()).get_approx_norm2() < it->get_approx_norm2() )
+                
+                
+            num_of_elements[appendixCounter]++;
             
             
             

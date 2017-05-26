@@ -144,7 +144,11 @@ public:
     using LengthDivisionType = std::array< LatticeApproximations::ApproxTypeNorm2, 100 >;
     
     //stores the last element of each block for filtered_list
-    using FilterDivisionType = std::array< FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2>, 100 >;
+    using FilterDivisionType = std::array<typename FilteredListType::iterator, 100 >;
+    
+    //number of elements per block in filtered_list // COULD BE LONG?
+    using FilterNumOfElems = std::array<int, 100 >;
+    
     
     
     using AppendixType =  std::priority_queue<FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2>, std::vector<FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> >,  CompareQueue<ET,GAUSS_SIEVE_IS_MULTI_THREADED> >;
