@@ -430,9 +430,14 @@ void Compute_px1_bound(LatticeApproximations::ApproxTypeNorm2 x1_len, LatticeApp
     
 }
 
-void Compute_one_third_bound(LatticeApproximations::ApproxTypeNorm2 x1_len, LatticeApproximations::ApproxTypeNorm2 x2_len, LatticeApproximations::ApproxTypeNorm2 px2, float x1x2_scaled, float & res_upper)
+// Same as the above except all inner-products (scaled) are set to 1/3
+void Compute_one_third_bound(LatticeApproximations::ApproxTypeNorm2 x1_len, LatticeApproximations::ApproxTypeNorm2 x2_len, LatticeApproximations::ApproxTypeNorm2 px2, float & res_upper)
 {
-    
+    float len_sqrt_x1x2 =sqrt((float) x1_len * (float) x2_len);
+    if (px2>=0)
+        res_upper = abs(0.33 * len_sqrt_x1x2 + px2 - ((float)x1_len) / 2 - ((float)x2_len) /2);
+    else
+        res_upper = abs(0.33 * len_sqrt_x1x2 - px2 - ((float)x1_len) / 2 - ((float)x2_len) /2);
 }
 
 // OLD IMPLEMENTATION
