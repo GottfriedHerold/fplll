@@ -328,6 +328,16 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
             
                 //in case non of the list-elements from the new block will end up in filtered_list, the last_element of this block is the last_element of the prev. block
                 last_elements[NumOfBlocks] = last_elements[NumOfBlocks-1];
+                /*
+                last_elements[NumOfBlocks] = filtered_list.end();
+                if (num_of_elements_in_filter[NumOfBlocks-1]==0)
+                {
+                    if (NumOfBlocks==1)
+                        last_elements[NumOfBlocks-1] = filtered_list.end();
+                    else
+                       last_elements[NumOfBlocks-1] = last_elements[NumOfBlocks-2]; 
+                }
+                 */
             
         }
         
@@ -391,8 +401,21 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                     
                     typename FilteredListType::iterator it_block =  it_filter;
                     
+                    typename FilteredListType::iterator next_to_last;
+                    if (last_elements[appendixCounter] != filtered_list.end())
+                    {
+                        next_to_last = last_elements[appendixCounter];
+                        ++next_to_last;
+                        cout << "set next_to_last as next to last_elem" << endl;
+                    }
+                    else 
+                    {
+                        next_to_last = filtered_list.end();
+                        cout << "set next_to_last to end" << endl;
+                    }
                     
-                    while(it_block->get_sc_prod() > res_upper && it_block!=last_elements[appendixCounter])
+                    
+                    while(it_block->get_sc_prod() > res_upper && it_block!=next_to_last)
                     {
                         
                             cout << "it_block->get_sc_prod() = " << it_block->get_sc_prod() << endl;
@@ -500,7 +523,9 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                             ++it_block;
                     }
                     
-                    if ( (appendices[appendixCounter].top()).get_sc_prod() < last_elements[appendixCounter]->get_sc_prod())
+                    
+                    
+                    if ( !appendices[appendixCounter].empty() && (appendices[appendixCounter].top()).get_sc_prod() < last_elements[appendixCounter]->get_sc_prod())
                     {
                         FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> poped_from_queue =  appendices[appendixCounter].top();
                         appendices[appendixCounter].pop();
@@ -514,18 +539,16 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                     }
                     
                 }
-                
-                
-                   
+                cout << "last_elements[appendixCounter]->get_sc_prod() " << last_elements[appendixCounter]->get_sc_prod() << endl;
                 it_filter = last_elements[appendixCounter];
                 
-                if(it_filter!=filtered_list.cend())
+                if(it_filter!=filtered_list.end())
                     cout << "change it_filter to " << last_elements[appendixCounter]->get_sc_prod() << endl;
                 
                 appendixCounter++;
                 
                 cout << "appendixCounter = " << appendixCounter << endl;
-                if(it_filter!=filtered_list.cend())
+                if(it_filter!=filtered_list.end())
                     it_filter++;
         
             } //end of the loop over filtered_list
@@ -545,11 +568,13 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
             //cout << "position_is_found = " << position_is_found << endl;
             
             //is the insertion position was reached during the filter_list traversal, insert into filtered_list; otherwise, push into the queue
-            if (position_is_found || num_of_elements_in_filter[NumOfBlocks] == 0)            {
+            if (position_is_found || num_of_elements_in_filter[NumOfBlocks] == 0)            
+            {
                 filtered_list.insert(it_comparison_flip_filter,new_filtered_point);
                 num_of_elements_in_filter[NumOfBlocks]++;
                 
                 cout << "num_of_elements_in_filter[NumOfBlocks] = " << num_of_elements_in_filter[NumOfBlocks] << endl;
+                cout << " last_elements[NumOfBlocks]->get_sc_prod = " <<  last_elements[NumOfBlocks]->get_sc_prod() << endl;
      
                 //if it was the first insertion, assign last_elements[NumOfBlocks]
                 if (num_of_elements_in_filter[NumOfBlocks]==1)
@@ -569,7 +594,8 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                     cout << (--it_comparison_flip_filter)->get_sc_prod() << endl;
                     //assert(false);
                 }
-                
+                else   
+                    cout << "do not change last_elements " << endl;
             }
             //NOT SURE
             //else if (num_of_elements_in_filter[NumOfBlocks]>0 && abs(true_inner_product_px1) < last_elements[NumOfBlocks]->get_sc_prod())
