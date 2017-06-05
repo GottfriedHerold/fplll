@@ -218,8 +218,8 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
     if (p.norm2==0) return;
     ApproxLatticePoint<ET,false> pApprox (p);
     
-    cout << "------------" << endl;
-    cout << "Run iteration on p of approx norm " << pApprox.get_approx_norm2() << endl;
+    //cout << "------------" << endl;
+    //cout << "Run iteration on p of approx norm " << pApprox.get_approx_norm2() << endl;
     
     int const n = get_ambient_dimension();
     typename MainListType::Iterator it_comparison_flip=main_list.cend();
@@ -242,7 +242,6 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
     LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_the_current_block =  first_element_of_the_block->get_approx_norm2();
     LatticeApproximations::ApproxTypeNorm2 max_length_of_the_current_block = floor(length_factor * assumed_norm_of_the_current_block + 1);
     
-    cout << "max_length_of_the_current_block = " << max_length_of_the_current_block << endl;
     
     
     //BlockDivisionType BlockPointers;
@@ -267,7 +266,7 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
     while (it!=main_list.cend())
     {
         
-        cout << "1: consider a list element of approx norm = " << it->get_approx_norm2() << endl;
+        //cout << "1: consider a list element of approx norm = " << it->get_approx_norm2() << endl;
         //check if p is still of max. length
         if (p.norm2 < it.get_true_norm2())
         {
@@ -298,7 +297,7 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                 //put p back into the queue and break
                 if (p.norm2!=0)
                     main_queue.push(p);
-                cout << "2-reduced p, break all the loops" << endl;
+                //cout << "2-reduced p, break all the loops" << endl;
                 return;
             }
             else
@@ -317,13 +316,13 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                 NumOfBlocks++;
                 BlockDivision[NumOfBlocks] = assumed_norm_of_the_current_block;
                 
-                cout << "enter the next block" << endl;
+                //cout << "enter the next block" << endl;
                 
                 //cout << "filtered_list is:" << endl;
                 //for (auto it1 = filtered_list.cbegin(); it1!=filtered_list.cend(); ++it1)
                 //    cout << it1->get_sc_prod() << endl;
                     
-                cout << "max_length_of_the_current_block = " << max_length_of_the_current_block << endl;
+                //cout << "max_length_of_the_current_block = " << max_length_of_the_current_block << endl;
             
             
                 //in case non of the list-elements from the new block will end up in filtered_list, the last_element of this block is the last_element of the prev. block
@@ -354,17 +353,17 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
         if (abs((float)true_inner_product_px1 / scale)>px1bound)
         {
             
-            cout << "true_inner_product_px1 = " << true_inner_product_px1 << endl;
+            //cout << "true_inner_product_px1 = " << true_inner_product_px1 << endl;
             
             typename FilteredListType::iterator it_filter =  filtered_list.begin();
             typename FilteredListType::iterator it_comparison_flip_filter = filtered_list.end();
             
-            int appendixCounter = 0;
+            int block_counter = 0;
             bool position_is_found = false;
             
-            cout << "filtered_list is:" << endl;
-            for (auto it1 = filtered_list.cbegin(); it1!=filtered_list.cend(); ++it1)
-                    cout << it1->get_sc_prod() << endl;
+            //cout << "filtered_list is:" << endl;
+            //for (auto it1 = filtered_list.cbegin(); it1!=filtered_list.cend(); ++it1)
+            //        cout << it1->get_sc_prod() << endl;
             
             
             //loop over all elements x2 from the filtered list to 3-reduc (p, x1, x2)
@@ -381,55 +380,50 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                 
                 Compute_one_third_bound(assumed_norm_of_x1, assumed_norm_of_the_current_block, true_inner_product_px1, res_upper);
                 
-                cout << "res_upper = " << res_upper << endl;
+                //cout << "res_upper = " << res_upper << endl;
                 
                 //check if we even need to iterate over the current block of filtered_list
                 if (it_filter->get_sc_prod() > res_upper)
                 {
                 
                     //check if the top element of the relevant appendix is larger than res_upper
+                    
+                    /*
                     bool merge = false;
-                    if (!appendices[appendixCounter].empty())
+                    if (!appendices[block_counter].empty())
                     {
-                        cout << "appendix.top() has norm = " << (appendices[appendixCounter].top()).get_sc_prod() << endl;
-                        if ( (appendices[appendixCounter].top()).get_sc_prod() > res_upper)
+                        cout << "appendix.top() has norm = " << (appendices[block_counter].top()).get_sc_prod() << endl;
+                        if ( (appendices[block_counter].top()).get_sc_prod() > res_upper)
                             merge = true;
                     }
+                    */
                 
                 
                     ApproxTypeNorm2 true_inner_product_x1x2;
                     
                     typename FilteredListType::iterator it_block =  it_filter;
                     
-                    typename FilteredListType::iterator next_to_last;
-                    if (last_elements[appendixCounter] != filtered_list.end())
-                    {
-                        next_to_last = last_elements[appendixCounter];
-                        ++next_to_last;
-                        cout << "set next_to_last as next to last_elem" << endl;
-                    }
-                    else 
-                    {
-                        next_to_last = filtered_list.end();
-                        cout << "set next_to_last to end" << endl;
-                    }
+                    int inblock_counter = 0;
                     
                     
-                    while(it_block->get_sc_prod() > res_upper && it_block!=next_to_last)
+                    while(it_block!=filtered_list.end() && it_block->get_sc_prod() > res_upper && inblock_counter < num_of_elements_in_filter[block_counter])
                     {
                         
-                            cout << "it_block->get_sc_prod() = " << it_block->get_sc_prod() << endl;
-                            if (it_block->get_sc_prod() < abs(true_inner_product_px1) && !position_is_found && appendixCounter == NumOfBlocks)
+                            //cout << "it_block->get_sc_prod() = " << it_block->get_sc_prod() << endl;
+                        
+                            //check if we found the position to insert *it
+                            if (it_block->get_sc_prod() < abs(true_inner_product_px1) && !position_is_found && block_counter == NumOfBlocks)
                             {
+                                //cout << "position is found " << endl;
                                 it_comparison_flip_filter = it_block;
                                 position_is_found = true;
                             }
                         
-                            //check for reduction
+                            //------------------check for reduction-------------------
                             
                             predict = LatticeApproximations::Compare_Sc_Prod_3red(it_block->getApproxVector(), *it, n, x1x2, true_inner_product_x1x2);
 
-                            cout << "REDUCTION" << endl;
+                            //cout << "REDUCTION CHECK" << endl;
                             
                             //sgn1 and sgn2 store the signs s.t. || p + sgn1*x1 + sgn*x2 || < || p ||
                             // these values are computed in check3red_signs
@@ -459,12 +453,8 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                                 if(p.norm2!=0)
                                     main_queue.push(p);
                                 
-                                //if(get_best_length2() == 3135573)
-                                //{
-                                    //cout << "reduced p: RE-START with p on norm2 = " << p.norm2 << endl;
-                                    
-                                //}
-                                cout << "reduced p: RE-START with p on norm2 = " << p.norm2 << endl;
+                            
+                                //cout << "reduced p: RE-START with p on norm2 = " << p.norm2 << endl;
                                 //assert(false);
                                 
                             
@@ -472,88 +462,95 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                                 return;
                             }
                             
-                            else
-                                cout << "check3red is false" << endl; 
+                            //else
+                                //cout << "check3red is false" << endl;
                             
-                            
+                        
+                            //--------------------- end of reduction's check ----------------------
+                        
                             //make merge with an element from the queue
-                            if(merge && it_block->get_sc_prod() < (appendices[appendixCounter].top()).get_sc_prod() )
+                            if(!appendices[block_counter].empty() && it_block->get_sc_prod() < (appendices[block_counter].top()).get_sc_prod() )
                             {
-                                cout << "it_block->get_sc_prod() = " << it_block->get_sc_prod() << endl;
-                                FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> poped_from_queue =  appendices[appendixCounter].top();
-                                appendices[appendixCounter].pop();
+                                
+                                FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> poped_from_queue =  appendices[block_counter].top();
+                                appendices[block_counter].pop();
                                 
                                 
-                                 cout << "appendixCounter " << appendixCounter << endl;
                                 
                                 //Assume insert means inseart_before (TO CHECK)
                                 filtered_list.insert(it_block,poped_from_queue);
-                                num_of_elements_in_filter[appendixCounter]++;
+                                num_of_elements_in_filter[block_counter]++;
                                 
-                                cout << "insert from queue" << endl;
-                                cout << "last_elements[appendixCounter]->get_sc_prod() " << last_elements[appendixCounter]->get_sc_prod() << endl;
+                                //cout << "insert from appendix the element " << poped_from_queue.get_sc_prod() << endl;
+                                //cout << "last_elements[block_counter]->get_sc_prod() " << last_elements[block_counter]->get_sc_prod() << endl;
+                                //cout << "it_block->get_sc_prod() " << it_block->get_sc_prod() << endl;
                                 
-                                if ( last_elements[appendixCounter]->get_sc_prod() > poped_from_queue.get_sc_prod() )
+                                //never happens
+                                /*
+                                if ( last_elements[block_counter]->get_sc_prod() > poped_from_queue.get_sc_prod() )
                                 {
-                                    last_elements[appendixCounter] = it_block;
-                                    cout << "upd last_elements from queue to " <<  last_elements[appendixCounter]->get_sc_prod() <<  endl;
-                                    
-                                    if (num_of_elements_in_filter[appendixCounter]>2)
-                                    {
-                                        
-                                        cout << poped_from_queue.get_sc_prod() << endl;
-                                        cout << (it_block)->get_sc_prod() << endl;
-                                        assert(false);
-                                    }
+                                    last_elements[block_counter] = it_block; //TODO: TO CHECK.
+                                    cout << "upd last_elements from queue to " <<  last_elements[block_counter]->get_sc_prod() <<  endl;
+                                    assert(false);
                                     
                                 }
+                                */
+                                
 
                             }
-                            //cout <<" num_of_elements_in_filter[appendixCounter] = " <<  num_of_elements_in_filter[appendixCounter] << endl;
                             
                             //check if the new top element of the relevant appendix is larger than res_upper
+                        
+                            /*
                             merge = false;
                             if (!appendices[appendixCounter].empty())
                             {
                                 if ( (appendices[appendixCounter].top().getApproxVector()).get_approx_norm2() > res_upper )
                                 merge = true;
                             }
+                            */
                             
-                        
+                            inblock_counter++;
+                            //cout << "inblock_counter " << inblock_counter << endl;
                             ++it_block;
-                    }
+                        
+                    } //end of iteration over the block
                     
                     
-                    
-                    if ( !appendices[appendixCounter].empty() && (appendices[appendixCounter].top()).get_sc_prod() < last_elements[appendixCounter]->get_sc_prod())
+                    //insert from the appendix if the last element of the block is larger
+                    if ( !appendices[block_counter].empty() && (appendices[block_counter].top()).get_sc_prod() < last_elements[block_counter]->get_sc_prod())
                     {
-                        FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> poped_from_queue =  appendices[appendixCounter].top();
-                        appendices[appendixCounter].pop();
+                        FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> poped_from_queue =  appendices[block_counter].top();
+                        appendices[block_counter].pop();
                         
                         
-                        cout << "appendixCounter " << appendixCounter << endl;
+                        //cout << "about to append from appendix "  << endl;
                         
-                        //Assume insert means inseart_before (TO CHECK)
+                        //Assume insert means inseart_before (TO CHECK); it_block should point to the
                         filtered_list.insert(it_block,poped_from_queue);
-                        num_of_elements_in_filter[appendixCounter]++;
+                        num_of_elements_in_filter[block_counter]++;
+                        last_elements[block_counter] = --it_block; //TODO: TO CHECK.
+                        //cout << "last_elements[block_counter] is upd to " << last_elements[block_counter]->get_sc_prod() << endl;
+                        ++it_block;
                     }
                     
-                }
-                cout << "last_elements[appendixCounter]->get_sc_prod() " << last_elements[appendixCounter]->get_sc_prod() << endl;
-                it_filter = last_elements[appendixCounter];
+                } // end of if (it_filter->get_sc_prod() > res_upper)
                 
-                if(it_filter!=filtered_list.end())
-                    cout << "change it_filter to " << last_elements[appendixCounter]->get_sc_prod() << endl;
+                //cout << "last_elements[block_counter]->get_sc_prod() " << last_elements[block_counter]->get_sc_prod() << endl;
+                it_filter = last_elements[block_counter];
                 
-                appendixCounter++;
+                //if(it_filter!=filtered_list.end())
+                //   cout << "change it_filter to " << last_elements[block_counter]->get_sc_prod() << endl;
                 
-                cout << "appendixCounter = " << appendixCounter << endl;
+                block_counter++;
+                
+                //cout << "block_counter = " << block_counter << endl;
                 if(it_filter!=filtered_list.end())
                     it_filter++;
         
             } //end of the loop over filtered_list
             
-            cout << "NumOfBlocks = " << NumOfBlocks << endl;
+            //cout << "NumOfBlocks = " << NumOfBlocks << endl;
             //cout << "num_of_elements_in_filter[NumOfBlocks] = " << num_of_elements_in_filter[NumOfBlocks] << endl;
             
                    
@@ -568,60 +565,48 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
             //cout << "position_is_found = " << position_is_found << endl;
             
             //is the insertion position was reached during the filter_list traversal, insert into filtered_list; otherwise, push into the queue
-            if (position_is_found || num_of_elements_in_filter[NumOfBlocks] == 0)            
+            if (position_is_found || num_of_elements_in_filter[NumOfBlocks] == 0 )
             {
                 filtered_list.insert(it_comparison_flip_filter,new_filtered_point);
                 num_of_elements_in_filter[NumOfBlocks]++;
                 
-                cout << "num_of_elements_in_filter[NumOfBlocks] = " << num_of_elements_in_filter[NumOfBlocks] << endl;
-                cout << " last_elements[NumOfBlocks]->get_sc_prod = " <<  last_elements[NumOfBlocks]->get_sc_prod() << endl;
+                //cout << "num_of_elements_in_filter[NumOfBlocks] = " << num_of_elements_in_filter[NumOfBlocks] << endl;
      
                 //if it was the first insertion, assign last_elements[NumOfBlocks]
                 if (num_of_elements_in_filter[NumOfBlocks]==1)
                 {
                     last_elements[NumOfBlocks] = --it_comparison_flip_filter;
-                    cout << "upd last_elements as num_of_elements_in_filter[NumOfBlocks] == 0 to " << last_elements[NumOfBlocks]->get_sc_prod() <<  endl;
-                    //cout << new_filtered_point.get_sc_prod() << endl;
-                    //cout << (--it_comparison_flip_filter)->get_sc_prod() << endl;
-                    //assert(false);
+                    //cout << "upd last_elements as num_of_elements_in_filter[NumOfBlocks] == 0 to " << last_elements[NumOfBlocks]->get_sc_prod() <<  endl;
                 }
                 
                 else if ( last_elements[NumOfBlocks]->get_sc_prod() > abs(true_inner_product_px1) )
                 {
                     last_elements[NumOfBlocks] = --it_comparison_flip_filter;
-                    cout << "upd last_elements to" <<  last_elements[appendixCounter]->get_sc_prod() <<  endl;
-                    cout << new_filtered_point.get_sc_prod() << endl;
-                    cout << (--it_comparison_flip_filter)->get_sc_prod() << endl;
-                    //assert(false);
+                    //cout << "upd last_elements to " <<  last_elements[NumOfBlocks]->get_sc_prod() <<  endl;
                 }
-                else   
-                    cout << "do not change last_elements " << endl;
+                //else
+                //    cout << "do not change last_elements " << endl;
             }
-            //NOT SURE
-            //else if (num_of_elements_in_filter[NumOfBlocks]>0 && abs(true_inner_product_px1) < last_elements[NumOfBlocks]->get_sc_prod())
-            //{
-            //    filtered_list.insert(last_elements[NumOfBlocks],new_filtered_point);
-            //    last_elements[NumOfBlocks] = --(filtered_list.cend());
-            //    num_of_elements_in_filter[NumOfBlocks]++;
-            //}
+            /*
+            else if (last_elements[NumOfBlocks]->get_sc_prod() > abs(true_inner_product_px1) )
+            {
+                filtered_list.insert(filtered_list.end(),new_filtered_point);
+                last_elements[NumOfBlocks] = --filtered_list.end();
+            }
+            */
             else   
                 appendices[NumOfBlocks].push(new_filtered_point);
-                
-                
-            //check if we need to change the pointer to the last element of the last block
-            //if (num_of_elements_in_filter[NumOfBlocks] == 0)
-            //{
-            //    
-            //   
-            //}
+
             
                 
-            cout << "filtered_list.size = " << filtered_list.size() << endl;
-            cout << "appendices[NumOfBlocks].size = " << appendices[NumOfBlocks].size() << endl;
+            //cout << "filtered_list.size = " << filtered_list.size() << endl;
+            //cout << "appendices[NumOfBlocks].size = " << appendices[NumOfBlocks].size() << endl;
             
-            if (!appendices[NumOfBlocks].empty())
-                cout << "appendix[NumOfBlocks].top() is " << (appendices[NumOfBlocks].top()).get_sc_prod() << endl;
-            if (filtered_list.size() > 6 && NumOfBlocks > 1)
+            //if (!appendices[NumOfBlocks].empty())
+            //    cout << "appendix[NumOfBlocks].top() is " << (appendices[NumOfBlocks].top()).get_sc_prod() << endl;
+        
+            /*
+            if (filtered_list.size() > 10 && NumOfBlocks > 1)
             {
                 for (auto it1 = filtered_list.cbegin(); it1!=filtered_list.cend(); ++it1)
                     cout << it1->get_sc_prod() << endl;
@@ -636,6 +621,7 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                 
                 assert(false);
             }
+            */
             
         } //if (px1 is larger enough)
         
