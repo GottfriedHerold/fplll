@@ -223,6 +223,7 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
     
     int const n = get_ambient_dimension();
     typename MainListType::Iterator it_comparison_flip=main_list.cend();
+    ET scalar;  
     
     //if abs( <p, x1> / (|p||x1|) ) < px1bound, do not put it in the filtered_list
     float  px1bound = 0.33; // TO ADJUST
@@ -280,8 +281,7 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
          
         //check 2-red
         ++number_of_scprods;
-        bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n   );
-        ET scalar;    
+        bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n   );  
        
         if(predict){
 
@@ -640,8 +640,306 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
         }
     }
         
+     it =it_comparison_flip; //points to the next after p list-element 
+
+     assumed_norm_of_the_current_block = it->get_approx_norm2();
+     max_length_of_the_current_block =floor(length_factor * assumed_norm_of_the_current_block + 1);
+     NumOfBlocks++;
+     
+     bool reduced_x1 = false; //if true, do not increase ++it and do not include into filtered_list
+     
+         //now we are reducing *it
+    while (it!=main_list.cend())
+    {
+        reduced_x1 = false;
+        //cout << "2: consider a list element of approx norm = " << it->get_approx_norm2() << endl;
+        //assert(false);
         
+        
+        //--------------------------------2-red-------------------------------
+        ++number_of_scprods;
+        bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n   );
+            
+        // preform 2-reduction
+        if(predict){
+
+                
+        ++number_of_exact_scprods;
+        if ( GaussSieve::check2red_new(p, *(it.access_details()), scalar) )
+        {
+                LatticePoint<ET> reduced = GaussSieve::perform2red(p, *(it.access_details()), scalar);
+                
+                //put reduced back into the queue
+                if (reduced.norm2!=0)
+                    main_queue.push(reduced);
+                    
+                    
+                //cout << "put x1 of size " << reduced.norm2 << " into the queue " << endl;
+                
+                it = main_list.erase(it); //also makes ++it
+                --current_list_size;
+                reduced_x1 = true;
+        }
+        else
+                ++number_of_mispredictions;
+        }
+        
+        
+        //--------------------------------3-red-------------------------------
+        
+        //check if we reached the next block; if yes, re-compute max_length_of_the_current_block
+        if (it->get_approx_norm2() > max_length_of_the_current_block)
+        {
+                assumed_norm_of_the_current_block = it->get_approx_norm2();
+                max_length_of_the_current_block =floor(length_factor * assumed_norm_of_the_current_block + 1);
+                NumOfBlocks++;
+                BlockDivision[NumOfBlocks] = assumed_norm_of_the_current_block;
+                
+                //cout << "enter the next block" << endl;
+                
+                //cout << "filtered_list is:" << endl;
+                //for (auto it1 = filtered_list.cbegin(); it1!=filtered_list.cend(); ++it1)
+                //    cout << it1->get_sc_prod() << endl;
+                    
+                //cout << "max_length_of_the_current_block = " << max_length_of_the_current_block << endl;
+            
+            
+                //in case non of the list-elements from the new block will end up in filtered_list, the last_element of this block is the last_element of the prev. block
+                last_elements[NumOfBlocks] = last_elements[NumOfBlocks-1];
+                /*
+                last_elements[NumOfBlocks] = filtered_list.end();
+                if (num_of_elements_in_filter[NumOfBlocks-1]==0)
+                {
+                    if (NumOfBlocks==1)
+                        last_elements[NumOfBlocks-1] = filtered_list.end();
+                    else
+                       last_elements[NumOfBlocks-1] = last_elements[NumOfBlocks-2]; 
+                }
+                 */
+            
+        }
+        
+        ApproxTypeNorm2 true_inner_product_px1 = compute_sc_prod(pApprox.get_approx(), it->get_approx(), n);
+        
+        // scaling factor for <px1>: ||p|| * ||x_1||
+        //float scale = (float)(pow(pApprox.get_approx_norm2(), 0.5)) * (float)(pow (it->get_approx_norm2(), 0.5));
+        float scale = sqrt ( (float)pApprox.get_approx_norm2() * (float)(it->get_approx_norm2()) );
     
+        //cout  << "true_inner_product_px1 / scale " << (float)true_inner_product_px1 / scale << endl;
+        
+        //if true_inner_product_px1 is large enough, put it in filtered_list
+        if (abs((float)true_inner_product_px1 / scale)>px1bound)
+        {
+            
+            typename FilteredListType::iterator it_filter =  filtered_list.begin();
+            typename FilteredListType::iterator it_comparison_flip_filter = filtered_list.end();
+            
+            int block_counter = 0;
+            bool position_is_found = false;
+            
+            while ( it_filter != filtered_list.cend())
+            {
+    
+                // OR take the length from BlockDivision[appendixCounter]
+                LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_x1 = (it_filter->getApproxVector()).get_approx_norm2();
+
+            
+
+                //in res_upper, we store the upper bound on the inner-product of px2 for x2 from filtered_list
+                float res_upper = 0.0;
+                
+                Compute_one_third_bound(assumed_norm_of_x1, assumed_norm_of_the_current_block, true_inner_product_px1, res_upper);
+                
+                //cout << "res_upper = " << res_upper << endl;
+                
+                //check if we even need to iterate over the current block of filtered_list
+                if (it_filter->get_sc_prod() > res_upper)
+                {
+                
+                
+                    ApproxTypeNorm2 true_inner_product_x1x2;
+                    
+                    typename FilteredListType::iterator it_block =  it_filter;
+                    
+                    int inblock_counter = 0;
+                    
+                    
+                    while(it_block!=filtered_list.end() && it_block->get_sc_prod() > res_upper && inblock_counter < num_of_elements_in_filter[block_counter])
+                    {
+                        
+                            //cout << "it_block->get_sc_prod() = " << it_block->get_sc_prod() << endl;
+                        
+                            //check if we found the position to insert *it
+                            if (it_block->get_sc_prod() < abs(true_inner_product_px1) && !position_is_found && block_counter == NumOfBlocks)
+                            {
+                                //cout << "position is found " << endl;
+                                it_comparison_flip_filter = it_block;
+                                position_is_found = true;
+                            }
+                            
+                            
+                            //make merge with an element from the queue
+                            if(!appendices[block_counter].empty() && it_block->get_sc_prod() < (appendices[block_counter].top()).get_sc_prod() )
+                            {
+                                
+                                FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> poped_from_queue =  appendices[block_counter].top();
+                                appendices[block_counter].pop();
+                                
+                                
+                                
+                                //Assume insert means inseart_before (TO CHECK)
+                                filtered_list.insert(it_block,poped_from_queue);
+                                num_of_elements_in_filter[block_counter]++;
+                                
+                                //cout << "insert from appendix the element " << poped_from_queue.get_sc_prod() << endl;
+                                //cout << "last_elements[block_counter]->get_sc_prod() " << last_elements[block_counter]->get_sc_prod() << endl;
+                                //cout << "it_block->get_sc_prod() " << it_block->get_sc_prod() << endl;
+                                
+                            }
+                        
+                            //------------------check for reduction-------------------
+                            
+                            predict = LatticeApproximations::Compare_Sc_Prod_3red(it_block->getApproxVector(), *it, n, x1x2, true_inner_product_x1x2);
+
+                            //cout << "REDUCTION CHECK" << endl;
+                            
+                            //sgn1 and sgn2 store the signs s.t. || p + sgn1*x1 + sgn*x2 || < || p ||
+                            // these values are computed in check3red_signs
+                            int sgn1 = 0;
+                            int sgn2 = 0;
+                            
+                            
+                            //in fistered_list we store abs(<p, x1>); retrieve the true sign of x1 stored in filtered_list
+                            int sgn_px1 = 1;
+                            int sgn_px2 = 1 ;
+                            int sgn_x1x2 = 1;
+                            
+                            
+                            if (true_inner_product_px1 < 0 ) sgn_px1 = -1;
+                            if (!it_block->get_sign()) sgn_px2 = -1;
+                            if (true_inner_product_x1x2 < 0 ) sgn_x1x2 = -1;
+                            
+                            //check if reduction
+                            if (GaussSieve::check3red_signs(*(it.access_details()), p, (it_block->getApproxVector()).get_details(), sgn_px1, sgn_px2, sgn_x1x2, sgn1, sgn2))
+                            {
+                               
+                                //perfrom actual reduction
+                                LatticePoint<ET> reduced = GaussSieve::perform3red(*(it.access_details()), p, (it_block->getApproxVector()).get_details(), sgn1, sgn2);
+                                
+                                if(reduced.norm2!=0)
+                                        main_queue.push(reduced);
+                                    
+                                it = main_list.erase(it); //also makes ++it
+                                --current_list_size;
+                                    
+                                    
+                                //break both while-loops and set the flag not to insert *it into filtered_list
+                                reduced_x1 = true;
+                                break;
+                            }
+                            
+                            //else
+                                //cout << "check3red is false" << endl;
+                            
+                        
+                            //--------------------- end of reduction's check ----------------------
+                    
+                            
+                            inblock_counter++;
+                            //cout << "inblock_counter " << inblock_counter << endl;
+                            ++it_block;
+                        
+                    } //end of iteration over the block
+                    
+                    
+                    //insert from the appendix if the last element of the block is larger
+                    if ( !appendices[block_counter].empty() && (appendices[block_counter].top()).get_sc_prod() < last_elements[block_counter]->get_sc_prod())
+                    {
+                        FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> poped_from_queue =  appendices[block_counter].top();
+                        appendices[block_counter].pop();
+                        
+                        
+                        //cout << "about to append from appendix "  << endl;
+                        
+                        //Assume insert means inseart_before (TO CHECK); it_block should point to the
+                        filtered_list.insert(it_block,poped_from_queue);
+                        num_of_elements_in_filter[block_counter]++;
+                        last_elements[block_counter] = --it_block; //TODO: TO CHECK.
+                        //cout << "last_elements[block_counter] is upd to " << last_elements[block_counter]->get_sc_prod() << endl;
+                        ++it_block;
+                    }
+                    
+                } // end of if (it_filter->get_sc_prod() > res_upper)
+                
+                //cout << "last_elements[block_counter]->get_sc_prod() " << last_elements[block_counter]->get_sc_prod() << endl;
+                it_filter = last_elements[block_counter];
+                
+                //if(it_filter!=filtered_list.end())
+                //   cout << "change it_filter to " << last_elements[block_counter]->get_sc_prod() << endl;
+                
+                block_counter++;
+                
+                //cout << "block_counter = " << block_counter << endl;
+                if(it_filter!=filtered_list.end())
+                    it_filter++;
+        
+            } //end of the loop over filtered_list
+            
+            if (!reduced_x1)
+            {
+                bool px1_sign;
+                if (true_inner_product_px1>0)
+                    px1_sign = true;
+                else
+                    px1_sign = false;
+                    
+                FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> new_filtered_point(*it, abs(true_inner_product_px1), px1_sign);
+                
+                //cout << "position_is_found = " << position_is_found << endl;
+                
+                //is the insertion position was reached during the filter_list traversal, insert into filtered_list; otherwise, push into the queue
+                if (position_is_found || num_of_elements_in_filter[NumOfBlocks] == 0 )
+                {
+                    filtered_list.insert(it_comparison_flip_filter,new_filtered_point);
+                    num_of_elements_in_filter[NumOfBlocks]++;
+                    
+                    //cout << "num_of_elements_in_filter[NumOfBlocks] = " << num_of_elements_in_filter[NumOfBlocks] << endl;
+         
+                    //if it was the first insertion, assign last_elements[NumOfBlocks]
+                    if (num_of_elements_in_filter[NumOfBlocks]==1)
+                    {
+                        last_elements[NumOfBlocks] = --it_comparison_flip_filter;
+                        //cout << "upd last_elements as num_of_elements_in_filter[NumOfBlocks] == 0 to " << last_elements[NumOfBlocks]->get_sc_prod() <<  endl;
+                    }
+                    
+                    else if ( last_elements[NumOfBlocks]->get_sc_prod() > abs(true_inner_product_px1) )
+                    {
+                        last_elements[NumOfBlocks] = --it_comparison_flip_filter;
+                        //cout << "upd last_elements to " <<  last_elements[NumOfBlocks]->get_sc_prod() <<  endl;
+                    }
+                    //else
+                    //    cout << "do not change last_elements " << endl;
+                }
+                /*
+                else if (last_elements[NumOfBlocks]->get_sc_prod() > abs(true_inner_product_px1) )
+                {
+                    filtered_list.insert(filtered_list.end(),new_filtered_point);
+                    last_elements[NumOfBlocks] = --filtered_list.end();
+                }
+                */
+                else   
+                    appendices[NumOfBlocks].push(new_filtered_point);
+                }
+            
+        } //if (px1 is larger enough)
+        
+        if (!reduced_x1)
+        ++it;
+                
+    }
+    
+     
+     
      filtered_list.clear();
 }
 
