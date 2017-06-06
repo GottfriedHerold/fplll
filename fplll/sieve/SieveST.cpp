@@ -71,16 +71,11 @@ void Sieve<ET,false>::run()
             //SieveIteration3New(p);
             SieveIteration3(p);
         }
-
-
-        //cout << i <<  " list size" << current_list_size << " Queue: " << main_queue.size() << endl << flush;
         ++i;
-//        if (i % 500 == 0) {
-//            print_status();
-//            cout << "# of collisions: " << number_of_collisions << endl;
-//            cout << "norm2 of the so far shortest vector: " << get_best_length2() << endl;
-//
-//        }
+        if (i % 1000 == 0) {
+            cout << "[" << i << "]"  << "  |L|=" << current_list_size  << " |Q|=" << main_queue.size() << " #samples = " << number_of_points_sampled << " |sv|= " <<  get_best_length2() << endl;
+
+        }
     }
     sieve_status = SieveStatus::sieve_status_finished;
 
@@ -226,13 +221,13 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
     ET scalar;  
     
     //if abs( <p, x1> / (|p||x1|) ) < px1bound, do not put it in the filtered_list
-    float  px1bound = 0.33; // TO ADJUST
+    float  px1bound = 0.31; // TO ADJUST
     
-    //'promissingness'
-    float x1x2=.27;
+    
+    float x1x2=.31;
 
     // length_factor determines the difference (multiplicatively) between the legnth of the i-th and (i+1)-st blocks
-    float length_factor = 1.5; //TO ADJUST
+    float length_factor = 1.3; //TO ADJUST
     
     //number of blocks
     int NumOfBlocks = 0;
@@ -376,9 +371,9 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
             
 
                 //in res_upper, we store the upper bound on the inner-product of px2 for x2 from filtered_list
-                float res_upper = 0.0;
+                float res_upper = 6000;
                 
-                Compute_one_third_bound(assumed_norm_of_x1, assumed_norm_of_the_current_block, true_inner_product_px1, res_upper);
+                //Compute_one_third_bound(assumed_norm_of_x1, assumed_norm_of_the_current_block, true_inner_product_px1, res_upper);
                 
                 //cout << "res_upper = " << res_upper << endl;
                 
@@ -770,15 +765,14 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
             while (!reduced_x1 && it_filter != filtered_list.cend())
             {
     
-                // OR take the length from BlockDivision[appendixCounter]
                 LatticeApproximations::ApproxTypeNorm2 assumed_norm_of_x1 = (it_filter->getApproxVector()).get_approx_norm2();
 
             
 
                 //in res_upper, we store the upper bound on the inner-product of px2 for x2 from filtered_list
-                float res_upper = 0.0;
+                float res_upper = 6000;
                 
-                Compute_one_third_bound(assumed_norm_of_x1, assumed_norm_of_the_current_block, true_inner_product_px1, res_upper);
+                //Compute_one_third_bound(assumed_norm_of_x1, assumed_norm_of_the_current_block, true_inner_product_px1, res_upper);
                 
                 //cout << "res_upper = " << res_upper << endl;
                 
@@ -979,6 +973,26 @@ void Sieve<ET,false>::SieveIteration3 (LatticePoint<ET> &p)
                 
     }
     
+    /*
+    if (filtered_list.size()>60)
+    {
+        
+         cout << "filtered_list is:" << endl;
+         for (auto it1 = filtered_list.cbegin(); it1!=filtered_list.cend(); ++it1)
+         cout << it1->get_sc_prod() << endl;
+         
+         cout << "Number of elements in filtered_list per block: " << endl;
+         int i=0;
+         while (i<=NumOfBlocks)
+         {
+         cout << num_of_elements_in_filter[i] << " ";
+         i++;
+         }
+        
+        assert(false);
+
+    }
+    */
      
      
      filtered_list.clear();

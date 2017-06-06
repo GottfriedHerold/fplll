@@ -316,13 +316,13 @@ inline bool LatticeApproximations::Compare_Sc_Prod_3red(ApproxLatticePoint<ET,fa
     float approx_inner_product_sc = (float)approx_inner_product / (sqrt ( (float) pApprox.get_approx_norm2() * (float) x1.get_approx_norm2()) );
     //cout << approx_inner_product_double << endl;(pow
     
-    float eps = .02; // TODO: to adjust and make as input
+    float eps = .025; // TODO: to adjust and make as input
     
     //cout << "to_compare " << approx_inner_product_sc << endl;
     //cout << "target " << px1 << endl;
     
     //TODO: delete the or-condition
-    if (abs ( abs ( approx_inner_product_sc ) - abs(px1))  <= eps || abs(approx_inner_product_sc) > 0.37 )
+    if (abs ( abs ( approx_inner_product_sc ) - abs(px1))  <= eps || abs(approx_inner_product_sc) > 0.31 )
         return true;
     else
         return false;
