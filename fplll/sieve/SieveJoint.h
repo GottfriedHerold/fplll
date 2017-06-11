@@ -185,7 +185,8 @@ public:
     void SieveIteration2 (LatticePoint<ET> &p); //one run through the main_list (of 2-sieve)
     void SieveIteration3 (LatticePoint<ET> &p); //one run through the main_list (of 3-sieve)
     void SieveIteration3New (LatticePoint<ET> &p); //new run through the main_list (of 3-sieve) usign map for filtered_list
-    void SieveIteration3New_Pointer (LatticePoint<ET> &p);
+    void SieveIteration3Test (LatticePoint<ET> &p);
+    
     #if GAUSS_SIEVE_IS_MULTI_THREADED == true
     void sieve_2_thread(int const thread_id);   //function for worker threads
     #endif
