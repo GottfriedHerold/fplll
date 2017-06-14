@@ -112,7 +112,18 @@ void Sieve<ET,false>::run_3_sieve()
 template<class ET>
 void Sieve<ET,false>::run_k_sieve()
 {
-
+    LatticePoint<ET> p;
+    int i=0;
+    while (!check_if_done() )
+    {
+        p=main_queue.true_pop();
+        sieve_k_iteration(p);
+        ++i;
+        if (( i % 1000 == 0) && (verbosity >=2))
+        {
+            cout << "[" << i << "]"  << "  |L|=" << current_list_size  << " |Q|=" << main_queue.size() << " #samples = " << number_of_points_sampled << " |sv|= " <<  get_best_length2() << endl;
+        }
+    }
 }
 
 //
