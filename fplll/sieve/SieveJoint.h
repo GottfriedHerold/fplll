@@ -72,14 +72,13 @@ namespace GaussSieve //helper functions
     bool string_consume(istream &is, std::string const & str, bool elim_ws= true, bool verbose=true); //helper function for dumping/reading
     Z_NR<mpz_t> compute_mink_bound(ZZ_mat<mpz_t> const & basis);
     template<class ET>
-    bool check2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2); //ASSUMPTION: p1 is longer than p2.
-                                                                       //2-reduces p1 with the help of p2.
+    bool check_perform_2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2); //2-reduces p1 with the help of p2.
                                                                        //p1 is overwritten, whereas p2 is const. Returns true if p1 actually changed.
     template<class ET>
-    bool check2red_new (const LatticePoint<ET> &p1, const LatticePoint<ET> &p2, ET &scalar);
+    bool check2red_new (const LatticePoint<ET> &p1, const LatticePoint<ET> &p2, ET &scalar); //only checks whether 2reduction is possible
 
     template<class ET>
-    LatticePoint<ET> perform2red (const LatticePoint<ET> &p1, const LatticePoint<ET> &p2, ET const & scalar);
+    LatticePoint<ET> perform2red (const LatticePoint<ET> &p1, const LatticePoint<ET> &p2, ET const & scalar); //replaces p1 by p1 - scalar * p2
 
     template<class ET>
     bool check3red(const LatticePoint<ET> &p, const LatticePoint<ET> &x1, const LatticePoint<ET> &x2, float px1, float px2, float x1x2, int & sgn1, int & sgn2);
@@ -139,18 +138,18 @@ public:
     using SamplerType      = KleinSampler<typename ET::underlying_data_type, FP_NR<double>> *; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
     //using FilteredListType = std::vector<FilteredPoint<ET, float>>; //queue is also fine for our purposes; scalar products are not of type ET, two-templates; float for now; may be changed.
     using FilteredListType = std::list<FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2>>;
-    
+
     //using BlockDivisionType  = std::array< ApproxLatticePoint<ET,GAUSS_SIEVE_IS_MULTI_THREADED> , 100> ;
     using LengthDivisionType = std::array< LatticeApproximations::ApproxTypeNorm2, 100 >;
-    
+
     //stores the last element of each block for filtered_list
     using FilterDivisionType = std::array<typename FilteredListType::iterator, 100 >;
-    
+
     //number of elements per block in filtered_list // COULD BE LONG?
     using FilterNumOfElems = std::array<int, 100 >;
-    
-    
-    
+
+
+
     using AppendixType =  std::priority_queue<FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2>, std::vector<FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> >,  CompareQueue<ET,GAUSS_SIEVE_IS_MULTI_THREADED> >;
 
 
@@ -180,18 +179,28 @@ public:
     ~Sieve();
     static bool constexpr class_multithreaded =  GAUSS_SIEVE_IS_MULTI_THREADED;
     //class_multithreaded is for introspection, is_multithreaded is what the caller wants (may differ if we dump and re-read with different params)
-    void run_2_sieve(); //actually runs the Gauss Sieve with k=2 (needed in MT)
-    void run_sieve(int k); //runs k-sieve
+    //void run_sieve(int k); //runs k-sieve
+
+    LPType get_SVP() = delete;  //obtains Shortest vector and it's length. If sieve has not yet run, start it. Not yet implemented.
+
+    void run();                 //runs the sieve specified by the parameters. Dispatches to the corresponding k-sieve
+
+    void run_2_sieve(); //actually runs the Gauss Sieve with k=2
+    void run_3_sieve(); //actually runs the Gauss Sieve with k=3
+    void run_k_sieve(); //runs Gauss Sieve with arbitrary k
+
+    #if GAUSS_SIEVE_IS_MULTI_THREADED == true
+    void sieve_2_thread(int const thread_id);   //function for worker threads
+    void sieve_3_thread(int const thread_id);
+    void sieve_k_thread(int const thread_id);
+    #else
     void SieveIteration2 (LatticePoint<ET> &p); //one run through the main_list (of 2-sieve)
     void SieveIteration3 (LatticePoint<ET> &p); //one run through the main_list (of 3-sieve)
     void SieveIteration3New (LatticePoint<ET> &p); //new run through the main_list (of 3-sieve) usign map for filtered_list
     void SieveIteration3Test (LatticePoint<ET> &p);
-    
-    #if GAUSS_SIEVE_IS_MULTI_THREADED == true
-    void sieve_2_thread(int const thread_id);   //function for worker threads
     #endif
-    LPType get_SVP() = delete;  //obtains Shortest vector and it's length. If sieve has not yet run, start it. Not yet implemented.
-    void run();                 //runs the sieve specified by the parameters.
+
+
     void print_status(int verb = -1, std::ostream &out = cout) {dump_status_to_stream(out,verb);};      //prints status to out. verb overrides the verbosity unless set to -1.
     void dump_status_to_file(std::string const &outfilename, bool overwrite = false);                   //dumps to file (verbosity overridden to 3)
     void dump_status_to_stream(ostream &of, int verb=-1);       //dumps to stream. Can be read back if verb>= 3. Otherwise, verbosity determines what is output.

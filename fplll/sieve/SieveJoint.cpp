@@ -35,11 +35,8 @@
 
 
 template<class ET>
-bool GaussSieve::check2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2)
+bool GaussSieve::check_perform_2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2)
 {
-
-    //cout << "before the reduction: ";
-    //p1.printLatticePoint();
     //assert(p1.norm2 >= p2.norm2);     Not neccessarily true in multi-threaded case. -- Gotti
     ET sc_prod, abs_2scprod, scalar;
     sc_product(sc_prod, p1, p2);
@@ -64,13 +61,10 @@ bool GaussSieve::check2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2)
     LatticePoint<ET> res(p2);
     scalar_mult(res, scalar);
     p1 = p1 - res;
-
-    //cout << endl << "after the reduction: ";
-    //p1.printLatticePoint();
     return true;
 }
 
-// separate chec2Red and perform2Red
+// separate check2Red and perform2Red
 
 //if true, scalar is the multiple s.t. we reduce p1 = p1-sclar * p2;
 
@@ -123,11 +117,11 @@ bool GaussSieve::check3red(const LatticePoint<ET> &p, const LatticePoint<ET> &x1
     //in case sgn(x1x2)*sgn(px1)*sgn(px2) = 0, we cannot produce a shorter p:
     //  either they are all positive (clearly, no combination of \pm can result in a shorter p
     //  or there are two inner-products with -1 and one point in common. Take the negative of the common vector, arrive to the first case
-    
+
     //if (px1.sgn()*px2.sgn()*x1x2.sgn() == 1)
     //    return false;
-    
-    
+
+
     //TODO: look-up a sign-fnct for floats
     if (px1>0 && px2>0 && x1x2>0)
         return false;
@@ -137,10 +131,10 @@ bool GaussSieve::check3red(const LatticePoint<ET> &p, const LatticePoint<ET> &x1
         return false;
     if (x1x2>0 && px1<0 && px2<0)
         return false;
-    
+
     LatticePoint<ET> res(p);
-    
-    
+
+
     if (px1<0){
         res = res+x1;
         sgn1=1;
@@ -157,12 +151,12 @@ bool GaussSieve::check3red(const LatticePoint<ET> &p, const LatticePoint<ET> &x1
         res = res-x2;
         sgn2=-1;
     }
-    
+
     if(res.norm2>=p.norm2)
     {
         return false;
     }
-    
+
     //cout <<"p: ";
     //p.printLatticePoint();
     //cout<< "res: ";
@@ -176,11 +170,11 @@ bool GaussSieve::check3red_signs(const LatticePoint<ET> &p, const LatticePoint<E
     //in case sgn(x1x2)*sgn(px1)*sgn(px2) = 0, we cannot produce a shorter p:
     //  either they are all positive (clearly, no combination of \pm can result in a shorter p
     //  or there are two inner-products with -1 and one point in common. Take the negative of the common vector, arrive to the first case
-    
+
     //if (px1.sgn()*px2.sgn()*x1x2.sgn() == 1)
     //    return false;
-    
-    
+
+
     //TODO: look-up a sign-fnct for floats
     if (px1>0 && px2>0 && x1x2>0)
         return false;
@@ -190,10 +184,10 @@ bool GaussSieve::check3red_signs(const LatticePoint<ET> &p, const LatticePoint<E
         return false;
     if (x1x2>0 && px1<0 && px2<0)
         return false;
-    
+
     LatticePoint<ET> res(p);
-    
-    
+
+
     if (px1<0){
         res = res+x1;
         sgn1=1;
@@ -210,13 +204,13 @@ bool GaussSieve::check3red_signs(const LatticePoint<ET> &p, const LatticePoint<E
         res = res-x2;
         sgn2=-1;
     }
-    
+
     if(res.norm2>=p.norm2)
     {
         //cout << "res = " <<  res << " res.norm2 = " << res.norm2 <<  "p.norm2 = " << p.norm2 << endl;
         return false;
     }
-    
+
     //cout <<"p: ";
     //p.printLatticePoint();
     //cout<< "res: ";
@@ -233,19 +227,19 @@ LatticePoint<ET> GaussSieve::perform3red (const LatticePoint<ET> &p, const Latti
         res = res-x1;
     else
         res = res+x1;
-    
+
     if(sgn2<0)
         res = res-x2;
     else
         res = res+x2;
-    
+
     //cout << "3 red is performed:" << endl;
     //cout <<"p: ";
     //p.printLatticePoint();
     //cout<< "res: ";
     //res.printLatticePoint();
     return res;
-    
+
 }
 
 //helper function for reading in from streams. Gobbles up str from the stream (and optionally whitespace before/after).
@@ -321,7 +315,7 @@ Z_NR<mpz_t> GaussSieve::compute_mink_bound(ZZ_mat<mpz_t> const & basis)
 
     //cout << "after MinkBound_double is assigned... " << endl;
     Z_NR<mpz_t> Minkowski;
-    Minkowski.set_f(MinkBound_double); 
+    Minkowski.set_f(MinkBound_double);
     cout << "Mink. bound = " << Minkowski << endl;
     return Minkowski;
 }

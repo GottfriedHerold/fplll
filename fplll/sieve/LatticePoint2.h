@@ -48,7 +48,7 @@ template<class ET>
 class MaybeRational;
 
 template<class ET> class MaybeRational {public: static bool constexpr val=true;};       //helper template that selects whether the underlying type *might* be able to represent values strictly between 0 and 1.
-template<> class MaybeRational<Z_NR<long > >{public: static bool constexpr val=false;}; //this distinction just to serves to avoid correct, but needless approximations if the values are small enough to not need approximations in first place.
+template<> class MaybeRational<Z_NR<long > >{public: static bool constexpr val=false;}; //this distinction just to serves to avoid correct, but needless approximations if the values are small enough to not need approximations in the first place.
 template<> class MaybeRational<Z_NR<mpz_t> >{public: static bool constexpr val=false;}; //(otherwise, we would pad with zeros from the right(!), which is correct (but useless and hurts readability for debug outputs).
 template<> class MaybeRational<Z_NR<double> >{public: static bool constexpr val=true;};
 //template<class ET>
@@ -274,7 +274,7 @@ template <class ET> //fallback version, should never be called anyway.
 
 inline LatticeApproximations::ApproxTypeNorm2 LatticeApproximations::compute_sc_prod(ApproxType const * const arg1, ApproxType const * const arg2, unsigned int len)
 {
-    
+
     //syntax: inner_product(InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, T init); init accumelates the result
     return std::inner_product(arg1, arg1+len, arg2,0);
     /*
@@ -310,17 +310,17 @@ inline bool LatticeApproximations::Compare_Sc_Prod_3red(ApproxLatticePoint<ET,fa
     //cout << "pApproxnorm2 = " << pApprox.get_approx_norm2() << endl;
     //cout << "x1Approxnorm2 = " << x1.get_approx_norm2() << endl;
     //cout <<"p Length exp = " <<pApprox.get_length_exponent() << endl;
-    
+
     //TODO: Make more efficient
     //float approx_inner_product_sc = (float)approx_inner_product / ( (float)(pow(pApprox.get_approx_norm2(), 0.5)) * (float)(pow (x1.get_approx_norm2(), 0.5) ) ) ;
     float approx_inner_product_sc = (float)approx_inner_product / (sqrt ( (float) pApprox.get_approx_norm2() * (float) x1.get_approx_norm2()) );
     //cout << approx_inner_product_double << endl;(pow
-    
+
     float eps = .025; // TODO: to adjust and make as input
-    
+
     //cout << "to_compare " << approx_inner_product_sc << endl;
     //cout << "target " << px1 << endl;
-    
+
     //TODO: delete the or-condition
     if (abs ( abs ( approx_inner_product_sc ) - abs(px1))  <= eps || abs(approx_inner_product_sc) > 0.31 )
         return true;
@@ -331,38 +331,38 @@ inline bool LatticeApproximations::Compare_Sc_Prod_3red(ApproxLatticePoint<ET,fa
 
 /*
     According to Maple, given len_x1 = || x_1||^2, len_p = || p||^2, and len_x2 = ||x_2||^2, the optimal <p, x1>, <p,x2>, <x1x2> (all divided by the corresp. lengthes) are given by  the formulas we compute below
- 
+
     These formulas assume p = max {x1, x2, p};  The order of {x1, x2} does not matter. The total order of the triple is assumed to be correct (sieve should know it).
- 
-    
+
+
 */
 inline void LatticeApproximations::Determine_Sc_Prod (LatticeApproximations::ApproxTypeNorm2 const len_max, LatticeApproximations::ApproxTypeNorm2 const len_x1, LatticeApproximations::ApproxTypeNorm2 const len_x2, float & x1x2, float & px1, float & px2)
 {
-    
+
     //LatticeApproximations:: ApproxTypeNorm2 len_max_quad= len_max * len_max;
     //LatticeApproximations:: ApproxTypeNorm2 len_x1_quad = len_x1 * len_x1;
     //LatticeApproximations:: ApproxTypeNorm2 len_x2_quad = len_x2 * len_x2;
 
     // compute x1x2 - the inner product of two shorter vectors
     // float should be enough
-    
+
     float len_max_quad = (float)len_max*(float)len_max;
     float len_x1_quad = (float)len_x1*(float)len_x1;
     float len_x2_quad = (float)len_x2*(float)len_x2;
-    
+
     float term_x1x2 = 16 * len_max_quad - (float)(8*(float)len_x1*(float)len_max) - (float) (8*(float)len_x2 * (float)len_max) + len_x1_quad + (float)(14 * (float)len_x1 * (float)len_x2) + len_x2_quad; //without casting each length individually the result is wrong. -- TO IMPROVE
-    
+
     float sqrt_term_x1x2 = sqrt(term_x1x2);
-    
+
     float term2 = (-4*(float)len_max + (float)len_x1 + (float)len_x2);
-    
+
     float num = term2 + sqrt_term_x1x2;
-    
+
     long product = 36 * (long)len_x1 * (long)len_x2; //does not fit otherwise
-    
+
     float denom = sqrt((float) product);
 
-    
+
 //    cout << "num = " << num << " denom = " << denom << endl;
 //    cout << "term_x1x2 = " << setprecision(16) << term_x1x2 << endl;
 //    cout << "sqrt_term_x1x2 = " << setprecision(16) << sqrt_term_x1x2 << endl;
@@ -370,64 +370,64 @@ inline void LatticeApproximations::Determine_Sc_Prod (LatticeApproximations::App
 //    cout << "lex_max = " << len_max << endl;
 //    cout << "len_x1 = " << len_x1 << endl;
 //    cout << "len_x2 = " << len_x2 << endl;
-    
+
     x1x2 =  - num / denom;
-    
+
     //compute px1
-    
+
     float x1x2_sq = x1x2*x1x2;
     float x1x2quad =x1x2_sq*x1x2_sq;
     float sqrt_len_x1 = sqrt(len_x1);
-    
+
     float term_px1 = float ((float) (9*len_x1) * x1x2quad + (float)(16 *len_max)*x1x2_sq - (float)(10*len_x1)*x1x2_sq + (float)len_x1);
-    
+
     num = 3*x1x2_sq* sqrt_len_x1- 3*sqrt_len_x1 + sqrt(term_px1);
-    
+
     denom = 4 * sqrt((float)len_max);
-    
+
     px1  = num / denom;
-    
+
     //cout << "px1 = " << setprecision(16) <<  px1 << endl;
-    
+
     //compute px2
-    
+
     num = x1x2_sq * sqrt_len_x1 - sqrt_len_x1 +sqrt(term_px1);
     denom = 4*x1x2*sqrt(float(len_max));
-    
+
     px2 = num / denom;
-    
+
     //cout << "num = " << num << " denom = " << denom << endl;
     //cout << "px2 = " << setprecision(16) <<  px2 << endl;
-    
-    
+
+
 }
 
 //want: x1x2/(x1_len * x2_len) <=  (-px2/(x1_len * x2_len) - x1_len/(2* x2_len) - x2_len/(2* x1_len))  - px1/(x1_len * x2_len)  (also with different signs)
-// NOTE: x1x2 stores the assumed absolute value ('promissingness'). 
+// NOTE: x1x2 stores the assumed absolute value ('promissingness').
 // NOTE: we require sgn(px1) * sgn(px2) * sgn(x1x2) =-1
 void Compute_px1_bound(LatticeApproximations::ApproxTypeNorm2 x1_len, LatticeApproximations::ApproxTypeNorm2 x2_len, LatticeApproximations::ApproxTypeNorm2 px2, float x1x2_scaled, float & res_upper)
 {
-    
-    
+
+
     //float x1_len_sqrt = sqrt((float) x1_len);
     //float x2_len_sqrt = sqrt((float) x2_len);
     //float len_sqrt_x1x2 = x1_len_sqrt * x2_len_sqrt;
-    
+
     float len_sqrt_x1x2 =sqrt((float) x1_len * (float) x2_len);
-    
-    
+
+
     //cout << "---- in Compute_px1_bound ---- " << endl;
     //cout << "x2_len " << x2_len << endl;
     //cout << "x1_len_sqrt = " << x1_len_sqrt << " x2_len_sqrt = " << x2_len_sqrt << " px2 = " << px2 << endl;
-   
-    
+
+
     if (px2>=0)
         res_upper = abs(x1x2_scaled * len_sqrt_x1x2 + px2 - ((float)x1_len) / 2 - ((float)x2_len) /2);
     else
         res_upper = abs(x1x2_scaled * len_sqrt_x1x2 - px2 - ((float)x1_len) / 2 - ((float)x2_len) /2);
-    
+
     //cout << "--------------" << endl;
-    
+
 }
 
 // Same as the above except all inner-products (scaled) are set to 1/3
@@ -444,53 +444,53 @@ void Compute_one_third_bound(LatticeApproximations::ApproxTypeNorm2 x1_len, Latt
 /*
 inline void Compare_Sc_Prod_p (LatticeApproximations::ApproxTypeNorm2 len_p, LatticeApproximations::ApproxTypeNorm2 len_x1, LatticeApproximations::ApproxTypeNorm2 len_x2, double x1x2, double px1, double px2)
 {
- 
+
     LatticeApproximations:: ApproxTypeNorm2 len_p_quad = len_p * len_p;  // need to make sure it fits
     LatticeApproximations:: ApproxTypeNorm2 len_x1_quad = len_x1 * len_x1;
     LatticeApproximations:: ApproxTypeNorm2 len_x2_quad = len_x2 * len_x2;
-    
-    
+
+
     // compute x1x2
-    
+
 
     int term_x1x2 = 16 * len_p_quad - 8*(len_x1 + len_x2) * len_p + len_x1_quad + (14 * len_x1 * len_x2) + len_x2_quad;
-    
+
     double sqrt_term_x1x2 = sqrt(term_x1x2);
-    
-    
+
+
     int term2 = -4 * len_p + len_x1 + len_x2;
-    
+
     double denom = sqrt(36 * len_p * len_x2);
-    
+
     double nom = (double) term2 + sqrt_term_x1x2;
-    
+
     x1x2 = - nom / denom;
-    
+
     //compute px1
-    
+
     double x1x2_sq = x1x2*x1x2;
     double x1x2quad =x1x2_sq*x1x2_sq;
     double sqrt_len_x1 = sqrt(len_x1);
-    
+
     double term_px1 = double ((double) (9*len_x1) * x1x2quad + (double)(16 *len_p)*x1x2_sq - (double)(10*len_x1)*x1x2_sq + (double)len_x1);
-    
+
     nom = 3*x1x2_sq* sqrt_len_x1- 3*sqrt_len_x1 + sqrt(term_px1);
-    
+
     denom = 4 * sqrt(len_p);
-    
+
     px1  = nom / denom;
-    
+
     //compute px2
-    
+
     nom = x1x2_sq * sqrt_len_x1 - sqrt_len_x1 +sqrt(term_px1);
     denom = 4*x1x2*sqrt(len_p);
-    
+
     px2 = nom / denom;
-    
+
 }
 */
 /*
- 
+
     Same as above but now we assume x1 = max {x1, x2, p}
 */
 /*
@@ -500,52 +500,52 @@ inline void Compare_Sc_Prod_x1 (LatticeApproximations::ApproxTypeNorm2 len_p, La
     LatticeApproximations:: ApproxTypeNorm2 len_p_quad = len_p * len_p;  // need to make sure it fits
     LatticeApproximations:: ApproxTypeNorm2 len_x1_quad = len_x1 * len_x1;
     LatticeApproximations:: ApproxTypeNorm2 len_x2_quad = len_x2 * len_x2;
-    
-    
+
+
     // compute px2
-    
+
     int term_px2 = 16 * len_x1_quad - 8*(len_p + len_x2) * len_x1 + len_p_quad + (14 * len_p * len_x2) + len_x2_quad;
-    
+
     double sqrt_term_px2 = sqrt(term_px2);
-    
-    
+
+
     int term2 = -4 * len_x1 + len_p + len_x2;
-    
+
     double denom = sqrt(36 * len_p * len_x2);
-    
+
     double nom = (double) term2 + sqrt_term_px2;
-    
+
     px2 = - nom / denom;
-    
+
     //compute px1
-    
+
     double px2_sq = px2*px2;
     double px2_quad =px2_sq*px2_sq;
     double sqrt_len_p = sqrt(len_p);
-    
+
     double term_px1 = double ((double) (9*len_p) * px2_quad + (double)(16 *len_x1)*px2_sq - (double)(10*len_p)*px2_sq + (double)len_p);
-    
+
     nom = 3*px2_sq* sqrt_len_p- 3*sqrt_len_p + sqrt(term_px1);
-    
+
     denom = 4 * sqrt(len_x1);
-    
+
     px1  = nom / denom;
-    
+
     //compute x1x2
-    
+
     nom = px2_sq * sqrt_len_p - sqrt_len_p +sqrt(term_px1);
     denom = 4*px2*sqrt(len_x1);
-    
+
     x1x2 = nom / denom;
-    
+
 }
 */
 /*
-Computes the determinant of 
+Computes the determinant of
                 [1 px1 px2]
                 [px1 1 x1x2]
                 [px2 x1x2 1]
- 
+
 */
 inline double LatticeApproximations::detConf (float px1, float px2, float x1x2)
 {

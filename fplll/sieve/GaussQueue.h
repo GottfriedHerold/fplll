@@ -62,9 +62,12 @@ public:
     size_type size() const          {return main_queue.size();};   //returns size of queue (used for diagnostics and statistics only)
     void push(LPType const &val); //puts a copy of val in the queue
     void push(LPType && val);     //uses move semantics for that.
+
     [[deprecated("Ownership transfer clashes with compressed storage.")]]
     void give_ownership(LPType * const valptr); //takes a pointer to a list point and puts the point into the queue, moves ownership (avoids copying)
+
     RetType  true_pop(); //removes front element from queue *and returns it*.
+
     [[deprecated("Use copy elison rather than ownership transfer.")]]
     RetType* pop_take_ownership() ; //removes front elements from queue and returns handle to it.
                                    //Transfers ownership to the caller. Return type might change, but should be dereferencable, deleteable.
@@ -132,7 +135,7 @@ gauss_sieve(caller_sieve),
 sampler(nullptr)
 {
     assert(caller_sieve!=nullptr);
-    std::seed_seq seed{1,2,4};
+    std::seed_seq seed{1,2,4}; //just some
     //sampler = new EllipticSampler<ET,false, std::mt19937_64, std::seed_seq> (seed);
     sampler = new ShiSampler<ET,false, std::mt19937_64, std::seed_seq> (seed);
     //sampler=caller_sieve->sampler; //TODO: Remove sampler from SieveJoint.h and place it under control of the queue.
