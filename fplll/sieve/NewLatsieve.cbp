@@ -26,6 +26,9 @@
 		<Unit filename="SieveJoint.h" />
 		<Unit filename="SieveMT.cpp" />
 		<Unit filename="SieveST.cpp" />
+		<Unit filename="SieveST2.cpp" />
+		<Unit filename="SieveST3.cpp" />
+		<Unit filename="SieveSTk.cpp" />
 		<Unit filename="TermCondNew.h" />
 		<Unit filename="notes.txt" />
 		<Unit filename="sampler_basic.cpp" />
