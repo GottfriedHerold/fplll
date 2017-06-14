@@ -2,7 +2,7 @@
 */
 
 template<class ET>
-void Sieve<ET,false>::SieveIteration2 (LatticePoint<ET> &p) //note : Queue might output Approx ?
+void Sieve<ET,false>::sieve_2_iteration (LatticePoint<ET> &p) //note : Queue might output Approx ?
 {
     if (p.norm2==0) return; //cerr << "Trying to reduce 0"; //TODO: Ensure sampler does not output 0 (currently, it happens).
     ApproxLatticePoint<ET,false> pApprox (p);

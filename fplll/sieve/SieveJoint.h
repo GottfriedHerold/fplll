@@ -194,10 +194,11 @@ public:
     void sieve_3_thread(int const thread_id);
     void sieve_k_thread(int const thread_id);
     #else
-    void SieveIteration2 (LatticePoint<ET> &p); //one run through the main_list (of 2-sieve)
-    void SieveIteration3 (LatticePoint<ET> &p); //one run through the main_list (of 3-sieve)
-    void SieveIteration3New (LatticePoint<ET> &p); //new run through the main_list (of 3-sieve) usign map for filtered_list
-    void SieveIteration3Test (LatticePoint<ET> &p);
+    void sieve_2_iteration (LatticePoint<ET> &p); //one run through the main_list (of 2-sieve)
+    void sieve_3_iteration (LatticePoint<ET> &p); //one run through the main_list (of 3-sieve)
+    void sieve_3_iteration_new (LatticePoint<ET> &p); //new run through the main_list (of 3-sieve) usign map for filtered_list
+    void sieve_3_iteration_test (LatticePoint<ET> &p);
+    void sieve_k_iteration (LatticePoint<ET> &p);
     #endif
 
 
