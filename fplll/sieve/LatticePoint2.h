@@ -10,21 +10,18 @@
 #include <numeric>
 #include <iomanip>   //to check precision in computing innder-products
 
-//#define SCALENORMS 0.995
-
 //forward declarations:
 
-template <class ET,bool insideMTList=false, int n_fixed=-1> //insideMTList: Is this point stored inside our Multithreaded list class? -> changes some data types, memory layout and ownership semantics.
-                                                            //n : compile-time fixed dimension with n=-1 meaning dynamic.
+template <class ET,bool insideMTList=false, int n_fixed=-1> //insideMTList: Is this point stored inside our Multithreaded list class? -> May change some data types, memory layout and ownership semantics.
+                                                            //insideMTList is currently unused.
+                                                            //n : compile-time fixed dimension with n=-1 meaning dynamic. Currently unused.
 class ApproxLatticePoint;
 
 template<class ET, bool insideMTList, int n_fixed>
 ostream & operator<< (ostream &os, ApproxLatticePoint<ET,insideMTList,n_fixed> const & appLP); //output.
 
-
 namespace LatticeApproximations //helper types etc. enclosed in namespace
 {
-
 inline signed int get_exponent (Z_NR<mpz_t> const & val)     {return val!=0 ?val.exponent() : std::numeric_limits<signed int>::min();}     //returns smallest t s.t. abs(val) < 2^t (i.e. the bit-length for integral types)
 inline signed int get_exponent (Z_NR<long> const & val)      {return val!=0 ?val.exponent() : std::numeric_limits<signed int>::min();}     //for val==0, we return the most negative value that fits into an int.
 inline signed int get_exponent (Z_NR<double> const & val)    {return val!=0 ?val.exponent() : std::numeric_limits<signed int>::min();}     //Note that the function is already implemented in Z_NR< > - types.
@@ -37,7 +34,6 @@ template<class ApproxType, class ET> ApproxType do_approximate( typename enable_
 
 using ApproxTypeNorm2 = int32_t; //determines bit-length of approximation, by making sure that n* (MAXAPPROX^2) must fit into it.
 using ApproxType = int32_t; //at least half the size of the above. Same size might work better for vectorization.
-
 
 //The above should be read as specialisations of
 //template<class ET,class ApproxType>
@@ -54,15 +50,17 @@ template<> class MaybeRational<Z_NR<double> >{public: static bool constexpr val=
 //template<class ET>
 
 inline ApproxTypeNorm2 compute_sc_prod(ApproxType const * const arg1, ApproxType const * const arg2, unsigned int len);
+
 template<class ET>
 inline bool Compare_Sc_Prod(ApproxLatticePoint<ET,false,-1> const & arg1, ApproxLatticePoint<ET,false,-1> const & arg2, ApproxTypeNorm2 abslimit, int limit_exp, int dim);
+
 inline void Determine_Sc_Prod (ApproxTypeNorm2 len_max, ApproxTypeNorm2 len_x1, ApproxTypeNorm2 len_x2,  float & x1x2, float & px1, float & px2);
+
 template<class ET>
-    inline bool Compare_Sc_Prod_3red(ApproxLatticePoint<ET,false, -1> const & pApprox, ApproxLatticePoint<ET,false, -1> const & x1, int dim, float px1,  ApproxTypeNorm2 & approx_inner_product);
+inline bool Compare_Sc_Prod_3red(ApproxLatticePoint<ET,false, -1> const & pApprox, ApproxLatticePoint<ET,false, -1> const & x1, int dim, float px1,  ApproxTypeNorm2 & approx_inner_product);
+
 inline double detConf (float px1, float px2, float x1x2);
 }
-
-
 
 
 //end of forward declarations.
@@ -204,9 +202,6 @@ void ApproxLatticePoint<ET,false, -1>::update_approximation()
             approx[i] = LatticeApproximations::do_approximate<ApproxType,ET> ( (*details)[i], length_exponent );
         }
         approxn2 = LatticeApproximations::do_approximate<ApproxTypeNorm2,ET> ( (*details).get_norm2(),2*length_exponent   );
-	#ifdef SCALENORMS
-	approxn2 = approxn2 * SCALENORMS;
-	#endif
     }
 }
 

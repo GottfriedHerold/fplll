@@ -92,6 +92,7 @@ namespace GaussSieve //helper functions
 /*INCLUDES */
 
 #include "LatticePoint.h"
+#include "LatticePointsNew.h"
 #include "PointList.h"
 #include <iostream>
 #include <type_traits>

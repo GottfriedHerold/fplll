@@ -18,6 +18,7 @@ template <class ET>
 using GaussQueueMT=GaussQueue<ET,true>;
 
 #include "LatticePoint.h"
+#include "LatticePointsNew.h"
 #include <mutex>
 #include <atomic>
 #include <queue>
