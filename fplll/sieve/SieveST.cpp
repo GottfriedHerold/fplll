@@ -6,11 +6,11 @@
 #endif
 
 class next_block;
-using namespace LatticeApproximations; // to be able to use ApproxTypeNorm2 to store inner-produces scaled by length
+//using namespace LatticeApproximations; // to be able to use ApproxTypeNorm2 to store inner-produces scaled by length
 
 class main_list;
-template<class ET>
-bool Sieve<ET,false>::update_shortest_vector_found(LPType const & newvector)
+
+template<class ET> bool Sieve<ET,false>::update_shortest_vector_found(LPType const & newvector)
 {
     if(newvector.norm2 < shortest_vector_found.norm2)
     {
@@ -20,21 +20,18 @@ bool Sieve<ET,false>::update_shortest_vector_found(LPType const & newvector)
     return false;
 }
 
-template<class ET>
-typename Sieve<ET,false>::LPType Sieve<ET,false>::get_shortest_vector_found()
+template<class ET> typename Sieve<ET,false>::LPType Sieve<ET,false>::get_shortest_vector_found()
 {
     return shortest_vector_found;
 }
 
-template<class ET>
-ET Sieve<ET,false>::get_best_length2()
+template<class ET> ET Sieve<ET,false>::get_best_length2()
 {
     return shortest_vector_found.norm2;
 }
 
 
-template<class ET>
-void Sieve<ET,false>::run()
+template<class ET> void Sieve<ET,false>::run()
 {
     if (verbosity >=2) cout << "the shortest vector in the input basis has norm2 = " << (main_list.cbegin())->get_details().norm2 << endl;
     //int MaxIteration = 8000;
@@ -56,11 +53,10 @@ void Sieve<ET,false>::run()
 
     switch (sieve_k)
     {
-        case 2: run_2_sieve(); break;
-        case 3: run_3_sieve(); break;
-        default:run_k_sieve(); break;
+        //case 2: run_2_sieve(); break;
+        //case 3: run_3_sieve(); break;
+        //default:run_k_sieve(); break;
     }
-
     sieve_status = SieveStatus::sieve_status_finished;
 
      //Diagnostic and use of the information moved up to the caller.
@@ -72,8 +68,9 @@ void Sieve<ET,false>::run()
     */
 }
 
-template<class ET>
-void Sieve<ET,false>::run_2_sieve()
+/*
+
+template<class ET> void Sieve<ET,false>::run_2_sieve()
 {
     LatticePoint<ET> p;
     int i=0;
@@ -88,6 +85,10 @@ void Sieve<ET,false>::run_2_sieve()
         }
     }
 }
+
+*/
+
+/*
 
 template<class ET>
 void Sieve<ET,false>::run_3_sieve()
@@ -125,6 +126,8 @@ void Sieve<ET,false>::run_k_sieve()
         }
     }
 }
+
+*/
 
 //
 // 3- Sieve is in new file now -- Gotti
@@ -285,7 +288,7 @@ else if(count % 100 == 80)
 */
 
 #include "SieveST2.cpp"
-#include "SieveST3.cpp"
-#include "SieveSTk.cpp"
+//#include "SieveST3.cpp"
+//#include "SieveSTk.cpp"
 
 #endif

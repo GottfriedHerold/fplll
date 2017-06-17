@@ -48,14 +48,11 @@ NEED TO GO HERE OR TO SieveGauss.h:
   These go before includes to allow cyclic dependencies
 */
 
-template<class ET,bool MultiThreaded>
-class CompareQueue;
+template<class ET,bool MultiThreaded> class CompareQueue;
 
-template<class T>
-class IsLongerVector_class; //class wrapper to compare vectors by length
+template<class T> class IsLongerVector_class; //class wrapper to compare vectors by length
 
-template<class ET, bool MultiThreaded>
-class Sieve;
+template<class ET, bool MultiThreaded> class Sieve;
 
 struct CompareFilteredPoint {
   bool operator() (const pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> & el1, const pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> & el2) const
@@ -94,6 +91,7 @@ namespace GaussSieve //helper functions
 #include "LatticePoint.h"
 #include "LatticePointsNew.h"
 #include "PointList.h"
+#include "PointListNew.h"
 #include <iostream>
 #include <type_traits>
 #include <sys/stat.h>
@@ -122,7 +120,7 @@ class CompareQueue<ET, GAUSS_SIEVE_IS_MULTI_THREADED>{
     public:
      bool operator() (const FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> & el1, const FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> & el2) const
      {
-        return el1.get_sc_prod() > el2.get_sc_prod();  // inner products are in the decreasing order
+        return el1.get_sc_prod() > el2.get_sc_prod();  // inner products are in decreasing order
     }
 };
 
@@ -136,7 +134,7 @@ public:
     using MainQueueType    = GaussQueue<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
     using MainListType     = GaussList<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
     using LatticeBasisType = ZZ_mat<typename ET::underlying_data_type>;
-    using SamplerType      = KleinSampler<typename ET::underlying_data_type, FP_NR<double>> *; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
+    //using SamplerType      = KleinSampler<typename ET::underlying_data_type, FP_NR<double>> *; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
     //using FilteredListType = std::vector<FilteredPoint<ET, float>>; //queue is also fine for our purposes; scalar products are not of type ET, two-templates; float for now; may be changed.
     using FilteredListType = std::list<FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2>>;
 
@@ -186,9 +184,9 @@ public:
 
     void run();                 //runs the sieve specified by the parameters. Dispatches to the corresponding k-sieve
 
-    void run_2_sieve(); //actually runs the Gauss Sieve with k=2
-    void run_3_sieve(); //actually runs the Gauss Sieve with k=3
-    void run_k_sieve(); //runs Gauss Sieve with arbitrary k
+    //void run_2_sieve(); //actually runs the Gauss Sieve with k=2
+    //void run_3_sieve(); //actually runs the Gauss Sieve with k=3
+    //void run_k_sieve(); //runs Gauss Sieve with arbitrary k
 
     #if GAUSS_SIEVE_IS_MULTI_THREADED == true
     void sieve_2_thread(int const thread_id);   //function for worker threads
@@ -196,10 +194,10 @@ public:
     void sieve_k_thread(int const thread_id);
     #else
     void sieve_2_iteration (LatticePoint<ET> &p); //one run through the main_list (of 2-sieve)
-    void sieve_3_iteration (LatticePoint<ET> &p); //one run through the main_list (of 3-sieve)
-    void sieve_3_iteration_new (LatticePoint<ET> &p); //new run through the main_list (of 3-sieve) usign map for filtered_list
-    void sieve_3_iteration_test (LatticePoint<ET> &p);
-    void sieve_k_iteration (LatticePoint<ET> &p);
+    //void sieve_3_iteration (LatticePoint<ET> &p); //one run through the main_list (of 3-sieve)
+    //void sieve_3_iteration_new (LatticePoint<ET> &p); //new run through the main_list (of 3-sieve) usign map for filtered_list
+    //void sieve_3_iteration_test (LatticePoint<ET> &p);
+    //void sieve_k_iteration (LatticePoint<ET> &p);
     #endif
 
 
@@ -266,7 +264,7 @@ private:
     unsigned int num_threads_wanted;        //number of threads that we spawn
     #endif // GAUSS_SIEVE_IS_MULTI_THREADED
     unsigned int sieve_k; //parameter k of the sieve currently running.
-    SamplerType sampler; //TODO: Thread-safety. Move control to queue.
+    //SamplerType sampler; //TODO: Thread-safety. Move control to queue.
     int verbosity;       //ranged from 0 to 3 (0 : silent, 1 : errors only, 2 : more output, 3 : debug
 
 //public:  //made public to avoid complicated (due to template hack) friend - declaration.
@@ -385,12 +383,12 @@ void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_stream(ostream &of,
     if(howverb>=2) of << "Termination Conditions:" << endl;
     if(howverb>=2) of << term_cond;
     if(howverb>=2) of << "Sampler:"<< endl;
-    if(howverb>=2) of << "Sampler Initialized" << static_cast<bool>(sampler!=nullptr) << endl;
-    if(sampler!=nullptr)
-    {
-        if(howverb>=3) cerr << "Note : Dumping of internal data of sampler not yet supported" << endl;
-        //dump internals of sampler?
-    }
+    //if(howverb>=2) of << "Sampler Initialized" << static_cast<bool>(sampler!=nullptr) << endl;
+    //if(sampler!=nullptr)
+    //{
+    //    if(howverb>=3) cerr << "Note : Dumping of internal data of sampler not yet supported" << endl;
+    //    //dump internals of sampler?
+    //}
     if(howverb>=3) of << "Original Basis:" << endl;
     if(howverb>=3) of << original_basis;
     if(howverb>=2) of << "--End of Params--" << endl << endl;

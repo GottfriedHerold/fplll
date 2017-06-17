@@ -7,8 +7,9 @@
 #include <cfenv>
 #include <type_traits>
 
-template<class ET, bool MT, class Engine, class Sseq>
-class Sampler;
+//forward declarations
+
+template<class ET,bool MT, class Engine, class Sseq> class Sampler;
 template<class ET,bool MT, class Engine, class Sseq> ostream & operator<<(ostream &os, Sampler<ET,MT, Engine, Sseq>* const samplerptr); //printing
 template<class ET,bool MT, class Engine, class Sseq> istream & operator>>(istream &is, Sampler<ET,MT, Engine, Sseq>* const samplerptr); //reading (may also be used by constructor from istream)
 enum class SamplerType
@@ -18,12 +19,9 @@ enum class SamplerType
     shi_sampler = 2,
     gauss_sampler =3
 };
-template<class Engine, bool MT, class Sseq> //make separate class to allow specialisation for MT.
-class MTPRNG;                    //wrapper around (a vector of) random number engines of type Engine
-//template<class ET, bool MT, class Sseq = std::seed_seq>
-//class KleinSamplerNew;
 
-
+template<class Engine, bool MT, class Sseq> class MTPRNG;       //wrapper around (a vector of) random number engines of type Engine
+                                                                //This is used to unify the single and multi-threaded case
 namespace GaussSieve
 {
 //    #if __GNUG__ //GCC has constexpr variants of trigonometric functions. Unfortunately, other compilers also define __GNUC__ and so on and detecting this at compile time is a pain.
@@ -76,8 +74,7 @@ namespace GaussSieve
 //This is done even in the single-threaded case to ensure consistency.
 //Note that for obtaining the per-thread seeds from the master seeds, we use a fixed Mersenne twister engine and not the template param.
 
-template<class Engine, class Sseq>
-class MTPRNG<Engine,true, Sseq>
+template<class Engine, class Sseq>  class MTPRNG<Engine,true, Sseq>
 {
     public:
     MTPRNG(Sseq & _seq = {}) : seeder(_seq), engines(0), num_threads(0)       {}; //constructs an uninitialized MTPRNG
@@ -96,23 +93,21 @@ class MTPRNG<Engine,true, Sseq>
 };
 
 
-template<class Engine, class Sseq> //just wrapper around Engine
-class MTPRNG<Engine, false, Sseq>
+template<class Engine, class Sseq>  class MTPRNG<Engine, false, Sseq>           //just wrapper around Engine
 {
     public:
     MTPRNG(Sseq & _seq ={}) : engine()                      {reseed(_seq);};
     void reseed(Sseq & _seq);
     void init(unsigned int const = 1)                       {} //does nothing.
-    Engine & rnd(unsigned int const)                        {return engine;}; //Argument is number of thread. It is ignored.
-    Engine & rnd()                                          {return engine;}; //
+    Engine & rnd(unsigned int const)                        {return engine;};   //Argument is number of thread. It is ignored.
+    Engine & rnd()                                          {return engine;};   //Version without thread-id
     private:
     Engine engine;
     static unsigned int constexpr seed_length = 20; //number of 32bit values to use as (per-thread) seed for the underlying engine.
                                                     //Technically, we could use state_size if the engine provides it, but not all default engines do.
 };      //End of MTPRNG
 
-template<class Engine, class Sseq>
-void MTPRNG<Engine,true,Sseq>::reseed(Sseq & _seq)
+template<class Engine, class Sseq> void MTPRNG<Engine,true,Sseq>::reseed(Sseq & _seq)
 {
     seeder.seed(_seq);
     unsigned int old_threads=num_threads;
@@ -120,8 +115,7 @@ void MTPRNG<Engine,true,Sseq>::reseed(Sseq & _seq)
     init(old_threads); //will restart all engines, because num_threads = 0;
 };
 
-template<class Engine, class Sseq>
-void MTPRNG<Engine,true,Sseq>::init(unsigned int const _num_threads)
+template<class Engine, class Sseq> void MTPRNG<Engine,true,Sseq>::init(unsigned int const _num_threads)
 {
     if(_num_threads<=num_threads) //no need to initalize.
     {
@@ -144,8 +138,7 @@ void MTPRNG<Engine,true,Sseq>::init(unsigned int const _num_threads)
     num_threads = _num_threads;
 }
 
-template<class Engine, class Sseq>
-void MTPRNG<Engine,false,Sseq>::reseed(Sseq & _seq)
+template<class Engine, class Sseq> void MTPRNG<Engine,false,Sseq>::reseed(Sseq & _seq)
 {
     std::mt19937 seeder(_seq);
     uint32_t per_engine_seed[seed_length];
@@ -191,11 +184,9 @@ class Sampler
     Sieve<ET,MT> * sieveptr; //pointer to parent sieve.
 };
 
-template <class ET,bool MT, class Engine, class Sseq>
-Sampler<ET,MT, Engine,Sseq>::~Sampler() {} //actually needed, even though destructor is pure virtual as the base class destructor is eventually called implicitly.
+template <class ET,bool MT, class Engine, class Sseq> Sampler<ET,MT, Engine,Sseq>::~Sampler() {} //actually needed, even though destructor is pure virtual as the base class destructor is eventually called implicitly.
 
-template <class ET,bool MT, class Engine, class Sseq>
-void Sampler<ET,MT,Engine,Sseq>::init(Sieve<ET,MT> * const sieve)
+template <class ET,bool MT, class Engine, class Sseq> void Sampler<ET,MT,Engine,Sseq>::init(Sieve<ET,MT> * const sieve)
 {
     sieveptr = sieve;
     engine.init(sieve->get_num_threads());
@@ -211,21 +202,18 @@ template<class ET,bool MT, class Engine, class Sseq> istream & operator>>(istrea
 
  //Z must be an integral POD class
 
-template<class Z, class Engine>
-Z GaussSieve::sample_z_gaussian(double s, double const center, Engine & engine, double const cutoff)
+template<class Z, class Engine> Z GaussSieve::sample_z_gaussian(double s, double const center, Engine & engine, double const cutoff)
 {
 //Note : The following allows to access / modify floating point exceptions and modes.
 //#pragma STDC FENV_ACCESS on
 //This is too compiler/implementation-specific and does not work most of the time...
 
     static_assert(is_integral<Z>::value,"Return type for sample_z_gaussian must be POD integral type.");
-
     Z maxdev = static_cast<Z>(std::ceil(s * cutoff)); //maximum deviation of the Gaussian from the center. Note that maxdev may be 1.
     std::uniform_int_distribution<Z> uniform_in_range (std::floor(center-maxdev),std::ceil(center+maxdev));
     std::uniform_real_distribution<double> rejection_test(0.0,1.0); //defaults to value from [0,1), used in rejection sampling.
     Z closest_int = std::round(center); //closest int to center, i.e. most likely value.
     double adj = -(center-closest_int)*(center-closest_int); //negative squared distance to most likely value. Used to scale up the Gaussian weight function s.t. it is 1 at the most likely value.
-
     s = s*s/pi; //overwriting s.
     //std::fenv_t env;
     //feholdexcept( &env); //This disables all floating-point exceptions.
@@ -253,15 +241,13 @@ Z GaussSieve::sample_z_gaussian(double s, double const center, Engine & engine, 
     }
 }
 
-template<class Z, class Engine>
-Z GaussSieve::sample_z_gaussian_VMD(double const s2pi, double const center, Engine & engine, double const maxdeviation)
+template<class Z, class Engine> Z GaussSieve::sample_z_gaussian_VMD(double const s2pi, double const center, Engine & engine, double const maxdeviation)
 {
 //Note : The following allows to access / modify floating point exceptions and modes.
 //#pragma STDC FENV_ACCESS on
 //This is too compiler/implementation-specific and does not work most of the time...
 
     static_assert(is_integral<Z>::value,"Return type for sample_z_gaussian must be POD integral type.");
-
     std::uniform_int_distribution<Z> uniform_in_range (std::floor(center-maxdeviation),std::ceil(center+maxdeviation));
     std::uniform_real_distribution<double> rejection_test(0.0,1.0); //defaults to value from [0,1), used in rejection sampling.
     Z closest_int = std::round(center); //closest int to center, i.e. most likely value.
@@ -292,7 +278,5 @@ Z GaussSieve::sample_z_gaussian_VMD(double const s2pi, double const center, Engi
         }
     }
 }
-
-
 
 #endif

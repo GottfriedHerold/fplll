@@ -340,7 +340,6 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
     num_threads_wanted(num_threads),
     #endif // GAUSS_SIEVE_IS_MULTI_THREADED
     sieve_k(k),
-    sampler(nullptr),
     verbosity(verbosity_),
     term_cond(termcond),
     sieve_status(SieveStatus::sieve_status_init),
@@ -361,7 +360,6 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
     if(num_threads_wanted==0) //0 means we take a meaningful default, which is given by thread::hardware_concurrency
     num_threads_wanted = std::max(std::thread::hardware_concurrency(),static_cast<unsigned int>(1)); //Note: hardware_concurrency might return 0 for "unknown".
     #endif
-    sampler = new KleinSampler<typename ET::underlying_data_type, FP_NR<double>>(B, verbosity, seed_sampler);
     //unsigned int n = lattice_rank;
     //auto it = main_list.before_begin();
     //assert(main_list.empty()); We don't have a function to check that yet...
@@ -388,8 +386,6 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
 template<class ET>
 Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::~Sieve()
 {
-    delete sampler;
-
     #if GAUSS_SIEVE_IS_MULTI_THREADED==true
     delete[] garbage_bins;
     #endif

@@ -5,26 +5,26 @@
 template <class ET, bool MT>
 class GaussQueue;
 
-template <class ET>
-class GaussQueue<ET,true>;
+//template <class ET>
+//class GaussQueue<ET,true>;
+//
+//template <class ET>
+//class GaussQueue<ET,false>;
+//
+//template <class ET>
+//using GaussQueueST=GaussQueue<ET,false>;
+//
+//template <class ET>
+//using GaussQueueMT=GaussQueue<ET,true>;
 
-template <class ET>
-class GaussQueue<ET,false>;
-
-template <class ET>
-using GaussQueueST=GaussQueue<ET,false>;
-
-template <class ET>
-using GaussQueueMT=GaussQueue<ET,true>;
-
-#include "LatticePoint.h"
-#include "LatticePointsNew.h"
 #include <mutex>
 #include <atomic>
 #include <queue>
+#include <utility>
+#include "LatticePoint.h"
+#include "LatticePointsNew.h"
 #include "assert.h"
 #include "SieveGauss.h"
-#include <utility>
 #include "Sampler.h"
 #include "EllipticSampler.h"
 #include "ShiSampler.h"
@@ -79,7 +79,7 @@ private:
     Sieve<ET,false>* gauss_sieve;   //pointer to caller object.
     //SamplerType *sampler; //controlled by the GaussSieve currently. TODO: Change that
 public:
-    Sampler<ET,false,std::mt19937_64, std::seed_seq> * sampler;
+    Sampler<ET,false,std::mt19937_64, std::seed_seq> * sampler; //or a type derived from it.
 };
 
 template<class ET> //multi-threaded version:
@@ -139,7 +139,6 @@ sampler(nullptr)
     std::seed_seq seed{1,2,4}; //just some
     //sampler = new EllipticSampler<ET,false, std::mt19937_64, std::seed_seq> (seed);
     sampler = new ShiSampler<ET,false, std::mt19937_64, std::seed_seq> (seed);
-    //sampler=caller_sieve->sampler; //TODO: Remove sampler from SieveJoint.h and place it under control of the queue.
 }
 
 template<class ET>

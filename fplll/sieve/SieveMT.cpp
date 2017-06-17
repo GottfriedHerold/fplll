@@ -51,13 +51,13 @@ void Sieve<ET,true>::run() //runs the sieve specified by the parameters.
     assert(sieve_k == 2); //for now
     sieve_status =SieveStatus::sieve_status_running;
     term_cond->init(this); //this updates the Minkowski condition, if needed.
-    run_2_sieve();
+    //run_2_sieve();
     sieve_status = SieveStatus::sieve_status_finished;
 }
 
+/*
 
-template<class ET>
-void Sieve<ET,true>::run_2_sieve()
+template<class ET> void Sieve<ET,true>::run_2_sieve()
 {
     std::vector<std::thread> threads;
     for (unsigned int i=0;i<num_threads_wanted;++i )
@@ -70,8 +70,10 @@ void Sieve<ET,true>::run_2_sieve()
     }
 }
 
-template<class ET>
-void Sieve<ET,true>::sieve_2_thread(int const thread_id)
+*/
+
+/*
+template<class ET> void Sieve<ET,true>::sieve_2_thread(int const thread_id)
 {
     cout << "Starting thread " << thread_id << endl;
     int const n = get_ambient_dimension();
@@ -149,5 +151,7 @@ void Sieve<ET,true>::sieve_2_thread(int const thread_id)
         }
     }
 }
+
+*/
 
 #endif
