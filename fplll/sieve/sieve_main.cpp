@@ -116,6 +116,7 @@ int main(int argc, char **argv)
     Z_NR<mpz_t> target_norm;
     target_norm = 0;
     int k=2;
+    int bs=2;
 
     if (argc == 1)
     {
@@ -133,6 +134,9 @@ int main(int argc, char **argv)
                 break;
             case 'k':
                 k=atoi(optarg);
+            case 'b':
+                bs = atoi(optarg);
+            break;
         }
     }
 
@@ -163,16 +167,20 @@ int main(int argc, char **argv)
     //    sample = Sampler->sample();
     //    cout << sample << endl;
     
-    lll_reduction(B, LLL_DEF_DELTA, LLL_DEF_ETA, LM_WRAPPER);
-    
     /* preprocessing of basis */
     clock_t stime = clock();
-    //lll_reduction(B, 0.75, 0.51, LM_WRAPPER);
-    //bkzReduction(B, 20, BKZ_DEFAULT, FT_DEFAULT, 0);
-    
+    if (bs > 0)
+        bkz_reduction(B, bs, BKZ_DEFAULT, FT_DEFAULT, 0);
+    else
+        lll_reduction(B, LLL_DEF_DELTA, LLL_DEF_ETA, LM_WRAPPER);
+
     clock_t etime = clock();
-    double secs = (etime - stime) / (double) CLOCKS_PER_SEC;
-    cout << "# [info] LLL took time " << secs << " s" << endl;
+    double secs   = (etime - stime) / (double)CLOCKS_PER_SEC;
+
+    if (bs > 0)
+        cout << "# [info] BKZ took time " << secs << " s" << endl;
+    else
+        cout << "# [info] LLL took time " << secs << " s" << endl;
     
     //ApproxLatticePoint<Z_NR<mpz_t>,false,-1> X ( conv_matrixrow_to_lattice_point(B[0]) );
 
@@ -334,7 +342,7 @@ int main(int argc, char **argv)
   if (bs > 0)
     bkz_reduction(B, bs, BKZ_DEFAULT, FT_DEFAULT, 0);
   else
-    lll_reduction(B, LLL_DEF_DELTA, LLL_DEF_ETA, LM_WRAPPER);
+      lll_reduction(B, LLL_DEF_DELTA, LLL_DEF_ETA, LM_WRAPPER);
 
   clock_t etime = clock();
   double secs   = (etime - stime) / (double)CLOCKS_PER_SEC;
