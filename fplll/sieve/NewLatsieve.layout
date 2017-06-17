@@ -2,77 +2,9 @@
 <CodeBlocks_layout_file>
 	<FileVersion major="1" minor="0" />
 	<ActiveTarget name="Release" />
-	<File name="LatticePoint2.h" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="test_newsieve.cpp" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="5009" topLine="39" />
-		</Cursor>
-	</File>
-	<File name="sampler_basic.cpp" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="565" topLine="81" />
-		</Cursor>
-	</File>
-	<File name="sampler_basic.h" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="822" topLine="24" />
-		</Cursor>
-	</File>
-	<File name="sieve_main.cpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="0" topLine="120" />
-		</Cursor>
-	</File>
-	<File name="SieveST2.cpp" open="1" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="121" topLine="0" />
-		</Cursor>
-		<Folding>
-			<Collapse line="5" />
-		</Folding>
-	</File>
-	<File name="PointList.cpp" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="232" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="SieveST3.cpp" open="1" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="56428" topLine="0" />
-		</Cursor>
-		<Folding>
-			<Collapse line="6" />
-			<Collapse line="801" />
-			<Collapse line="1383" />
-		</Folding>
-	</File>
-	<File name="SieveMT.cpp" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="0" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="GaussQueue.h" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="4225" topLine="6" />
-		</Cursor>
-	</File>
-	<File name="SieveGauss.h" open="0" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="901" topLine="51" />
-		</Cursor>
-	</File>
-	<File name="test_newsieve.h" open="0" top="0" tabpos="13" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="0" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="PointList.h" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="12255" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="EllipticSampler.h" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="351" topLine="0" />
+			<Cursor1 position="350" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="SieveST.cpp" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -80,19 +12,9 @@
 			<Cursor1 position="3209" topLine="102" />
 		</Cursor>
 	</File>
-	<File name="SieveJoint.h" open="1" top="1" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="LatticePointsNew.h" open="1" top="1" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="8674" topLine="60" />
-		</Cursor>
-	</File>
-	<File name="TermCondNew.h" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="0" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="LatticePoint.h" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="4536" topLine="0" />
+			<Cursor1 position="7096" topLine="69" />
 		</Cursor>
 	</File>
 	<File name="notes.txt" open="0" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -100,19 +22,44 @@
 			<Cursor1 position="590" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="sampler_main.cpp" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="CompressedPoint.cpp" open="1" top="0" tabpos="12" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="0" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="Sampler.h" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="ApproximateLatticePoint.cpp" open="1" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="273" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="TermCondNew.h" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="0" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="SieveSTk.cpp" open="1" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="ExactLatticePoint.h" open="1" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="41" topLine="0" />
+			<Cursor1 position="278" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="LatticePointsNew.cpp" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="test_newsieve.h" open="0" top="0" tabpos="13" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="PointList.cpp" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="SieveST2.cpp" open="0" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="121" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="FilteredList.h" open="0" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -120,14 +67,102 @@
 			<Cursor1 position="230" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="test_newsieve.cpp" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Sampler.h" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="350" topLine="0" />
+			<Cursor1 position="10692" topLine="159" />
+		</Cursor>
+	</File>
+	<File name="LatticePoint2.h" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="10447" topLine="120" />
+		</Cursor>
+	</File>
+	<File name="sampler_main.cpp" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="LatticePoint.h" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="87" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="SieveJoint.h" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3390" topLine="83" />
+		</Cursor>
+	</File>
+	<File name="ApproximateLatticePoint.h" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2509" topLine="15" />
+		</Cursor>
+	</File>
+	<File name="EllipticSampler.h" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="351" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="SieveGauss.h" open="0" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="901" topLine="51" />
+		</Cursor>
+	</File>
+	<File name="sampler_basic.h" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="822" topLine="24" />
+		</Cursor>
+	</File>
+	<File name="CompressedPoint.h" open="1" top="0" tabpos="13" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1026" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="SieveJoint.cpp" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="810" topLine="32" />
+		</Cursor>
+	</File>
+	<File name="SieveMT.cpp" open="0" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="PointList.h" open="1" top="0" tabpos="14" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="102" />
+		</Cursor>
+	</File>
+	<File name="sieve_main.cpp" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="120" />
+		</Cursor>
+	</File>
+	<File name="SieveST3.cpp" open="0" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="0" />
+		</Cursor>
+		<Folding>
+			<Collapse line="6" />
+		</Folding>
+	</File>
+	<File name="ExactLatticePoint.cpp" open="1" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2331" topLine="18" />
+		</Cursor>
+	</File>
+	<File name="GaussQueue.h" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="438" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="sampler_basic.cpp" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="565" topLine="81" />
+		</Cursor>
+	</File>
+	<File name="SieveSTk.cpp" open="0" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="41" topLine="0" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>

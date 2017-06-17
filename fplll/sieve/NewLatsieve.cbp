@@ -13,11 +13,19 @@
 				<Option compiler="null" />
 			</Target>
 		</Build>
+		<Unit filename="ApproximateLatticePoint.cpp" />
+		<Unit filename="ApproximateLatticePoint.h" />
+		<Unit filename="CompressedPoint.cpp" />
+		<Unit filename="CompressedPoint.h" />
 		<Unit filename="EllipticSampler.h" />
+		<Unit filename="ExactLatticePoint.cpp" />
+		<Unit filename="ExactLatticePoint.h" />
 		<Unit filename="FilteredList.h" />
 		<Unit filename="GaussQueue.h" />
 		<Unit filename="LatticePoint.h" />
 		<Unit filename="LatticePoint2.h" />
+		<Unit filename="LatticePointsNew.cpp" />
+		<Unit filename="LatticePointsNew.h" />
 		<Unit filename="PointList.cpp" />
 		<Unit filename="PointList.h" />
 		<Unit filename="Sampler.h" />

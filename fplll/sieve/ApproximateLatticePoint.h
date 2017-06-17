@@ -49,7 +49,7 @@ class ApproximateLatticePoint<ET,-1>
 
 };
 
-template<class ET, int nfixed=-1> ostream& operator<< (ostream &os, ApproximateLatticePoint<ET,nfixed> const & approx_point) //output.
+template<class ET, int nfixed> ostream& operator<< (ostream &os, ApproximateLatticePoint<ET,nfixed> const & approx_point) //output.
 {
     assert(false); //does not work because we do not store length.
     return os;
