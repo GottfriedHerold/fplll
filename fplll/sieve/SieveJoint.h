@@ -48,11 +48,14 @@ NEED TO GO HERE OR TO SieveGauss.h:
   These go before includes to allow cyclic dependencies
 */
 
-template<class ET,bool MultiThreaded> class CompareQueue;
+/* TODO: Move these into the files where they are used... */
+
+//template<class ET,bool MultiThreaded> class CompareQueue;
 
 
 template<class ET, bool MultiThreaded, int nfixed> class Sieve;
 
+/*
 struct CompareFilteredPoint {
   bool operator() (const pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> & el1, const pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> & el2) const
   { if (get<0>(el1)==get<0>(el2))
@@ -61,7 +64,7 @@ struct CompareFilteredPoint {
         return get<0>(el1) < get<0>(el2); //length is in the increasing order
   }
 };
-
+*/
 
 /*INCLUDES */
 
@@ -91,15 +94,16 @@ GO HERE.
 
 //The following may be included once or twice (with different values for GAUSS_SIEVE_IS_MULTI_THREADED)
 
+//TODO: Move to where it is actually used.
 
-template<class ET>
-class CompareQueue<ET, GAUSS_SIEVE_IS_MULTI_THREADED>{
-    public:
-     bool operator() (const FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> & el1, const FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> & el2) const
-     {
-        return el1.get_sc_prod() > el2.get_sc_prod();  // inner products are in decreasing order
-    }
-};
+//template<class ET>
+//class CompareQueue<ET, GAUSS_SIEVE_IS_MULTI_THREADED>{
+//    public:
+//     bool operator() (const FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> & el1, const FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> & el2) const
+//     {
+//        return el1.get_sc_prod() > el2.get_sc_prod();  // inner products are in decreasing order
+//    }
+//};
 
 
 template<class ET, int nfixed> class Sieve<ET, GAUSS_SIEVE_IS_MULTI_THREADED,nfixed >
@@ -112,26 +116,28 @@ public:
     using LatticeBasisType = ZZ_mat<typename ET::underlying_data_type>;
     //using SamplerType      = KleinSampler<typename ET::underlying_data_type, FP_NR<double>> *; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
     //using FilteredListType = std::vector<FilteredPoint<ET, float>>; //queue is also fine for our purposes; scalar products are not of type ET, two-templates; float for now; may be changed.
-    using FilteredListType = std::list<FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2>>;
+
+
+//    using FilteredListType = std::list<FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2>>;
 
     //using BlockDivisionType  = std::array< ApproxLatticePoint<ET,GAUSS_SIEVE_IS_MULTI_THREADED> , 100> ;
-    using LengthDivisionType = std::array< LatticeApproximations::ApproxTypeNorm2, 100 >;
+//    using LengthDivisionType = std::array< LatticeApproximations::ApproxTypeNorm2, 100 >;
 
     //stores the last element of each block for filtered_list
-    using FilterDivisionType = std::array<typename FilteredListType::iterator, 100 >;
+//    using FilterDivisionType = std::array<typename FilteredListType::iterator, 100 >;
 
     //number of elements per block in filtered_list // COULD BE LONG?
-    using FilterNumOfElems = std::array<int, 100 >;
+//    using FilterNumOfElems = std::array<int, 100 >;
 
 
 
-    using AppendixType =  std::priority_queue<FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2>, std::vector<FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> >,  CompareQueue<ET,GAUSS_SIEVE_IS_MULTI_THREADED> >;
+//    using AppendixType =  std::priority_queue<FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2>, std::vector<FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> >,  CompareQueue<ET,GAUSS_SIEVE_IS_MULTI_THREADED> >;
 
 
 
     //map where a key is a pair <length_of_list_element, inner-product>
-    using FilteredListType2 = std::map<pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2>, FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2>, CompareFilteredPoint>;
-    using FilteredListTypeP = std::map<pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2>, FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> *, CompareFilteredPoint>;
+//    using FilteredListType2 = std::map<pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2>, FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2>, CompareFilteredPoint>;
+//    using FilteredListTypeP = std::map<pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2>, FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> *, CompareFilteredPoint>;
     //using FilteredListTest  =  std::map<char,int,classcomp>;
     using TermCondType     = TerminationCondition<ET,GAUSS_SIEVE_IS_MULTI_THREADED> *;
 
@@ -154,13 +160,14 @@ public:
     ~Sieve();
     static bool constexpr class_multithreaded =  GAUSS_SIEVE_IS_MULTI_THREADED;
     //class_multithreaded is for introspection, is_multithreaded is what the caller wants (may differ if we dump and re-read with different params)
+
     //void run_sieve(int k); //runs k-sieve
 
     //LPType get_SVP() = delete;  //obtains Shortest vector and it's length. If sieve has not yet run, start it. Not yet implemented.
 
     void run();                 //runs the sieve specified by the parameters. Dispatches to the corresponding k-sieve
 
-    //void run_2_sieve(); //actually runs the Gauss Sieve with k=2
+    void run_2_sieve(); //actually runs the Gauss Sieve with k=2
     //void run_3_sieve(); //actually runs the Gauss Sieve with k=3
     //void run_k_sieve(); //runs Gauss Sieve with arbitrary k
 
@@ -226,9 +233,9 @@ private:
     MainListType main_list;
     //MainListType3 main_list_test;
     MainQueueType main_queue;
-    FilteredListType filtered_list;
-    FilteredListType2 filtered_list2;
-    FilteredListTypeP filtered_listp;
+//    FilteredListType filtered_list;
+//    FilteredListType2 filtered_list2;
+//    FilteredListTypeP filtered_listp;
 
 //information about lattice and algorithm we are using
 

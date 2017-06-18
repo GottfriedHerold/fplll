@@ -38,7 +38,7 @@
 //End of things included only once.
 #endif // SIEVE_JOINT_CPP
 
-template<class ET, int nfixed> //ET : underlying entries of the vectors. Should be a Z_NR<foo> - type. Consider making argument template itself.
+template<class ET, int nfixed> //ET : underlying entries of the vectors. Should be a Z_NR<foo> - type.
 #if GAUSS_SIEVE_IS_MULTI_THREADED==true
 Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::Sieve(LatticeBasisType B, unsigned int k, unsigned int num_threads, TermCondType const termcond, unsigned int verbosity_, int seed_sampler):
 #else
@@ -46,7 +46,7 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::Sieve(LatticeBasisType B, unsign
 #endif
     main_list(),
     main_queue(this),
-    filtered_list(),
+//    filtered_list(),
     original_basis(B),
     lattice_rank(B.get_rows()),
     ambient_dimension(B.get_cols()), //Note : this means that rows of B form the basis.

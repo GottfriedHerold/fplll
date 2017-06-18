@@ -5,10 +5,10 @@
 #error SieveST.cpp included with wrong macro settings
 #endif
 
-class next_block;
+//class next_block;
 //using namespace LatticeApproximations; // to be able to use ApproxTypeNorm2 to store inner-produces scaled by length
 
-class main_list;
+//class main_list;
 
 template<class ET,int nfixed> bool Sieve<ET,false,nfixed>::update_shortest_vector_found(LPType const & newvector)
 {
@@ -52,7 +52,7 @@ template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run()
 
     switch (sieve_k)
     {
-        //case 2: run_2_sieve(); break;
+        case 2: run_2_sieve(); break;
         //case 3: run_3_sieve(); break;
         //default:run_k_sieve(); break;
     }
@@ -67,16 +67,15 @@ template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run()
     */
 }
 
-/*
 
-template<class ET> void Sieve<ET,false>::run_2_sieve()
+template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run_2_sieve()
 {
-    LatticePoint<ET> p;
+    CompressedPoint<ET,false,nfixed> p;
     int i=0;
     while (!check_if_done() )
     {
         p=main_queue.true_pop();
-        sieve_2_iteration(p);
+//        sieve_2_iteration(p);
         ++i;
         if (( i % 1000 == 0) && (verbosity >=2))
         {
@@ -85,7 +84,7 @@ template<class ET> void Sieve<ET,false>::run_2_sieve()
     }
 }
 
-*/
+
 
 /*
 
