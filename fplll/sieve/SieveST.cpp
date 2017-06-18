@@ -10,7 +10,7 @@ class next_block;
 
 class main_list;
 
-template<class ET> bool Sieve<ET,false>::update_shortest_vector_found(LPType const & newvector)
+template<class ET,int nfixed> bool Sieve<ET,false,nfixed>::update_shortest_vector_found(LPType const & newvector)
 {
     if(newvector.norm2 < shortest_vector_found.norm2)
     {
@@ -20,18 +20,18 @@ template<class ET> bool Sieve<ET,false>::update_shortest_vector_found(LPType con
     return false;
 }
 
-template<class ET> typename Sieve<ET,false>::LPType Sieve<ET,false>::get_shortest_vector_found()
+template<class ET,int nfixed> typename Sieve<ET,false,nfixed>::LPType Sieve<ET,false,nfixed>::get_shortest_vector_found()
 {
     return shortest_vector_found;
 }
 
-template<class ET> ET Sieve<ET,false>::get_best_length2()
+template<class ET,int nfixed> ET Sieve<ET,false,nfixed>::get_best_length2()
 {
     return shortest_vector_found.norm2;
 }
 
 
-template<class ET> void Sieve<ET,false>::run()
+template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run()
 {
     if (verbosity >=2) cout << "the shortest vector in the input basis has norm2 = " << (main_list.cbegin())->get_details().norm2 << endl;
     //int MaxIteration = 8000;

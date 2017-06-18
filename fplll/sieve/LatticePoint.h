@@ -22,7 +22,6 @@
 **/
 
 template <class ET> class LatticePoint;
-template <class ET> class IsLongerVector_class; //class wrapper to compare vectors by length. Needs to be wrapped in a class to work seamlessly with some STL containers.
 
 template <class ET>
 void sc_product (ET &result, const LatticePoint<ET> &p1, const LatticePoint<ET> &p2);
@@ -102,15 +101,6 @@ LatticePoint<ET>::LatticePoint(int n, long fillwith) : NumVect<ET>(n),norm2() //
     sc_product(this->norm2, *this, *this);
     //norm2 = fillwith*fillwith*n; gives type problems.
 }
-
-
-template<class ET> class IsLongerVector_class //TODO : Move to GaussQueue.h
-{
-    public: bool operator() (LatticePoint<ET> const &A, LatticePoint<ET> const & B)
-    {
-     return (A.get_norm2() > B.get_norm2() );
-    }
-};
 
 
 template <class ET>

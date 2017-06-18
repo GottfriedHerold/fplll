@@ -50,9 +50,8 @@ NEED TO GO HERE OR TO SieveGauss.h:
 
 template<class ET,bool MultiThreaded> class CompareQueue;
 
-template<class T> class IsLongerVector_class; //class wrapper to compare vectors by length
 
-template<class ET, bool MultiThreaded> class Sieve;
+template<class ET, bool MultiThreaded, int nfixed> class Sieve;
 
 struct CompareFilteredPoint {
   bool operator() (const pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> & el1, const pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> & el2) const
@@ -88,10 +87,6 @@ namespace GaussSieve //helper functions
 }
 /*INCLUDES */
 
-#include "LatticePoint.h"
-#include "LatticePointsNew.h"
-#include "PointList.h"
-#include "PointListNew.h"
 #include <iostream>
 #include <type_traits>
 #include <sys/stat.h>
@@ -102,7 +97,10 @@ namespace GaussSieve //helper functions
 #include "GaussQueue.h"
 #include "FilteredPoint.h"
 #include "TermCondNew.h"
-
+#include "LatticePoint.h"
+#include "LatticePointsNew.h"
+#include "PointList.h"
+#include "PointListNew.h"
 
 #endif //end of ONLY-ONCE part
 
@@ -125,14 +123,13 @@ class CompareQueue<ET, GAUSS_SIEVE_IS_MULTI_THREADED>{
 };
 
 
-template<class ET>
-class Sieve<ET, GAUSS_SIEVE_IS_MULTI_THREADED >
+template<class ET, int nfixed> class Sieve<ET, GAUSS_SIEVE_IS_MULTI_THREADED,nfixed >
 {
 public:
     /*DATA TYPES*/
-    using LPType           = LatticePoint<ET>;
-    using MainQueueType    = GaussQueue<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
-    using MainListType     = GaussList<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
+    using LPType           = ExactLatticePoint<ET,nfixed>;
+    using MainQueueType    = GaussQueue<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>; //FIXME
+    using MainListType     = GaussListNew<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>;
     using LatticeBasisType = ZZ_mat<typename ET::underlying_data_type>;
     //using SamplerType      = KleinSampler<typename ET::underlying_data_type, FP_NR<double>> *; //TODO : Should be a class with overloaded operator() or with a sample() - member.;
     //using FilteredListType = std::vector<FilteredPoint<ET, float>>; //queue is also fine for our purposes; scalar products are not of type ET, two-templates; float for now; may be changed.
@@ -161,7 +158,7 @@ public:
 
 public:
     /*FRIENDS */
-    friend GaussQueue<ET,GAUSS_SIEVE_IS_MULTI_THREADED>;
+    friend GaussQueue<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>;
     /*CONSTRUCTORS / DESTRUCTORS */
     Sieve() = delete;
     Sieve(Sieve const &old ) = delete;
@@ -180,7 +177,7 @@ public:
     //class_multithreaded is for introspection, is_multithreaded is what the caller wants (may differ if we dump and re-read with different params)
     //void run_sieve(int k); //runs k-sieve
 
-    LPType get_SVP() = delete;  //obtains Shortest vector and it's length. If sieve has not yet run, start it. Not yet implemented.
+    //LPType get_SVP() = delete;  //obtains Shortest vector and it's length. If sieve has not yet run, start it. Not yet implemented.
 
     void run();                 //runs the sieve specified by the parameters. Dispatches to the corresponding k-sieve
 
@@ -189,11 +186,11 @@ public:
     //void run_k_sieve(); //runs Gauss Sieve with arbitrary k
 
     #if GAUSS_SIEVE_IS_MULTI_THREADED == true
-    void sieve_2_thread(int const thread_id);   //function for worker threads
-    void sieve_3_thread(int const thread_id);
-    void sieve_k_thread(int const thread_id);
+//    void sieve_2_thread(int const thread_id);   //function for worker threads
+//    void sieve_3_thread(int const thread_id);
+//    void sieve_k_thread(int const thread_id);
     #else
-    void sieve_2_iteration (LatticePoint<ET> &p); //one run through the main_list (of 2-sieve)
+//    void sieve_2_iteration (LatticePoint<ET> &p); //one run through the main_list (of 2-sieve)
     //void sieve_3_iteration (LatticePoint<ET> &p); //one run through the main_list (of 3-sieve)
     //void sieve_3_iteration_new (LatticePoint<ET> &p); //new run through the main_list (of 3-sieve) usign map for filtered_list
     //void sieve_3_iteration_test (LatticePoint<ET> &p);
@@ -334,8 +331,8 @@ Reads length(str) chars from stream is, expecting them to equal str. If what is 
 //version string for dump file
 #define SIEVE_VER_STR "Version TEST1"
 
-template<class ET>
-void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_file(std::string const &outfilename, bool overwrite)
+template<class ET,int nfixed>
+void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::dump_status_to_file(std::string const &outfilename, bool overwrite)
 {
     assert(!check_whether_sieve_is_running());
     if(verbosity>=2)
@@ -363,8 +360,8 @@ void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_file(std::string co
     }
 }
 
-template<class ET>
-void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::dump_status_to_stream(ostream &of, int verb)
+template<class ET,int nfixed>
+void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::dump_status_to_stream(ostream &of, int verb)
 {
     int howverb = verb==-1 ? verbosity : verb;
     if(howverb>=2) of << SIEVE_FILE_ID << endl;

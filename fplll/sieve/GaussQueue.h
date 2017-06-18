@@ -2,8 +2,11 @@
 #define GAUSS_QUEUE_H
 /* defines the classes used for the main Queues in the Gauss Sieve */
 
-template <class ET, bool MT>
-class GaussQueue;
+template <class ET, bool MT, int nfixed> class GaussQueue;
+
+//template <class ET> class IsLongerVector_class; //class wrapper to compare vectors by length. Needs to be wrapped in a class to work seamlessly with some STL containers.
+//template <class ET> class IsLongerVector_classPtr;
+
 
 //template <class ET>
 //class GaussQueue<ET,true>;
@@ -26,28 +29,49 @@ class GaussQueue;
 #include "assert.h"
 #include "SieveGauss.h"
 #include "Sampler.h"
-#include "EllipticSampler.h"
+//#include "EllipticSampler.h"
 #include "ShiSampler.h"
 
-template<class ET> class IsLongerVector_classPtr
+
+//template<class ET,int nfixed> class IsLongerVector_class //TODO : Move to GaussQueue.h
+//{
+//    public: bool operator() (LatticePoint<ET> const &A, LatticePoint<ET> const & B)
+//    {
+//     return (A.get_norm2() > B.get_norm2() );
+//    }
+//};
+//
+//template<class ET> class IsLongerVector_classPtr
+//{
+//    public: bool operator() (LatticePoint<ET>* const &A, LatticePoint<ET>* const & B)
+//    {
+//        return (A->get_norm2() > B->get_norm2() );
+//    }
+//};
+
+template<class ET,bool MT, int nfixed> class IsLongerVector_ExactPtr
 {
-    public: bool operator() (LatticePoint<ET>* const &A, LatticePoint<ET>* const & B)
+    public: bool operator() (CompressedPoint<ET,MT,nfixed>* const &A, CompressedPoint<ET,MT,nfixed>* const & B)
     {
-        return (A->get_norm2() > B->get_norm2() );
+        return (A->get_exact_norm2() > B->get_exact_norm2() );
     }
 };
 
-template<class ET> //single-threaded version:
-class GaussQueue<ET,false>
+namespace GaussSieve{
+template<class ET,bool MT, int nfixed> using GaussQueue_ReturnType = GaussSampler_ReturnType<ET,MT,nfixed>;
+template<class ET,bool MT, int nfixed> using GaussQueue_DataType   = GaussQueue_ReturnType<ET,MT,nfixed>;
+};
+
+template<class ET,int nfixed> //single-threaded version:
+class GaussQueue<ET,false,nfixed>
 {
 public:
-    using EntryType = ET;               //entries of lattice points
-    using LPType = LatticePoint<ET>;    //Type of Data internally stored
-    using RetType= LatticePoint<ET>;    //Type of Data returned
+    using DataType = typename GaussSieve::GaussQueue_DataType<ET,false,nfixed>;    //Type of Data internally stored
+    using RetType=   typename GaussSieve::GaussQueue_ReturnType<ET,false,nfixed>;    //Type of Data returned
     #ifndef USE_REGULAR_QUEUE
-    using QueueType =      std::priority_queue< LPType* , std::vector<LPType* >, IsLongerVector_classPtr<ET> >;
+    using QueueType =      std::priority_queue< DataType* , std::vector<DataType* >, IsLongerVector_ExactPtr<ET,false,nfixed> >;
     #else
-    using QueueType =      std::queue<LPType*>;
+    using QueueType =      std::queue<DataType*>;
     #endif
     using size_type = typename QueueType::size_type;
     //using SamplerType =    KleinSampler<typename ET::underlying_data_type, FP_NR<double> > ;
@@ -59,18 +83,21 @@ public:
     GaussQueue& operator= (GaussQueue &&old) = delete;
     ~GaussQueue();
 
+    [[deprecated("The queue is never empty")]]
     bool empty() const              {return main_queue.empty();};  //we might as well always return false (or make this private)!
     size_type size() const          {return main_queue.size();};   //returns size of queue (used for diagnostics and statistics only)
-    void push(LPType const &val); //puts a copy of val in the queue
-    void push(LPType && val);     //uses move semantics for that.
+    void push(DataType const &val) = delete; //puts a copy of val in the queue : deleted
+    void push(DataType && val);     //uses move semantics for that.
+    void push(DataType * &val); //uses move semantics! val is changed to nullptr
 
-    [[deprecated("Ownership transfer clashes with compressed storage.")]]
-    void give_ownership(LPType * const valptr); //takes a pointer to a list point and puts the point into the queue, moves ownership (avoids copying)
+//    [[deprecated("Ownership transfer clashes with compressed storage.")]]
+//    void give_ownership(LPType * const valptr); //takes a pointer to a list point and puts the point into the queue, moves ownership (avoids copying)
 
-    RetType  true_pop(); //removes front element from queue *and returns it*.
+    RetType true_pop(); //removes front element from queue *and returns it*.
+    //RetType true_pop() = delete;
 
-    [[deprecated("Use copy elison rather than ownership transfer.")]]
-    RetType* pop_take_ownership() ; //removes front elements from queue and returns handle to it.
+//    [[deprecated("Use copy elison rather than ownership transfer.")]]
+//    RetType* pop_take_ownership() ; //removes front elements from queue and returns handle to it.
                                    //Transfers ownership to the caller. Return type might change, but should be dereferencable, deleteable.
                                    //might become deprecated
 
@@ -82,6 +109,7 @@ public:
     Sampler<ET,false,std::mt19937_64, std::seed_seq> * sampler; //or a type derived from it.
 };
 
+/*
 template<class ET> //multi-threaded version:
 class GaussQueue<ET,true>
 {
@@ -127,185 +155,10 @@ private:
     //SamplerType *sampler; //controlled by the GaussSieve currently. TODO: Change that
 };
 
+*/
 
-template<class ET>
-GaussQueue<ET,false>::GaussQueue( Sieve<ET,false> *caller_sieve)  //constructor
-:
-main_queue(),
-gauss_sieve(caller_sieve),
-sampler(nullptr)
-{
-    assert(caller_sieve!=nullptr);
-    std::seed_seq seed{1,2,4}; //just some
-    //sampler = new EllipticSampler<ET,false, std::mt19937_64, std::seed_seq> (seed);
-    sampler = new ShiSampler<ET,false, std::mt19937_64, std::seed_seq> (seed);
-}
+#include "GaussQueue.cpp"
 
-template<class ET>
-GaussQueue<ET,true>::GaussQueue( Sieve<ET,true> *caller_sieve)
-:
-main_queue(),
-gauss_sieve(caller_sieve),
-queue_mutex()
-//sampler(nullptr)
-{
-    assert(caller_sieve!=nullptr);
-}
-
-
-template<class ET>
-typename GaussQueue<ET,false>::RetType GaussQueue<ET,false>::true_pop()
-{
-    if(main_queue.empty())
-    {
-        ++ (gauss_sieve->number_of_points_sampled);
-        ++ (gauss_sieve->number_of_points_constructed);
-//        return gauss_sieve->sampler->sample();
-        assert(sampler!=nullptr);
-        typename GaussQueue<ET,false>::RetType ret = sampler->sample();
-        return ret;
-    }
-    else
-    {
-        #ifndef USE_REGULAR_QUEUE
-        LPType next_point = *(main_queue.top());
-        delete main_queue.top();
-        #else
-        LPType next_point = * (main_queue.front());
-        delete main_queue.front();
-        #endif // USE_REGULAR_QUEUE
-        main_queue.pop();
-        return next_point;
-    }
-}
-
-template<class ET>
-typename GaussQueue<ET,true>::RetType GaussQueue<ET,true>::true_pop()
-{
-    mutex_guard lock(queue_mutex); //global lock. TODO : Enable concurrent sampling.
-    if(main_queue.empty())
-    {
-        ++ (gauss_sieve->number_of_points_sampled); //atomic
-        ++ (gauss_sieve->number_of_points_constructed); //atomic
-        return gauss_sieve->sampler->sample();
-    }
-    else
-    {
-        #ifndef USE_REGULAR_QUEUE
-        LPType next_point = *(main_queue.top());
-        delete main_queue.top();
-        #else
-        LPType next_point = * (main_queue.front());
-        delete main_queue.front();
-        #endif // USE_REGULAR_QUEUE
-        main_queue.pop();
-        return next_point;
-    }
-}
-
-
-template<class ET>
-typename GaussQueue<ET,false>::RetType* GaussQueue<ET,false>::pop_take_ownership()
-{
-    if(main_queue.empty())
-    {
-    ++ (gauss_sieve->number_of_points_sampled);
-    ++ (gauss_sieve->number_of_points_constructed);
-    LPType *next_point_ptr = new LPType (gauss_sieve->sampler->sample());
-    return next_point_ptr;
-    }
-    else
-    {
-        #ifndef USE_REGULAR_QUEUE
-        LPType* next_point_ptr = main_queue.top();
-        #else
-        LPType* next_point_ptr = main_queue.front();
-        #endif // USE_REGULAR_QUEUE
-        main_queue.pop(); //remove pointer from queue.
-        return next_point_ptr;
-    }
-}
-
-template<class ET>
-typename GaussQueue<ET,true>::RetType* GaussQueue<ET,true>::pop_take_ownership()
-{
-    assert(false); //currently disabled
-}
-
-template<class ET>
-void GaussQueue<ET,false>::push(LPType const & val)
-{
-    LPType * new_lp = new LPType (val);
-    main_queue.push(new_lp);
-}
-
-template<class ET>
-void GaussQueue<ET,true>::push(LPType const & val)
-{
-    mutex_guard lock(queue_mutex);
-    LPType * new_lp = new LPType (val);
-    main_queue.push(new_lp);
-}
-
-
-template<class ET>
-void GaussQueue<ET,false>::push(LPType && val)
-{
-    LPType * new_lp = new LPType (std::move(val) );
-    main_queue.push(new_lp);
-}
-
-template<class ET>
-void GaussQueue<ET,true>::push(LPType && val)
-{
-    mutex_guard lock(queue_mutex);
-    LPType * new_lp = new LPType (std::move(val) );
-    main_queue.push(new_lp);
-}
-
-
-template<class ET>
-void GaussQueue<ET,false>::give_ownership(LPType * const valptr)
-{
-    main_queue.push(valptr);
-}
-
-
-template<class ET>
-void GaussQueue<ET,true>::give_ownership(LPType * const valptr)
-{
-assert(false);
-}
-
-template<class ET>
-GaussQueue<ET,false>::~GaussQueue()
-{
-//TODO: Delete sampler if owned.
-    while(! main_queue.empty() )
-    {
-        #ifndef USE_REGULAR_QUEUE
-        delete main_queue.top();
-        #else
-        delete main_queue.front();
-        #endif // USE_REGULAR_QUEUE
-        main_queue.pop();
-    }
-    delete sampler;
-}
-
-template<class ET> //making a second bool template argument does not work. You can not partially specialize member functions. (Workaround is possible, but its syntax is ridiculous).
-GaussQueue<ET,true>::~GaussQueue()
-{
-//TODO: Delete sampler if owned.
-    while(! main_queue.empty() )
-    {
-        #ifndef USE_REGULAR_QUEUE
-        delete main_queue.top();
-        #else
-        delete main_queue.front();
-        #endif // USE_REGULAR_QUEUE
-        main_queue.pop();
-    }
-}
+template class GaussQueue<Z_NR<long>,false,-1>;
 
 #endif // GAUSS_QUEUE_H

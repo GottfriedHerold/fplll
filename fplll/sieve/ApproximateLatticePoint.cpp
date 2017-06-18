@@ -7,15 +7,7 @@ ApproximateLatticePoint<ET,-1>::ApproximateLatticePoint(ApproximateLatticePoint<
     memcpy(approx, other.approx, dim*sizeof(ApproxEntryType));
 }
 
-
-//template<class ET>
-//ApproximateLatticePoint<ET,-1>::ApproximateLatticePoint(ExactLatticePoint const & exact_point)  //create approximation from exact point.
-//{
-//
-//}
-
-template <class ET>
-ApproximateLatticePoint<ET,-1>::ApproximateLatticePoint(ExactLatticePoint<ET,-1> const & exact_point)
+template <class ET> ApproximateLatticePoint<ET,-1>::ApproximateLatticePoint(ExactLatticePoint<ET,-1> const & exact_point)
 {
     unsigned int const n = exact_point.get_dim(); //should be unsigned
     assert(n!=0);

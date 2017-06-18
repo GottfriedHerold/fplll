@@ -1,6 +1,8 @@
 /* DO NOT INCLUDE THIS FILE DIRECTLY
 */
 
+#if 0
+
 template<class ET>
 void Sieve<ET,false>::sieve_2_iteration (LatticePoint<ET> &p) //note : Queue might output Approx ?
 {
@@ -118,3 +120,5 @@ void Sieve<ET,false>::sieve_2_iteration (LatticePoint<ET> &p) //note : Queue mig
     //}
 
 }
+
+#endif

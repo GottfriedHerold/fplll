@@ -7,6 +7,8 @@
 #ifndef SIEVE_GAUSS_H
 #define SIEVE_GAUSS_H
 
+#define SIEVE_GAUSS_SINGLE_THREADED
+
 //SIEVE_GAUSS_SINGLE_THREADED : if defined by user, means that we request the single-threaded implementation
 //SIEVE_GAUSS_MULTI_THREADED  : if defined by user, means that we request the multi -threaded implementation
 //If neither is set, we default to both.
@@ -27,7 +29,7 @@
 #define SIEVE_GAUSS_DEFAULT_THREADED false
 #endif
 
-template<class ET, bool MultiThreaded>
+template<class ET, bool MultiThreaded, int nfixed=-1>
 class Sieve;
 
 template<class ET>
@@ -66,28 +68,3 @@ using SieveMT = Sieve<ET,true>;
 
 
 #endif // SIEVE_GAUSS_H
-
-//#ifndef SIEVE_GAUSS_BOTH_THREADED_H
-//#define SIEVE_GAUSS_BOTH_THREADED_H
-//
-//#define SIEVE_GAUSS_DEFAULT_THREADED false
-//
-//#ifdef GAUSS_SIEVE_MULTI_THREADED
-//#undef GAUSS_SIEVE_MULTI_THREADED
-//#endif
-//
-//#define GAUSS_SIEVE_SINGLE_THREADED
-//#define GAUSS_SIEVE_IS_MULTI_THREADED false
-//#include "SieveJoint.h"
-//#include "SieveJoint.cpp"
-//#include "SieveST.cpp"
-//#undef  GAUSS_SIEVE_SINGLE_THREADED
-//#define GAUSS_SIEVE_MULTI_THREADED
-//#undef  GAUSS_SIEVE_IS_MULTI_THREADED
-//#define GAUSS_SIEVE_IS_MULTI_THREADED true
-//#include "SieveJoint.h"
-//#include "SieveJoint.cpp"
-//#include "SieveMT.cpp"
-//#undef  GAUSS_SIEVE_MULTI_THREADED
-//
-//#endif

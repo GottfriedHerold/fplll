@@ -323,11 +323,11 @@ Z_NR<mpz_t> GaussSieve::compute_mink_bound(ZZ_mat<mpz_t> const & basis)
 //End of things included only once.
 #endif // SIEVE_JOINT_CPP
 
-template<class ET> //ET : underlying entries of the vectors. Should be a Z_NR<foo> - type. Consider making argument template itself.
+template<class ET, int nfixed> //ET : underlying entries of the vectors. Should be a Z_NR<foo> - type. Consider making argument template itself.
 #if GAUSS_SIEVE_IS_MULTI_THREADED==true
-Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int k, unsigned int num_threads, TermCondType const termcond, unsigned int verbosity_, int seed_sampler):
+Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::Sieve(LatticeBasisType B, unsigned int k, unsigned int num_threads, TermCondType const termcond, unsigned int verbosity_, int seed_sampler):
 #else
-Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int k, TermCondType const termcond, unsigned int verbosity_, int seed_sampler):
+Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::Sieve(LatticeBasisType B, unsigned int k, TermCondType const termcond, unsigned int verbosity_, int seed_sampler):
 #endif
     main_list(),
     main_queue(this),
@@ -383,33 +383,17 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::Sieve(LatticeBasisType B, unsigned int 
     main_queue.sampler->init(this);
 };
 
-template<class ET>
-Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::~Sieve()
+template<class ET,int nfixed>
+Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::~Sieve()
 {
     #if GAUSS_SIEVE_IS_MULTI_THREADED==true
     delete[] garbage_bins;
     #endif
 };
 
-template<class ET>
-bool Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::check_if_done()
+template<class ET, int nfixed>
+bool Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::check_if_done()
 {
-//    if(term_cond.do_we_use_default_condition())
-//    {
-//        //assert(false); //DOES NOT WORK, since compute_mink_bound does not work.
-//        cout << original_basis.get_cols();
-//        ET Minkowski = GaussSieve::compute_mink_bound(original_basis);
-//        if (verbosity>=1) cout << "set Mink. bound to: " << Minkowski << endl;
-//        term_cond.set_target_length(Minkowski);
-//
-//        //FT MatGSO< ZT, FT >::get_root_det in gso.cpp
-//        //term_cond(set_target_length(Minkowski))
-//    }
-//    if(term_cond.do_we_check_length())
-//    {
-//            if (get_best_length2() <= term_cond.get_target_length()) return true; //TODO : Use current_best or somesuch.
-//    }
-//    return false;
     return (term_cond->check(this) != 0)?true:false;
 }
 
@@ -422,8 +406,6 @@ bool Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::check_if_done()
 //    run_2_sieve();
 //    sieve_status = SieveStatus::sieve_status_finished;
 //}
-
-
 
 #define SIEVE_JOINT_CPP
 #endif

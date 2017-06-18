@@ -21,7 +21,8 @@ public:
     ExactLatticePoint(ExactLatticePoint &&Point) = default ;
     ExactLatticePoint(int n); //creates all-zero vector of length n
     ExactLatticePoint(int n, long fillwith);    //TODO: fillwith should be ET, not long.
-    ExactLatticePoint(NumVect<ET> vector_) : NumVect<ET>(vector_) {normalize();} //Creates an exact lattice point from a NumVect
+    explicit ExactLatticePoint(NumVect<ET> const & vector_) : NumVect<ET>(vector_) {normalize();};          //Creates an exact lattice point from a NumVect
+    explicit ExactLatticePoint(NumVect<ET> && vector_) : NumVect<ET>(std::move(vector_)) {normalize();};
     void normalize(); //sets norm2 to the correct value. Use after using operations from the NumVect<ET> base class.
     ExactLatticePoint& operator=(ExactLatticePoint const &that) =default;
     ExactLatticePoint& operator=(ExactLatticePoint && that) =default;
