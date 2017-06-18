@@ -21,6 +21,7 @@ class CompressedPoint
     signed int get_length_exponent() const {return approx_data.get_length_exponent();};
     DetailType get_exact_point() const;                 //returns a copy of the underlying exact point
     DetailType & access_exact_point_r() const {return *details;};
+    bool operator< (CompressedPoint const &other ) const {return (this->access_exact_point_r() < other.access_exact_point_r() );};
 
     protected:
     ApproximateLatticePoint<ET,nfixed> approx_data;

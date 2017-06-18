@@ -119,7 +119,7 @@ class GaussIteratorNew<ET,false,nfixed>
     GaussIteratorNew & operator= (GaussIteratorNew const & other) = default;
     GaussIteratorNew & operator= (GaussIteratorNew && other) = default;
     ~GaussIteratorNew() = default;
-    ApproximateLatticePoint<ET,nfixed> const & reference_details_r() {it -> access_exact_point_r();};
+    ExactLatticePoint<ET,nfixed> const & dereference_details_r() {return it -> access_exact_point_r();};
     //LatticePoint<ET> * access_details() { assert(  (*this)->get_details_ptr_rw()!=nullptr );  return (*this)-> get_details_ptr_rw() ;};
     explicit GaussIteratorNew(UnderlyingIterator const & other) : it(other) {}; //make iterator from pointer
     GaussIteratorNew&  operator++() {++it; return *this;}; //prefix version

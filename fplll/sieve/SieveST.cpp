@@ -30,10 +30,9 @@ template<class ET,int nfixed> ET Sieve<ET,false,nfixed>::get_best_length2()
     return shortest_vector_found.norm2;
 }
 
-
 template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run()
 {
-    if (verbosity >=2) cout << "the shortest vector in the input basis has norm2 = " << (main_list.cbegin())->get_details().norm2 << endl;
+    if (verbosity >=2) cout << "the shortest vector in the input basis has norm2 = " << main_list.cbegin().dereference_details_r().norm2 << endl;
     //int MaxIteration = 8000;
     if (term_cond==nullptr)
     {
