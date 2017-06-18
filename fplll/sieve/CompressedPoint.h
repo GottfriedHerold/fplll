@@ -20,6 +20,7 @@ class CompressedPoint
     ET get_exact_norm2() const {return details->access_norm2();};
     signed int get_length_exponent() const {return approx_data.get_length_exponent();};
     DetailType get_exact_point() const;                 //returns a copy of the underlying exact point
+    DetailType & access_exact_point_r() const {return *details;};
 
     protected:
     ApproximateLatticePoint<ET,nfixed> approx_data;

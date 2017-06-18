@@ -1,6 +1,7 @@
 //
 //  LatticePoint.h
 //
+
 #ifndef LATTICE_VECTOR_CLASS_H
 #define LATTICE_VECTOR_CLASS_H
 
@@ -149,13 +150,13 @@ void LatticePoint<ET>::Normalize() //sets norm2 to the correct value. Use after 
     sc_product(this->norm2, *this,*this);
 };
 
-template <class ET>
-LatticePoint<ET> conv_matrixrow_to_lattice_point (MatrixRow<ET> const &row)
-{
-	LatticePoint<ET> res(row.get_underlying_row());
-	//NumVect<ET> tmp(row.get_underlying_row());
-	return res;
-}
+//template <class ET>
+//LatticePoint<ET> conv_matrixrow_to_lattice_point (MatrixRow<ET> const &row)
+//{
+//	LatticePoint<ET> res(row.get_underlying_row());
+//	//NumVect<ET> tmp(row.get_underlying_row());
+//	return res;
+//}
 
 // Convert sample() result NumVect to LatticePoint
 

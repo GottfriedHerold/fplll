@@ -6,6 +6,7 @@
     We also have some elementary arithmetic (addition, substraction etc. ) defined on them.
 */
 
+template <class ET,int nfixed> ExactLatticePoint<ET,nfixed> conv_matrixrow_to_lattice_point (MatrixRow<ET> const &row);
 
 template<class ET,int nfixed> //ET: entries of the individual vectors. Required to be copy-constructible. Use E = Z_NR<mpz_t> rather than E=mpz_t.
 class ExactLatticePoint : public NumVect<ET>
@@ -46,7 +47,10 @@ public:
     {
         os << * (static_cast<NumVect<ET> const *>(this)) << " of norm: " << this->norm2 << endl;
     }
+    bool operator< (ExactLatticePoint const &other ) const {return (this->norm2 < other.norm2);};
 };
 
+
 #include "ExactLatticePoint.cpp"
+
 #endif

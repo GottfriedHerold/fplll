@@ -21,6 +21,7 @@
 		<Unit filename="ExactLatticePoint.cpp" />
 		<Unit filename="ExactLatticePoint.h" />
 		<Unit filename="FilteredList.h" />
+		<Unit filename="GaussQueue.cpp" />
 		<Unit filename="GaussQueue.h" />
 		<Unit filename="LatticePoint.h" />
 		<Unit filename="LatticePoint2.h" />
@@ -28,7 +29,12 @@
 		<Unit filename="LatticePointsNew.h" />
 		<Unit filename="PointList.cpp" />
 		<Unit filename="PointList.h" />
+		<Unit filename="PointListNew.cpp" />
+		<Unit filename="PointListNew.h" />
+		<Unit filename="Sampler.cpp" />
 		<Unit filename="Sampler.h" />
+		<Unit filename="ShiSampler.cpp" />
+		<Unit filename="ShiSampler.h" />
 		<Unit filename="SieveGauss.h" />
 		<Unit filename="SieveJoint.cpp" />
 		<Unit filename="SieveJoint.h" />

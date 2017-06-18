@@ -367,12 +367,13 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::Sieve(LatticeBasisType B, unsign
     auto it = main_list.cbegin();
     for (unsigned int i=0; i<lattice_rank; ++i)
     {
-        main_list.insert_before(it,  conv_matrixrow_to_lattice_point (original_basis[i])  );
+        ExactLatticePoint<ET,nfixed> * new_basis_vector = new ExactLatticePoint<ET,nfixed> ( conv_matrixrow_to_lattice_point<ET,nfixed> (original_basis[i]));
+        main_list.insert_before(it,  static_cast<CompressedPoint<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed> >(new_basis_vector) );
     }
     current_list_size+=lattice_rank;
 //    #if GAUSS_SIEVE_IS_MULTI_THREADED == false
     if(verbosity>=2)    {cout << "Sorting ...";}
-    main_list.sort();
+    //main_list.sort();
     if(verbosity>=2)    {cout << "is finished." << endl;}
     shortest_vector_found = main_list.cbegin()->get_details();
 //    #endif // GAUSS_SIEVE_IS_MULTI_THREADED

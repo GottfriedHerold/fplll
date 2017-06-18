@@ -99,7 +99,7 @@ namespace GaussSieve //helper functions
 #include "TermCondNew.h"
 #include "LatticePoint.h"
 #include "LatticePointsNew.h"
-#include "PointList.h"
+//#include "PointList.h"
 #include "PointListNew.h"
 
 #endif //end of ONLY-ONCE part

@@ -54,6 +54,7 @@ namespace GaussSieve //Some type declarations used in the GaussList class templa
     template<class ET, int nfixed> using GaussList_ST_UnderlyingContainer = std::list<CompressedPoint<ET,false,nfixed> >;
     template<class ET, bool MT, int nfixed> using GaussList_Iterator = GaussIteratorNew<ET,false,nfixed>;
     template<class ET, bool MT, int nfixed> using GaussList_DereferencesTo = ApproximateLatticePoint<ET,nfixed>;
+    template<class ET, bool MT, int nfixed> using GaussList_StoredPoint = CompressedPoint<ET,MT,nfixed>;
 };
 
 
@@ -63,7 +64,7 @@ class GaussListNew<ET, false, nfixed>
 public:
     friend GaussIteratorNew<ET,false,nfixed>;
     //using EntryType= ET;
-    //using DataType = CompressedPoint<ET,false,-1>; //Type of data stored in the list (from caller's POV)
+    using DataType = GaussSieve::GaussList_StoredPoint<ET,false,nfixed>;
     //using DataPointer=DataType *;
     using UnderlyingContainer = typename GaussSieve::GaussList_ST_UnderlyingContainer<ET,nfixed>;
     using Iterator = typename GaussSieve::GaussList_Iterator<ET,false,nfixed>;
@@ -83,9 +84,10 @@ public:
     //These functions insert (possibly a copy of val) into the list.
     //TODO: include ownership transfer semantics to avoid some copying, possibly include refcounts in LatticePoints.
     //This becomes really tricky if overwrite is allowed in multithreaded case.
-    //Iterator insert_before(Iterator pos, DataType && val) = delete      //{return actual_list.emplace(pos.it, val);};
-    /*
-    Iterator insert_before_give_ownership(Iterator pos, DetailType * const val) = delete;  //TODO
+    Iterator insert_before(Iterator pos, DataType const & val) = delete;    //no copying
+    Iterator insert_before(Iterator pos, DataType && val)               {return static_cast<Iterator> (actual_list.emplace(pos.it, std::move(val)));};
+
+    /*Iterator insert_before_give_ownership(Iterator pos, DetailType * const val) = delete;  //TODO
     Iterator insert_before(Iterator pos, DataType const & val) =  delete; //TODO
     Iterator insert_before_give_ownership(Iterator pos, DataType const & val) = delete;                          //TODO
     */
@@ -93,7 +95,7 @@ public:
     //Iterator erase(Iterator pos) = delete; //                                        {return actual_list.erase(pos.it);}; //only for single-threaded
     //void unlink(Iterator pos)=delete;     //MT only                              //{actual_list.erase(pos);};
 
-    //void sort()                                                         {actual_list.sort();};  //only for single-threaded (for now). Uses exact length.
+    void sort()                                                         {actual_list.sort();};  //only for single-threaded (for now). Uses exact length.
 
 private:
     UnderlyingContainer actual_list;
@@ -105,10 +107,10 @@ template <class ET,int nfixed>
 class GaussIteratorNew<ET,false,nfixed>
 {
     friend GaussListNew<ET,false,nfixed>;
-//    public:
-      using UnderlyingIterator = typename GaussSieve::GaussList_ST_UnderlyingContainer<ET,nfixed>::iterator; //non-const
+    public:
+    using UnderlyingIterator = typename GaussSieve::GaussList_ST_UnderlyingContainer<ET,nfixed>::iterator; //non-const
 //    using CUnderlyingIterator= typename GaussList<ET,false,-1>::UnderlyingContainer::const_iterator;
-      using DerefType  = typename GaussSieve::GaussList_DereferencesTo <ET,false,nfixed>; //without cv - spec.
+    using DerefType  = typename GaussSieve::GaussList_DereferencesTo <ET,false,nfixed>; //without cv - spec.
 //    using DetailType = LatticePoint<ET>;
 //    using ExactType  = LatticePoint<ET>; //need not be the same!
     GaussIteratorNew () = delete; // ???
@@ -117,6 +119,7 @@ class GaussIteratorNew<ET,false,nfixed>
     GaussIteratorNew & operator= (GaussIteratorNew const & other) = default;
     GaussIteratorNew & operator= (GaussIteratorNew && other) = default;
     ~GaussIteratorNew() = default;
+    ApproximateLatticePoint<ET,nfixed> const & reference_details_r() {it -> access_exact_point_r();};
     //LatticePoint<ET> * access_details() { assert(  (*this)->get_details_ptr_rw()!=nullptr );  return (*this)-> get_details_ptr_rw() ;};
     explicit GaussIteratorNew(UnderlyingIterator const & other) : it(other) {}; //make iterator from pointer
     GaussIteratorNew&  operator++() {++it; return *this;}; //prefix version
