@@ -6,15 +6,16 @@
 */
 #include "sieve_main.h"
 #include "fplll.h"
-#include "LatticePoint.h"
-#include "PointList.h"
+//#include "LatticePoint.h"
+//#include "PointList.h"
 #include <thread>
 #include <chrono>
 #include "SieveGauss.h"
-#include "LatticePoint2.h"
+//#include "LatticePoint2.h"
 #include "TermCondNew.h"
-#include "FilteredPoint.h"
+//#include "FilteredPoint.h"
 
+//Don't do this:
 using namespace fplll;
 //using namespace LatticeApproximations;
 
@@ -166,7 +167,7 @@ int main(int argc, char **argv)
     //    NumVect<Z_NR<mpz_t> > sample(dim);
     //    sample = Sampler->sample();
     //    cout << sample << endl;
-    
+
     /* preprocessing of basis */
     clock_t stime = clock();
     if (bs > 0)
@@ -181,7 +182,7 @@ int main(int argc, char **argv)
         cout << "# [info] BKZ took time " << secs << " s" << endl;
     else
         cout << "# [info] LLL took time " << secs << " s" << endl;
-    
+
     //ApproxLatticePoint<Z_NR<mpz_t>,false,-1> X ( conv_matrixrow_to_lattice_point(B[0]) );
 
     //ApproxLatticePoint<Z_NR<mpz_t>,false,-1> p ( conv_matrixrow_to_lattice_point(B[1]) );
@@ -214,14 +215,14 @@ int main(int argc, char **argv)
         Test_2Sieve.set_termination_condition(termcond);
         cout << "Setting target norm2 to" << target_norm << endl << flush;
     }
-	
-    
+
+
     //Test_2Sieve.run();
 	//cout << "sv is " << endl;
     //Test_2Sieve.get_shortest_vector_found().printLatticePoint();
     //Test_2Sieve.print_status();
-    
-    
+
+
 
 
     Sieve<Z_NR<mpz_t>, false> Test_3Sieve(B, k);

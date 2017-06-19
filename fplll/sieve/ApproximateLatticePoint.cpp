@@ -41,7 +41,7 @@ template <class ET> ApproximateLatticePoint<ET,-1>::ApproximateLatticePoint(Exac
         for(unsigned int i=0;i<n;++i)
         {
             length_exponent = number_length - max_bits;
-            if(LatticeApproximations::MaybeRational<ET>::val == false) {length_exponent = max(0,length_exponent);} //constexpr if, actually...
+            if(LatticeApproximationsNew::MaybeRational<ET>::val == false) {length_exponent = max(0,length_exponent);} //constexpr if, actually...
             //The above line prevents padding with 0s from the right, if exact_point alreads fits into the mantissa.
 
             approx[i] = LatticeApproximationsNew::do_approximate<ApproxEntryType,ET> ( exact_point[i], length_exponent );

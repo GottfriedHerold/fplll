@@ -76,9 +76,9 @@ struct CompareFilteredPoint {
 #include <exception>
 //#include "TermCond.h"
 #include "GaussQueue.h"
-#include "FilteredPoint.h"
+//#include "FilteredPoint.h"
 #include "TermCondNew.h"
-#include "LatticePoint.h"
+//#include "LatticePoint.h"
 #include "LatticePointsNew.h"
 //#include "PointList.h"
 #include "PointListNew.h"
@@ -139,7 +139,7 @@ public:
 //    using FilteredListType2 = std::map<pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2>, FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2>, CompareFilteredPoint>;
 //    using FilteredListTypeP = std::map<pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2>, FilteredPoint<ET, LatticeApproximations::ApproxTypeNorm2> *, CompareFilteredPoint>;
     //using FilteredListTest  =  std::map<char,int,classcomp>;
-    using TermCondType     = TerminationCondition<ET,GAUSS_SIEVE_IS_MULTI_THREADED> *;
+    using TermCondType     = TerminationCondition<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed> *;
 
 public:
     /*FRIENDS */
@@ -176,7 +176,7 @@ public:
 //    void sieve_3_thread(int const thread_id);
 //    void sieve_k_thread(int const thread_id);
     #else
-//    void sieve_2_iteration (LatticePoint<ET> &p); //one run through the main_list (of 2-sieve)
+    void sieve_2_iteration (CompressedPoint<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed> &p); //one run through the main_list (of 2-sieve)
     //void sieve_3_iteration (LatticePoint<ET> &p); //one run through the main_list (of 3-sieve)
     //void sieve_3_iteration_new (LatticePoint<ET> &p); //new run through the main_list (of 3-sieve) usign map for filtered_list
     //void sieve_3_iteration_test (LatticePoint<ET> &p);

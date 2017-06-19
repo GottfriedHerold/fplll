@@ -24,7 +24,7 @@ template <class ET, bool MT, int nfixed> class GaussQueue;
 #include <atomic>
 #include <queue>
 #include <utility>
-#include "LatticePoint.h"
+//#include "LatticePoint.h"
 #include "LatticePointsNew.h"
 #include "assert.h"
 #include "SieveGauss.h"

@@ -2,6 +2,8 @@
 #define APPROXIMATE_LATTICE_POINT_H
 
 
+#include "assert.h"
+
 /*
     ApproximateLatticePoint stores an approximation to a lattice point in the form
     2^exponent * (mantissa), where exponent is shared among coordinates and
@@ -34,10 +36,12 @@ class ApproximateLatticePoint<ET,-1>
     ApproximateLatticePoint(ApproximateLatticePoint<ET,-1> && other, int const dim)
             : length_exponent(other.length_exponent), approx(other.approx), approxn2(other.approxn2) {other.approx=nullptr;};
     ~ApproximateLatticePoint(){delete approx;};
-    ApproxEntryType*     get_mantissas()   const            {return approx;};
-    ApproxTypeNorm2 get_norm2_mantissa()   const            {return approxn2;};
-    signed int get_length_exponent()  const                 {return length_exponent;};
-    unsigned int get_dim() const                            =delete; //Not implemented!
+
+    ApproxEntryType*     access_vectors_mantissa()   const              {return approx;};
+    ApproxTypeNorm2 get_norm2_mantissa()   const                        {return approxn2;};
+    signed int get_vectors_exponent()  const                            {return length_exponent;};
+    signed int get_norm2_exponent() const                               {return 2*length_exponent;};
+    unsigned int get_dim() const                                        =delete; //Not implemented! Dimension is not stored to save memory (because it's the same for each one and we store lots of Approx. Points)
 
     protected: //internal data
     signed int length_exponent; //note : May be negative
@@ -48,6 +52,8 @@ class ApproximateLatticePoint<ET,-1>
     //Note that we need to care about overflows here by truncating accordingly.
 
 };
+
+
 
 template<class ET, int nfixed> ostream& operator<< (ostream &os, ApproximateLatticePoint<ET,nfixed> const & approx_point) //output.
 {

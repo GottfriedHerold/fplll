@@ -37,7 +37,7 @@ template <class DT> class GarbageBin;
 #include <queue>
 #include "assert.h"
 #include <stack>
-#include "sieve_common.h"
+//#include "sieve_common.h"
 #include "LatticePointsNew.h"
 
 //Class for (weakly?) sorted list of lattice points.
@@ -85,7 +85,7 @@ public:
     //TODO: include ownership transfer semantics to avoid some copying, possibly include refcounts in LatticePoints.
     //This becomes really tricky if overwrite is allowed in multithreaded case.
     Iterator insert_before(Iterator pos, DataType const & val) = delete;    //no copying
-    Iterator insert_before(Iterator pos, DataType && val)               {return static_cast<Iterator> (actual_list.emplace(pos.it, std::move(val)));};
+    Iterator insert_before(Iterator pos, DataType && val)                {return static_cast<Iterator> (actual_list.emplace(pos.it, std::move(val)));};
 
     /*Iterator insert_before_give_ownership(Iterator pos, DetailType * const val) = delete;  //TODO
     Iterator insert_before(Iterator pos, DataType const & val) =  delete; //TODO
@@ -119,7 +119,7 @@ class GaussIteratorNew<ET,false,nfixed>
     GaussIteratorNew & operator= (GaussIteratorNew const & other) = default;
     GaussIteratorNew & operator= (GaussIteratorNew && other) = default;
     ~GaussIteratorNew() = default;
-    ExactLatticePoint<ET,nfixed> const & dereference_details_r() {return it -> access_exact_point_r();};
+    ExactLatticePoint<ET,nfixed> const & dereference_exactly_r() {return it -> access_exact_point_r();};
     //LatticePoint<ET> * access_details() { assert(  (*this)->get_details_ptr_rw()!=nullptr );  return (*this)-> get_details_ptr_rw() ;};
     explicit GaussIteratorNew(UnderlyingIterator const & other) : it(other) {}; //make iterator from pointer
     GaussIteratorNew&  operator++() {++it; return *this;}; //prefix version
@@ -139,7 +139,7 @@ class GaussIteratorNew<ET,false,nfixed>
 
     //DetailType * access_details() {return it->get_details_ptr_rw();}; //Note: In multithreaded environment, there is no write access.
     //ExactType get_exact_point() const {return *(it->get_details_ptr());}; //retrieves a copy of the exact value. preferably use this one.
-    ET get_true_norm2() const = delete; // {return (it->get_details_ptr())->get_norm2();}; // Use this function to get the true norm2 value.
+    ET get_true_norm2() const  {return it->get_exact_norm2();}; // Use this function to get the true norm2 value.
     //DerefType & deref_rw() {return *it;};
     private:
     UnderlyingIterator it;

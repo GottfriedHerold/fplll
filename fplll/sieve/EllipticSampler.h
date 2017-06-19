@@ -1,3 +1,5 @@
+//NOT WOKING ATM, does not yet used new lattic point classes.
+
 #ifndef ELLIPTIC_SAMPLER_H
 #define ELLIPTIC_SAMPLER_H
 

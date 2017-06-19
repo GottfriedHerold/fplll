@@ -32,7 +32,7 @@ template<class ET,int nfixed> ET Sieve<ET,false,nfixed>::get_best_length2()
 
 template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run()
 {
-    if (verbosity >=2) cout << "the shortest vector in the input basis has norm2 = " << main_list.cbegin().dereference_details_r().norm2 << endl;
+    if (verbosity >=2) cout << "the shortest vector in the input basis has norm2 = " << main_list.cbegin().dereference_exactly_r().norm2 << endl;
     //int MaxIteration = 8000;
     if (term_cond==nullptr)
     {
@@ -44,7 +44,7 @@ template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run()
         if(verbosity >=1) cerr << "sieve_k <=1. Aborting.";
         return;
     }
-    sieve_status =SieveStatus::sieve_status_running;
+    sieve_status=SieveStatus::sieve_status_running;
     term_cond->init(this); //initialisation of termination conditions.
     if (verbosity >=2) cout << "start " << sieve_k << "-Sieve" << endl;
 
@@ -67,7 +67,6 @@ template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run()
     */
 }
 
-
 template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run_2_sieve()
 {
     CompressedPoint<ET,false,nfixed> p;
@@ -84,10 +83,7 @@ template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run_2_sieve()
     }
 }
 
-
-
 /*
-
 template<class ET>
 void Sieve<ET,false>::run_3_sieve()
 {
@@ -124,86 +120,11 @@ void Sieve<ET,false>::run_k_sieve()
         }
     }
 }
-
 */
 
 //
 // 3- Sieve is in new file now -- Gotti
 //
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 //currently unused diagnostic code.
 /*

@@ -5,6 +5,7 @@
 
 #include "sieve_common.h" //needed (at least for convertions from MatrixRow (the header has to be revised);
 #include <string>
+#include <numeric>
 
 //forward declarations:
 
@@ -20,7 +21,7 @@ template <class ET,int nfixed=-1> class ExactLatticePoint;      //stores an (exa
 template <class ET,int nfixed=-1> void compute_exact_sc_product (ET &result, const ExactLatticePoint<ET,nfixed> &p1, const ExactLatticePoint<ET,nfixed> &p2);   //computes the scalar product of two exact lattice points.
 template <class ET,int nfixed=-1> ET exact_scalar_product(ExactLatticePoint<ET,nfixed> const &p1, ExactLatticePoint<ET,nfixed> const & p2);                     //same, but returns result instead of storing in first arg.
 template <class ET,int nfixed=-1> void scalar_mult (ExactLatticePoint<ET,nfixed> &A, ET const & multiple); //A = A*multiple
-template <class ET,int nfixed=-1> ostream & operator<<(ostream &os, ExactLatticePoint<ET,nfixed> const & exact_point); //printing
+template <class ET,int nfixed=-1> std::ostream & operator<<(std::ostream &os, ExactLatticePoint<ET,nfixed> const & exact_point); //printing
 //template<class ET> istream & operator>>(istream &is, ExactLatticePoint & exact_point); //reading (may also be used by constructor from istream)
 //FIXME: operator >> is NOT IMPLEMENTED YET
 
@@ -39,7 +40,7 @@ template <class ET,int nfixed=-1> ostream & operator<<(ostream &os, ExactLattice
 
 template<class ET, int nfixed=-1> class ApproximateLatticePoint;      //This class represents an approximation to a lattice point.
                                                                         //Note that it is detached from whatever it approximates.
-template<class ET, int nfixed=-1> ostream& operator<< (ostream &os, ApproximateLatticePoint<ET,nfixed> const & approx_point); //output.
+template<class ET, int nfixed=-1> std::ostream& operator<< (std::ostream &os, ApproximateLatticePoint<ET,nfixed> const & approx_point); //output.
 //TODO: Input
 
 /* Creates a stand-alone Approximation from an exact point */
@@ -50,8 +51,6 @@ template<class ET, int nfixed> ApproximateLatticePoint<ET,nfixed> create_detache
 //This class represents an approximate point together with some extra data (called Details) that allows to recover the exact point again.
 //Note that access to the exact point may be slow (in multi-threading, it might involve locks or fences), so working with the approximation is prefered.
 //IMPORTANT:
-//For efficiency reasons, CompressedPoint does not own its details.
-//In particular, copying a compressed point only copies the approximations.
 
 
 template<class ET, bool MT, int nfixed=-1> class CompressedPoint;
@@ -59,7 +58,7 @@ template<class ET, bool MT, int nfixed=-1> class CompressedPoint;
 
 
 
-namespace LatticeApproximationsNew //helper types for approximations etc. enclosed in namespace
+namespace LatticeApproximationsNew //internal helper types for approximations etc. enclosed in namespace
 {
 inline signed int get_exponent (Z_NR<mpz_t> const & val)     {return val!=0 ?val.exponent() : std::numeric_limits<signed int>::min();}     //returns smallest t s.t. abs(val) < 2^t (i.e. the bit-length for integral types)
 inline signed int get_exponent (Z_NR<long> const & val)      {return val!=0 ?val.exponent() : std::numeric_limits<signed int>::min();}     //for val==0, we return the most negative value that fits into an int.
@@ -88,13 +87,40 @@ template<> class MaybeRational<Z_NR<double> >{public: static bool constexpr val=
 
 //template<class ET>
 //inline bool Compare_Sc_Prod(ApproxLatticePoint<ET,false,-1> const & arg1, ApproxLatticePoint<ET,false,-1> const & arg2, ApproxTypeNorm2 abslimit, int limit_exp, int dim);
-}
+};
+
+namespace GaussSieve
+{
+//computes scalar products: mantissa variant only computes the scalar product of the mantissas (i.e. it lacks an 2^{exponent1+exponent2} - factor)
+//                          vec version computes scalar products between two arrays.
+template<class ET,int nfixed>   LatticeApproximationsNew::ApproximationNorm2Type compute_mantissa_sc_product(ApproximateLatticePoint<ET,nfixed> const & arg1, ApproximateLatticePoint<ET,nfixed> const & arg2, int const dim);
+                                LatticeApproximationsNew::ApproximationNorm2Type compute_vec_sc_products(LatticeApproximationsNew::ApproximationEntriesType const * const arg1, LatticeApproximationsNew::ApproximationEntriesType const * const arg2, int const dim);
+//FIXME: templating by nfixed does not work here. Correct way is to make ApproxEntryType* a template.
+//The error message is weird and makes me suspect compiler bugs (the issue is with template function signature not depending on template param, but it give namespace errors (GCC)
+};
+
+
 
 /*actual class declarations in separate files*/
 
 #include "ExactLatticePoint.h"
 #include "ApproximateLatticePoint.h"
 #include "CompressedPoint.h"
+
+LatticeApproximationsNew::ApproximationNorm2Type GaussSieve::compute_vec_sc_products(LatticeApproximationsNew::ApproximationEntriesType const * const arg1, LatticeApproximationsNew::ApproximationEntriesType const * const arg2, int const dim)
+{
+    return std::inner_product(arg1, arg1+dim, arg2,0);
+}
+
+//template<int nfixed> LatticeApproximationsNew::ApproximationNorm2Type GaussSieve::compute_vec_sc_products<-1>(LatticeApproximationsNew::ApproximationEntriesType const * const arg1, LatticeApproximationsNew::ApproximationEntriesType const * const arg2, int const dim)
+//{
+//    return std::inner_product(arg1, arg1+nfixed,arg2,0);
+//}
+
+template<class ET,int nfixed>  LatticeApproximationsNew::ApproximationNorm2Type GaussSieve::compute_mantissa_sc_product(ApproximateLatticePoint<ET,nfixed> const & arg1, ApproximateLatticePoint<ET,nfixed> const & arg2, int const dim)
+{
+    return GaussSieve::compute_vec_sc_products(arg1.get_mantissas(),arg2.get_mantissas,dim);
+}
 
 #include "LatticePointsNew.cpp"
 

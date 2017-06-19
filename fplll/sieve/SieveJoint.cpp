@@ -90,7 +90,7 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::Sieve(LatticeBasisType B, unsign
     if(verbosity>=2)    {cout << "Sorting ...";}
     //main_list.sort();
     if(verbosity>=2)    {cout << "is finished." << endl;}
-    shortest_vector_found = main_list.cbegin().dereference_details_r();
+    shortest_vector_found = main_list.cbegin().dereference_exactly_r();
 //    #endif // GAUSS_SIEVE_IS_MULTI_THREADED
     //TODO : enable sorting for multithreaded case.
     #if GAUSS_SIEVE_IS_MULTI_THREADED==true

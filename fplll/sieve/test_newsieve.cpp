@@ -3,12 +3,12 @@
 
 #include "sieve_main.h"
 #include "fplll.h"
-#include "LatticePoint.h"
-#include "PointList.h"
+//#include "LatticePoint.h"
+//#include "PointList.h"
 #include <thread>
 #include <chrono>
 #include "SieveGauss.h"
-#include "LatticePoint2.h"
+//#include "LatticePoint2.h"
 #include <iostream>
 #include <fstream>
 #include "Sampler.h"

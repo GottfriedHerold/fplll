@@ -1,15 +1,15 @@
 /* DO NOT INCLUDE THIS FILE DIRECTLY
 */
 
-#if 0
-
-template<class ET>
-void Sieve<ET,false>::sieve_2_iteration (LatticePoint<ET> &p) //note : Queue might output Approx ?
+template<class ET, int nfixed> void Sieve<ET,false,nfixed>::sieve_2_iteration (CompressedPoint<ET,false,nfixed> &p) //note : Queue might output Approx ?
 {
-    if (p.norm2==0) return; //cerr << "Trying to reduce 0"; //TODO: Ensure sampler does not output 0 (currently, it happens).
-    ApproxLatticePoint<ET,false> pApprox (p);
-    //simplified the code, because main_list supports deleting AT pos and inserting BEFORE pos now. -- Gotti
     int const n = get_ambient_dimension();
+    if (p.norm2==0) return; //cerr << "Trying to reduce 0"; //TODO: Ensure sampler does not output 0 (currently, it happens).
+    ApproximateLatticePoint<ET,nfixed> p_approx (p.access_approximation_r(), n); //makes a copy.
+    ET p_exact_norm = p.get_exact_norm2();
+    ExactLatticePoint<ET,nfixed> p_exact = p.get_exact_point();
+    //simplified the code, because main_list supports deleting AT pos and inserting BEFORE pos now. -- Gotti
+
     bool loop = true;
 
     ET scalar; //reduction multiple output by check2red_new
@@ -21,19 +21,20 @@ void Sieve<ET,false>::sieve_2_iteration (LatticePoint<ET> &p) //note : Queue mig
         loop = false;
         for (auto it = main_list.cbegin(); it!=main_list.cend(); ++it)
         {
-            if (p.norm2 < it.get_true_norm2())
+            if (p_exact_norm < it.get_true_norm2())
             {
                 it_comparison_flip = it;
                 break;
             }
         ++number_of_scprods;
-        bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n   );
+        bool const predict =GaussSieve::compare_abs_approx_scalar_product(p_approx,*it,it->get_norm2_mantissa(), it->get_norm2_exponent() -1,n); //the -1 acts a a constant factor 1/2, related to our target scalar product.
+//        bool predict = LatticeApproximations::Compare_Sc_Prod(p_approx,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n   );
 	    if(!predict) continue;
 
 	/* OLD IMPLEMENTATION: check2red both check and reduces p
 	    if(GaussSieve::check2red(p, *(it.access_details()) ) ) //p was changed
             {
-		        if(p.norm2!=0)  pApprox = static_cast< ApproxLatticePoint<ET,false> >(p);
+		        if(p.norm2!=0)  p_approx = static_cast< ApproxLatticePoint<ET,false> >(p);
 		cout << "p = ";
 		p.printLatticePoint();
                 loop = true;
@@ -41,11 +42,15 @@ void Sieve<ET,false>::sieve_2_iteration (LatticePoint<ET> &p) //note : Queue mig
             }
 	*/
             ++number_of_exact_scprods;
-            if ( GaussSieve::check2red_new(p, *(it.access_details()), scalar) )
+            if ( GaussSieve::check2red_exact(p, it.dereference_details_r(), scalar) )
             {
-                p = GaussSieve::perform2red(p, *(it.access_details()), scalar);
+                p = GaussSieve::perform2red_exact_to_compressed(p,it->dereference_details_r(),scalar);
+                p_approx = p.access_approximation_r();
+                p_exact  = p.get_exact_point();
+                p_exact_norm = p_exact.norm2;
+                //p = GaussSieve::perform2red(p, *(it.access_details()), scalar);
             //update the approximation of f
-                if (p.norm2!=0) pApprox = static_cast< ApproxLatticePoint<ET,false> >(p);
+                //if (p.norm2!=0) p_approx = static_cast< ApproxLatticePoint<ET,false> >(p);
                 loop = true;
                 break;
             }
@@ -59,18 +64,17 @@ void Sieve<ET,false>::sieve_2_iteration (LatticePoint<ET> &p) //note : Queue mig
     //p no longer changes. it_comparison_flip is iterator to first (shortest) element in the list that is longer than p.
     //If no such element exists, it_comparison_flip refers to after-the-end.
 
-    if (p.norm2 == 0) //essentially means that p was already inside the list.
+    if (p_exact_norm == 0) //essentially means that p was already inside the list.
 	{
         //cout << "p has norm 2" << endl;
 		number_of_collisions++;
 		return;
 	}
 
-
     //insert p into main_list;
-    main_list.insert_before(it_comparison_flip,p);
+    main_list.insert_before(it_comparison_flip,p.deep_copy_compressed_point()); //FIXME: This should cause an error without .deep_copy, but doesn't. Something is wrong!
     ++current_list_size;
-    if(update_shortest_vector_found(p))
+    if(update_shortest_vector_found(p_exact))
     {
         if(verbosity>=2)
         {
@@ -82,28 +86,28 @@ void Sieve<ET,false>::sieve_2_iteration (LatticePoint<ET> &p) //note : Queue mig
                                                               //We know that every element current_list_point=*it is at least as long as p, so we reduce x using p.
     {
         ++number_of_scprods;
-        bool predict = LatticeApproximations::Compare_Sc_Prod(pApprox,*it,pApprox.get_approx_norm2(),2* pApprox.get_length_exponent()-1,n   );
+        bool const predict = GaussSieve::compare_abs_approx_scalar_product(p_approx,*it,p_approx.get_norm2_mantissa(),p_approx.get_norm2_exponent()-1,n);
         if(!predict){++it;continue;} //if prediction is bad, don't even bother to reduce.
-        LatticePoint<ET> current_list_point = it.get_exact_point();
+        //We believe we can reduce *it
+        ExactLatticePoint<ET,nfixed> current_list_point = it.derefence_exactly_r();
         ++number_of_exact_scprods;
-        if (GaussSieve::check2red_new(current_list_point, p, scalar)) //We can reduce *it.
+        if (GaussSieve::check2red_exact(current_list_point, p, scalar)) //We can reduce *it.
 		{
 			//create new list point
-			LatticePoint<ET> reduced = GaussSieve::perform2red(p, current_list_point, scalar);
+			CompressedPoint<ET,false,nfixed> reduced_point = GaussSieve::perform2red_exact_to_compressed(current_list_point, p, scalar);
 			//if (!predict) cerr << "Misprediction 2" << endl;
 			//cout << "v was found" <<  endl;
 
-            if (reduced.norm2 == 0) //Note : this cannot happen unless the list contains a non-trivial multiple of p (because the collision would have triggered before).
+            if (reduced_point.get_exact_norm2() == 0) //Note : this cannot happen unless the list contains a non-trivial multiple of p (because the collision would have triggered before).
             {
                 number_of_collisions++;
                 ++it;
                 continue; //was a break. Changed to ++it;continue; -- Gotti
             }
 
-			main_queue.push(reduced);
+			main_queue.push(std::move(reduced_point));
 			it = main_list.erase(it); //this also moves it forward
 			--current_list_size;
-
 		}
 		else
 		{
@@ -111,14 +115,10 @@ void Sieve<ET,false>::sieve_2_iteration (LatticePoint<ET> &p) //note : Queue mig
 		//	prev = it1;
 			++it;
 		}
-
     }
 
     /* print for debugging */
     //for (it1 = main_list.begin(); it1!=main_list.end(); ++it1) {
     //	(*it1).printLatticePoint();
     //}
-
 }
-
-#endif
