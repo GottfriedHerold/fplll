@@ -28,9 +28,9 @@ template <class ET> ApproximateLatticePoint<ET,-1>::ApproximateLatticePoint(Exac
     }
     //Now, number_length is the length of the longest coordinate (in absolute values);
 
-    if(number_length == std::numeric_limits<signed int>::min()) // exact_point is all-zero vector. should never happen in the Sieve algorithm.
+    if(number_length == std::numeric_limits<signed int>::min()) // exact_point is all-zero vector. should never happen in the Sieve algorithm. -- it currently does
     {
-        cerr << "Warning: approximating all-zero vector.";
+//        cerr << "Warning: approximating all-zero vector.";
         length_exponent=0;
         for(unsigned int i=0;i<n;++i){approx[i]=0;}
         approxn2=0;

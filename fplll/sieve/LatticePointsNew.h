@@ -119,7 +119,7 @@ LatticeApproximationsNew::ApproximationNorm2Type GaussSieve::compute_vec_sc_prod
 
 template<class ET,int nfixed>  LatticeApproximationsNew::ApproximationNorm2Type GaussSieve::compute_mantissa_sc_product(ApproximateLatticePoint<ET,nfixed> const & arg1, ApproximateLatticePoint<ET,nfixed> const & arg2, int const dim)
 {
-    return GaussSieve::compute_vec_sc_products(arg1.get_mantissas(),arg2.get_mantissas,dim);
+    return GaussSieve::compute_vec_sc_products(arg1.access_vectors_mantissa(),arg2.access_vectors_mantissa,dim);
 }
 
 #include "LatticePointsNew.cpp"

@@ -92,7 +92,7 @@ public:
     Iterator insert_before_give_ownership(Iterator pos, DataType const & val) = delete;                          //TODO
     */
     //Iterator insert_before(Iterator pos, DetailType && val)           {return actual_list.insert(pos,std::move(val));};
-    //Iterator erase(Iterator pos) = delete; //                                        {return actual_list.erase(pos.it);}; //only for single-threaded
+    Iterator erase(Iterator pos)                                        {return static_cast<Iterator> (actual_list.erase(pos.it));}; //only for single-threaded
     //void unlink(Iterator pos)=delete;     //MT only                              //{actual_list.erase(pos);};
 
     void sort()                                                         {actual_list.sort();};  //only for single-threaded (for now). Uses exact length.
@@ -131,7 +131,8 @@ class GaussIteratorNew<ET,false,nfixed>
     bool is_end() const = delete; //not implemented for single-threaded yet.
     //intrinsic check for end, validity etc?
     //operator DerefType const *();
-    DerefType const & operator*() const {return it->access_approximation_r();};
+    DerefType const  & operator*() const    {return it->access_approximation_r();};
+    DerefType const *  operator->() const    {return it->get_approximation_const_ptr();};
     //CUnderlyingIterator const operator->() const {return static_cast<CUnderlyingIterator>(it);};
 
     //Note : access_details may become deprecated at some point, if details only store difference to approximation or coefficients wrt other vectors.

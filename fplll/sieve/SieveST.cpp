@@ -5,6 +5,8 @@
 #error SieveST.cpp included with wrong macro settings
 #endif
 
+#include "Utility.h"
+
 //class next_block;
 //using namespace LatticeApproximations; // to be able to use ApproxTypeNorm2 to store inner-produces scaled by length
 
@@ -74,7 +76,7 @@ template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run_2_sieve()
     while (!check_if_done() )
     {
         p=main_queue.true_pop();
-//        sieve_2_iteration(p);
+        sieve_2_iteration(p);
         ++i;
         if (( i % 1000 == 0) && (verbosity >=2))
         {

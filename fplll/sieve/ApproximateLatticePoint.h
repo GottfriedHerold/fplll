@@ -42,6 +42,13 @@ class ApproximateLatticePoint<ET,-1>
     signed int get_vectors_exponent()  const                            {return length_exponent;};
     signed int get_norm2_exponent() const                               {return 2*length_exponent;};
     unsigned int get_dim() const                                        =delete; //Not implemented! Dimension is not stored to save memory (because it's the same for each one and we store lots of Approx. Points)
+    void copy(ApproximateLatticePoint<ET,-1> const & other, int const dim)
+    {
+    if (approx == other.approx) return;
+    memcpy(approx, other.approx, dim*sizeof(ApproxEntryType));
+    length_exponent = other.length_exponent;
+    approxn2=other.approxn2;
+    }
 
     protected: //internal data
     signed int length_exponent; //note : May be negative

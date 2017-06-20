@@ -4,7 +4,7 @@
 template<class ET, int nfixed> void Sieve<ET,false,nfixed>::sieve_2_iteration (CompressedPoint<ET,false,nfixed> &p) //note : Queue might output Approx ?
 {
     int const n = get_ambient_dimension();
-    if (p.norm2==0) return; //cerr << "Trying to reduce 0"; //TODO: Ensure sampler does not output 0 (currently, it happens).
+    if (p.access_exact_point_r().norm2==0) return; //cerr << "Trying to reduce 0"; //TODO: Ensure sampler does not output 0 (currently, it happens).
     ApproximateLatticePoint<ET,nfixed> p_approx (p.access_approximation_r(), n); //makes a copy.
     ET p_exact_norm = p.get_exact_norm2();
     ExactLatticePoint<ET,nfixed> p_exact = p.get_exact_point();
@@ -42,10 +42,10 @@ template<class ET, int nfixed> void Sieve<ET,false,nfixed>::sieve_2_iteration (C
             }
 	*/
             ++number_of_exact_scprods;
-            if ( GaussSieve::check2red_exact(p, it.dereference_details_r(), scalar) )
+            if ( GaussSieve::check2red_exact<ET,nfixed>(p_exact, it.dereference_exactly_r(), scalar) )
             {
-                p = GaussSieve::perform2red_exact_to_compressed(p,it->dereference_details_r(),scalar);
-                p_approx = p.access_approximation_r();
+                p = GaussSieve::perform2red_exact_to_compressed<ET,false,nfixed>(p_exact,it.dereference_exactly_r(),scalar);
+                p_approx.copy(p.access_approximation_r(), n);
                 p_exact  = p.get_exact_point();
                 p_exact_norm = p_exact.norm2;
                 //p = GaussSieve::perform2red(p, *(it.access_details()), scalar);
@@ -89,12 +89,12 @@ template<class ET, int nfixed> void Sieve<ET,false,nfixed>::sieve_2_iteration (C
         bool const predict = GaussSieve::compare_abs_approx_scalar_product(p_approx,*it,p_approx.get_norm2_mantissa(),p_approx.get_norm2_exponent()-1,n);
         if(!predict){++it;continue;} //if prediction is bad, don't even bother to reduce.
         //We believe we can reduce *it
-        ExactLatticePoint<ET,nfixed> current_list_point = it.derefence_exactly_r();
+        ExactLatticePoint<ET,nfixed> current_list_point = it.dereference_exactly_r();
         ++number_of_exact_scprods;
-        if (GaussSieve::check2red_exact(current_list_point, p, scalar)) //We can reduce *it.
+        if (GaussSieve::check2red_exact(current_list_point, p_exact, scalar)) //We can reduce *it.
 		{
 			//create new list point
-			CompressedPoint<ET,false,nfixed> reduced_point = GaussSieve::perform2red_exact_to_compressed(current_list_point, p, scalar);
+			CompressedPoint<ET,false,nfixed> reduced_point = GaussSieve::perform2red_exact_to_compressed<ET,false,nfixed>(current_list_point, p_exact, scalar);
 			//if (!predict) cerr << "Misprediction 2" << endl;
 			//cout << "v was found" <<  endl;
 

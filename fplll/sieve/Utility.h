@@ -41,8 +41,8 @@ namespace GaussSieve //helper functions
                                             int const bound_exponent,
                                             int const dim)
 {
-    int const rel = arg1.get_length_exponent() + arg2.get_length_exponent() - bound_exponent; //relative exponent between lhs and rhs of the expression we want to compare.
-    LatticeApproximationsNew::ApproximationNorm2Type const abs_sc_prod_mantissa = abs(GaussSieve::compute_mantissa_sc_product(arg1,arg2),dim);
+    int const rel = arg1.get_vectors_exponent() + arg2.get_vectors_exponent() - bound_exponent; //relative exponent between lhs and rhs of the expression we want to compare.
+    LatticeApproximationsNew::ApproximationNorm2Type const abs_sc_prod_mantissa = abs(GaussSieve::compute_mantissa_sc_product(arg1,arg2,dim));
     if(rel > 0) //depending on whether the relative exponent is positive or not, we bit-shift either the lhs or the rhs.
                 //This is to ensure we also shift right in order to avoid overflows.
     {
@@ -59,7 +59,7 @@ template<class ET,int nfixed> bool GaussSieve::check2red_exact (ExactLatticePoin
     //assert(p1.norm2 >= p2.norm2); Not neccessarily true in multi-threaded case. -- Gotti
     ET sc_prod, abs_2scprod;
     scalar = 0;
-    sc_product(sc_prod, p1, p2);    //stores scalar product of p1 and p2 into sc_prod. This uses the sc_prod - routine from NumVect, IIRC.
+    compute_exact_sc_product(sc_prod, p1, p2);    //stores scalar product of p1 and p2 into sc_prod.
     abs_2scprod.mul_ui(sc_prod,2);  //multiply result by two
     abs_2scprod.abs(abs_2scprod);   //and take the absolute value
 
