@@ -82,7 +82,9 @@ template<class ET,int nfixed> bool GaussSieve::check2red_exact (ExactLatticePoin
 template<class ET,bool MT, int nfixed> CompressedPoint<ET,MT,nfixed> GaussSieve::perform2red_exact_to_compressed(ExactLatticePoint<ET,nfixed> const &p1,ExactLatticePoint<ET,nfixed> const &p2, ET const & scalar)
 {
     ExactLatticePoint<ET,nfixed> * res = new ExactLatticePoint<ET,nfixed>(p1);
-    res->addmul(p2,-scalar);
+    ET tmpnegscalar;
+    tmpnegscalar.neg(scalar); //negscalar := -scalar.
+    res->addmul(p2,std::move(tmpnegscalar)); //Z_NR< > does not allow just -scalar, we have to do stupid things.
     res->normalize();
     return static_cast<CompressedPoint<ET,MT,nfixed > >(res); //Note: This constructor transfers ownership, which is why we don't delete res.
 }
