@@ -23,6 +23,7 @@ class CompressedPoint
     ExactLatticePoint<ET,nfixed> const &                                access_exact_point_r() const            {return *details;};
     typename ApproximateLatticePoint<ET,nfixed>::ApproxTypeNorm2        get_approx_norm2_mantissa() const       {return approx_data.get_norm2_mantissa();};
     signed int                                                          get_approx_norm2_exponent() const       {return approx_data.get_norm2_exponent();};
+    double                                                              get_approx_norm2_d() const              {return approx_data.get_norm2_d();};
     signed int                                                          get_approx_vectors_exponent() const     {return approx_data.get_vectors_exponent();};
     typename ApproximateLatticePoint<ET,nfixed>::ApproxEntryType*       access_approx_vectors_mantissa() const  {return approx_data.access_vectors_mantissa();};
     ET                                                                  get_exact_norm2() const                 {return details->access_norm2();};

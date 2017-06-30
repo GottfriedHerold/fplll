@@ -57,9 +57,9 @@ namespace GaussSieve //helper functions
 template<class ET,int nfixed> bool GaussSieve::check2red_exact (ExactLatticePoint<ET,nfixed> const &p1, ExactLatticePoint<ET,nfixed> const &p2, ET &scalar) //only checks whether 2reduction is possible
 {
     //assert(p1.norm2 >= p2.norm2); Not neccessarily true in multi-threaded case. -- Gotti
-    ET sc_prod, abs_2scprod;
+    ET abs_2scprod;
     scalar = 0;
-    compute_exact_sc_product(sc_prod, p1, p2);    //stores scalar product of p1 and p2 into sc_prod.
+    ET sc_prod=exact_scalar_product(p1, p2);    //stores scalar product of p1 and p2 into sc_prod.
     abs_2scprod.mul_ui(sc_prod,2);  //multiply result by two
     abs_2scprod.abs(abs_2scprod);   //and take the absolute value
 

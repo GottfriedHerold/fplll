@@ -45,7 +45,7 @@ template<class ET, int nfixed> void Sieve<ET,false,nfixed>::sieve_2_iteration (C
             if ( GaussSieve::check2red_exact<ET,nfixed>(p_exact, it.dereference_exactly_r(), scalar) )
             {
                 p = GaussSieve::perform2red_exact_to_compressed<ET,false,nfixed>(p_exact,it.dereference_exactly_r(),scalar);
-                p_approx.copy(p.access_approximation_r(), n);
+                p_approx.replace_by(p.access_approximation_r(), n);
                 p_exact  = p.get_exact_point();
                 p_exact_norm = p_exact.norm2;
                 //p = GaussSieve::perform2red(p, *(it.access_details()), scalar);

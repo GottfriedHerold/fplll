@@ -1,5 +1,4 @@
-#define USE_REGULAR_QUEUE //comment out if you use priority-queue
-
+//#define USE_REGULAR_QUEUE //comment out if you use priority-queue
 
 #include "sieve_main.h"
 #include "fplll.h"
@@ -62,6 +61,8 @@ template <class Z> void sample_gaussians(int number, double s, double center, do
         cout << GaussSieve::sample_z_gaussian<Z, std::mt19937_64>(s,center,engine, cutoff) << endl;
     }
 }
+
+
 
 int main(int argc, char **argv)
 {

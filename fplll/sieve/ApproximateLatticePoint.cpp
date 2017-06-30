@@ -1,3 +1,13 @@
+LatticeApproximationsNew::ApproximationNorm2Type GaussSieve::compute_vec_sc_product(LatticeApproximationsNew::ApproximationEntriesType const * const arg1, LatticeApproximationsNew::ApproximationEntriesType const * const arg2, int const dim)
+{
+    return std::inner_product(arg1, arg1+dim, arg2,0);
+}
+
+template<class ET,int nfixed>  LatticeApproximationsNew::ApproximationNorm2Type GaussSieve::compute_mantissa_sc_product(ApproximateLatticePoint<ET,nfixed> const & arg1, ApproximateLatticePoint<ET,nfixed> const & arg2, int const dim)
+{
+    return GaussSieve::compute_vec_sc_product(arg1.access_vectors_mantissa(),arg2.access_vectors_mantissa(),dim);
+}
+
 
 template<class ET>
 ApproximateLatticePoint<ET,-1>::ApproximateLatticePoint(ApproximateLatticePoint<ET,-1> const & other, int const dim)
@@ -48,4 +58,30 @@ template <class ET> ApproximateLatticePoint<ET,-1>::ApproximateLatticePoint(Exac
         }
         approxn2 = LatticeApproximationsNew::do_approximate<ApproxTypeNorm2,ET> ( exact_point.access_norm2(),2*length_exponent   );
     }
+}
+
+template<class ET>
+void ApproximateLatticePoint<ET,-1>::replace_by(ApproximateLatticePoint<ET,-1> const & other, int const dim)
+{
+    if (approx == other.approx) return;
+    memcpy(approx, other.approx, dim*sizeof(ApproxEntryType));
+    length_exponent = other.length_exponent;
+    approxn2=other.approxn2;
+}
+
+template<class ET>
+ApproximateLatticePoint<ET,-1> ApproximateLatticePoint<ET,-1>::make_copy(int const dim) const
+{
+    ApproximateLatticePoint<ET,-1> ans(*this, dim);
+    return ans;
+}
+
+template<class ET, int nfixed> double approximate_scalar_product_d(ApproximateLatticePoint<ET,nfixed> const &arg1, ApproximateLatticePoint<ET,nfixed> const & arg2, int const dim)
+{
+    return ldexp(GaussSieve::compute_mantissa_sc_product(arg1,arg2,dim),arg1.get_vectors_exponent()+arg2.get_vectors_exponent());
+}
+
+template<class ET> double ApproximateLatticePoint<ET,-1>::get_norm2_d() const
+{
+    return ldexp(approxn2,2*length_exponent);
 }

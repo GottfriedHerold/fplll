@@ -27,9 +27,9 @@ namespace GaussSieve
 
 
     // unfortunately, trigonometric functions to compute pi don't have constexpr variants on all compilers we want to support, so we just define pi directly
-    long double constexpr pi_long = 3.14159265358979323846264338327950288419716939937510L;
-    double constexpr pi_double = 3.14159265358979323846264338327950288419716939937510;
-    long double constexpr pi = 3.14159265358979323846264338327950288419716939937510L;
+    long double constexpr   pi_long     = 3.14159265358979323846264338327950288419716939937510L;
+    double constexpr        pi_double   = 3.14159265358979323846264338327950288419716939937510;
+    long double constexpr   pi          = 3.14159265358979323846264338327950288419716939937510L;
 
     template<class Z, class Engine>     Z sample_z_gaussian(double s, double const center, Engine & engine, double const cutoff);
     template<class Z, class Engine>     Z sample_z_gaussian_VMD(double const s2pi, double const center, Engine & engine, double const maxdeviation);
