@@ -3,6 +3,42 @@
 
 #include "PointListNew.h"
 
+
+//class that ignores its argument. Can be used to optimize away unused parameters in function templates...
+class IgnoreAnyArg{
+    public:
+    template<class T> constexpr IgnoreAnyArg(T val){}
+};
+
+//same, but enforces the type of the ignored argument.
+template<class T>
+class IgnoreArg{
+    public:
+    constexpr IgnoreArg(T val){}
+};
+
+template<int nfixed=-1> class Dimension;
+
+template<>
+class Dimension<-1>{
+    public:
+    using IsFixed=false_type;
+    Dimension(int new_dim):dim(new_dim){assert(false);};
+    Dimension(){assert(false);};
+    operator unsigned int() const {return dim;};
+    unsigned int dim;
+};
+
+template<int nfixed>
+class Dimension{
+    public:
+    using IsFixed=true_type;
+    Dimension(){};
+    Dimension(IgnoreArg<unsigned int> new_dim){}; //assert(new_dim==nfixed);}
+    constexpr operator unsigned int() {return nfixed;};
+    static constexpr unsigned int dim = nfixed;
+};
+
 namespace GaussSieve //helper functions
 {
     bool string_consume(istream &is, std::string const & str, bool elim_ws= true, bool verbose=true);   //helper function for dumping/reading

@@ -10,8 +10,8 @@
 //forward declarations
 
 template<class ET,bool MT, class Engine, class Sseq, int nfixed=-1> class Sampler;
-template<class ET,bool MT, class Engine, class Sseq> ostream & operator<<(ostream &os, Sampler<ET,MT, Engine, Sseq>* const samplerptr); //printing
-template<class ET,bool MT, class Engine, class Sseq> istream & operator>>(istream &is, Sampler<ET,MT, Engine, Sseq>* const samplerptr); //reading (may also be used by constructor from istream)
+template<class ET,bool MT, class Engine, class Sseq, int nfixed> ostream & operator<<(ostream &os, Sampler<ET,MT, Engine, Sseq, nfixed>* const samplerptr); //printing
+template<class ET,bool MT, class Engine, class Sseq, int nfixed> istream & operator>>(istream &is, Sampler<ET,MT, Engine, Sseq, nfixed>* const samplerptr); //reading (may also be used by constructor from istream)
 enum class SamplerType
 {
     user_defined = 0,
@@ -98,13 +98,14 @@ template<class Engine, class Sseq>  class MTPRNG<Engine, false, Sseq>           
 
 
 
+//This typedef defines the return type that the Sampler should have.
+
 namespace GaussSieve{
 template<class ET,bool MT, int nfixed> using GaussSampler_ReturnType = CompressedPoint<ET,MT,nfixed>;
 };
 
 //generic Sampler. All other sampler are derived from it.
-
-template<class ET,bool MT, class Engine, class Sseq,int nfixed> //Sseq is supposed to satisfy the C++ concept "SeedSequence". The standard library has std::seed_seq as a canonical example.
+template<class ET,bool MT, class Engine, class Sseq, int nfixed> //Sseq is supposed to satisfy the C++ concept "SeedSequence". The standard library has std::seed_seq as a canonical example.
                                                      //Engine is supposed to satisfy the C++ concept of a "Random Number Engine". <random> provides several of those, e.g. std::mt19937_64.
 class Sampler
 //Note :    In multi-threaded environment, we only have 1 sampler object. thread-number is given to sample();

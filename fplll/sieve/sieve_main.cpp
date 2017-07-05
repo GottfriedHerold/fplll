@@ -111,7 +111,6 @@ return;
 
 int main(int argc, char **argv)
 {
-
     char *target_norm_string = NULL;
     int opt, dim = 10;
     Z_NR<mpz_t> target_norm;

@@ -7,6 +7,7 @@ template<class ET, bool MT, class Engine, class Sseq, int nfixed=-1> class ShiSa
 #include "Sampler.h"
 
 
+//only defined for nfixed==-1 for now.
 
 template<class ET, bool MT, class Engine, class Sseq>
 class ShiSampler<ET,MT,Engine,Sseq,-1>: public Sampler<ET,MT, Engine, Sseq,-1>
