@@ -117,7 +117,7 @@ class Sampler
 
     Sampler<ET,MT,Engine,Sseq,nfixed> (Sseq & initial_seed): engine(initial_seed), sieveptr(nullptr)                      {}
     //We call init first, then custom_init (via init).
-    void init(Sieve<ET,MT> * const sieve);
+    void init(Sieve<ET,MT,nfixed> * const sieve);
     virtual ~Sampler()=0; //needs to be virtual
     virtual SamplerType  sampler_type() const {return SamplerType::user_defined;};    //run-time type information.
                                                                     //This may be used to determine how to interpret a dump file.
@@ -138,7 +138,7 @@ class Sampler
 
 template <class ET,bool MT, class Engine, class Sseq, int nfixed> Sampler<ET,MT, Engine,Sseq,nfixed>::~Sampler() {} //actually needed, even though destructor is pure virtual as the base class destructor is eventually called implicitly.
 
-template <class ET,bool MT, class Engine, class Sseq, int nfixed> void Sampler<ET,MT,Engine,Sseq,nfixed>::init(Sieve<ET,MT> * const sieve)
+template <class ET,bool MT, class Engine, class Sseq, int nfixed> void Sampler<ET,MT,Engine,Sseq,nfixed>::init(Sieve<ET,MT,nfixed> * const sieve)
 {
     sieveptr = sieve;
     engine.init(sieve->get_num_threads());
