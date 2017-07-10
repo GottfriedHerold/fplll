@@ -10,8 +10,8 @@
 //forward declarations
 
 template<class ET,bool MT, class Engine, class Sseq, int nfixed=-1> class Sampler;
-template<class ET,bool MT, class Engine, class Sseq, int nfixed> ostream & operator<<(ostream &os, Sampler<ET,MT, Engine, Sseq, nfixed>* const samplerptr); //printing
-template<class ET,bool MT, class Engine, class Sseq, int nfixed> istream & operator>>(istream &is, Sampler<ET,MT, Engine, Sseq, nfixed>* const samplerptr); //reading (may also be used by constructor from istream)
+template<class ET,bool MT, class Engine, class Sseq, int nfixed> std::ostream & operator<<(std::ostream &os, Sampler<ET,MT, Engine, Sseq, nfixed>* const samplerptr); //printing
+template<class ET,bool MT, class Engine, class Sseq, int nfixed> std::istream & operator>>(std::istream &is, Sampler<ET,MT, Engine, Sseq, nfixed>* const samplerptr); //reading (may also be used by constructor from istream)
 enum class SamplerType
 {
     user_defined = 0,
@@ -112,8 +112,8 @@ class Sampler
 {
     public:
     using SampleReturnType = typename GaussSieve::GaussSampler_ReturnType<ET,MT,nfixed>;
-    friend ostream & operator<< <ET,MT>(ostream &os, Sampler<ET,MT,Engine,Sseq,nfixed>* const samplerptr);
-    friend istream & operator>> <ET,MT>(istream &is, Sampler<ET,MT,Engine,Sseq,nfixed>* const samplerptr);
+    friend std::ostream & operator<< <ET,MT>(std::ostream &os, Sampler<ET,MT,Engine,Sseq,nfixed>* const samplerptr);
+    friend std::istream & operator>> <ET,MT>(std::istream &is, Sampler<ET,MT,Engine,Sseq,nfixed>* const samplerptr);
 
     Sampler<ET,MT,Engine,Sseq,nfixed> (Sseq & initial_seed): engine(initial_seed), sieveptr(nullptr)                      {}
     //We call init first, then custom_init (via init).
@@ -129,8 +129,8 @@ class Sampler
 
     private:
     virtual void custom_init()                                                                  {}         //called before any points are sampled;
-    virtual ostream & dump_to_stream(ostream &os)  {return os;};    //dummy implementation of << operator.
-    virtual istream & read_from_stream(istream &is){return is;};    //dummy implementation of >> operator.
+    virtual std::ostream & dump_to_stream(std::ostream &os)  {return os;};    //dummy implementation of << operator.
+    virtual std::istream & read_from_stream(std::istream &is){return is;};    //dummy implementation of >> operator.
     protected:
     MTPRNG<Engine, MT, Sseq> engine; //or engines
     Sieve<ET,MT,nfixed> * sieveptr; //pointer to parent sieve. Set in init();
@@ -141,12 +141,12 @@ template <class ET,bool MT, class Engine, class Sseq, int nfixed> Sampler<ET,MT,
 template <class ET,bool MT, class Engine, class Sseq, int nfixed> void Sampler<ET,MT,Engine,Sseq,nfixed>::init(Sieve<ET,MT,nfixed> * const sieve)
 {
     sieveptr = sieve;
-    engine.init(sieve->get_num_threads());
+        engine.init(sieve->get_num_threads());
     custom_init();
 }
 
-template<class ET,bool MT, class Engine, class Sseq> ostream & operator<<(ostream &os,Sampler<ET,MT,Engine,Sseq>* const samplerptr){return samplerptr->dump_to_stream(os);};
-template<class ET,bool MT, class Engine, class Sseq> istream & operator>>(istream &is,Sampler<ET,MT,Engine,Sseq>* const samplerptr){return samplerptr->read_from_stream(is);};
+template<class ET,bool MT, class Engine, class Sseq> std::ostream & operator<<(std::ostream &os,Sampler<ET,MT,Engine,Sseq>* const samplerptr){return samplerptr->dump_to_stream(os);};
+template<class ET,bool MT, class Engine, class Sseq> std::istream & operator>>(std::istream &is,Sampler<ET,MT,Engine,Sseq>* const samplerptr){return samplerptr->read_from_stream(is);};
 
 
 
