@@ -25,12 +25,12 @@ template <class ET, bool MT, int nfixed> class GaussQueue;
 #include <queue>
 #include <utility>
 //#include "LatticePoint.h"
+#include "ShiSampler.h"
 #include "LatticePointsNew.h"
 #include "assert.h"
 #include "SieveGauss.h"
 #include "Sampler.h"
 //#include "EllipticSampler.h"
-#include "ShiSampler.h"
 
 
 //template<class ET,int nfixed> class IsLongerVector_class //TODO : Move to GaussQueue.h
