@@ -8,6 +8,10 @@
 //There is also an include guard SIEVE_JOINT_H, which is set _after_ we included this file at least once already.
 //Use this to condition on the second pass.
 
+#ifndef GAUSS_SIEVE_IS_MULTI_THREADED
+    #error wrong usage of SieveJoint.h
+#endif
+
 #undef DO_INCLUDE_SIEVE_JOINT_H
 #if GAUSS_SIEVE_IS_MULTI_THREADED == false
 
@@ -48,23 +52,12 @@ NEED TO GO HERE OR TO SieveGauss.h:
   These go before includes to allow cyclic dependencies
 */
 
+template<class ET, bool MultiThreaded, int nfixed> class Sieve;
+
+
 /* TODO: Move these into the files where they are used... */
 
 //template<class ET,bool MultiThreaded> class CompareQueue;
-
-
-template<class ET, bool MultiThreaded, int nfixed> class Sieve;
-
-/*
-struct CompareFilteredPoint {
-  bool operator() (const pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> & el1, const pair <LatticeApproximations::ApproxTypeNorm2, LatticeApproximations::ApproxTypeNorm2> & el2) const
-  { if (get<0>(el1)==get<0>(el2))
-        return get<1>(el1) > get<1>(el2);  // inner products are in the decreasing order
-    else
-        return get<0>(el1) < get<0>(el2); //length is in the increasing order
-  }
-};
-*/
 
 /*INCLUDES */
 
@@ -105,6 +98,9 @@ GO HERE.
 //    }
 //};
 
+#ifndef GAUSS_SIEVE_IS_MULTI_THREADED
+#error Something very bad just happened
+#endif
 
 template<class ET, int nfixed> class Sieve<ET, GAUSS_SIEVE_IS_MULTI_THREADED,nfixed >
 {
@@ -294,6 +290,8 @@ private:
 };
 
 template class Sieve<Z_NR<long>,GAUSS_SIEVE_IS_MULTI_THREADED,-1>;
+template class Sieve<Z_NR<double>,GAUSS_SIEVE_IS_MULTI_THREADED,-1>;
+template class Sieve<Z_NR<mpz_t>,GAUSS_SIEVE_IS_MULTI_THREADED,-1>;
 
 /*DUMPING / READING ROUTINES */
 
@@ -315,108 +313,6 @@ template class Sieve<Z_NR<long>,GAUSS_SIEVE_IS_MULTI_THREADED,-1>;
 Reads length(str) chars from stream is, expecting them to equal str. If what is read differs we output false. If verbose, we also display an error.
 */
 
-#define SIEVE_FILE_ID "kTuple-Sieve dump file"
-//version string for dump file
-#define SIEVE_VER_STR "Version TEST1"
-
-template<class ET,int nfixed>
-void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::dump_status_to_file(std::string const &outfilename, bool overwrite)
-{
-    assert(!check_whether_sieve_is_running());
-    if(verbosity>=2)
-    {
-        cout << "Dumping to file " << outfilename << " ..." << endl;
-    }
-    if(!overwrite)
-    {
-        //checks if file exists
-        struct stat buffer;
-        if (::stat(outfilename.c_str(), &buffer) == 0)
-        {
-            if (verbosity>=1)
-            {
-                cerr << "Trying to dump to existing file without overwrite flag set. Aborting dump." << endl;
-            }
-            return;
-        }
-    }
-    std::ofstream of(outfilename,std::ofstream::out | std::ofstream::trunc);
-    dump_status_to_stream(of, 3); //verbosity set to 3 to dump everything.
-    if(verbosity>=2)
-    {
-        cout << "Dump finished." << endl;
-    }
-}
-
-template<class ET,int nfixed>
-void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::dump_status_to_stream(ostream &of, int verb)
-{
-    int howverb = verb==-1 ? verbosity : verb;
-    if(howverb>=2) of << SIEVE_FILE_ID << endl;
-    if(howverb>=2) of << SIEVE_VER_STR << endl;
-    if(howverb>=2) of << "--Params--" << endl;
-    if(howverb>=2) of << "Multithreaded version=" << class_multithreaded << endl;
-    if(howverb>=1) of << "Multithreaded is wanted" << multi_threaded_wanted << endl;
-    #if GAUSS_SIEVE_IS_MULTI_THREADED==true
-    if(howverb>=1) of << "Number of Threads=" << num_threads_wanted << endl;
-    #endif
-    if(howverb>=2) of << "k=" << sieve_k << endl;
-    if(howverb>=2) of << "verbosity=" << verbosity << endl;
-    if(howverb>=1) of << "sieve_status=" << static_cast<int>(sieve_status) << endl;
-    if(howverb>=2) of << "Lattice rank=" << lattice_rank << endl;
-    if(howverb>=2) of << "Ambient dimension=" << ambient_dimension << endl;
-    if(howverb>=2) of << "Termination Conditions:" << endl;
-    if(howverb>=2) of << term_cond;
-    if(howverb>=2) of << "Sampler:"<< endl;
-    //if(howverb>=2) of << "Sampler Initialized" << static_cast<bool>(sampler!=nullptr) << endl;
-    //if(sampler!=nullptr)
-    //{
-    //    if(howverb>=3) cerr << "Note : Dumping of internal data of sampler not yet supported" << endl;
-    //    //dump internals of sampler?
-    //}
-    if(howverb>=3) of << "Original Basis:" << endl;
-    if(howverb>=3) of << original_basis;
-    if(howverb>=2) of << "--End of Params--" << endl << endl;
-    if(howverb>=1) of << "--Statistics--" << endl;
-    if(howverb>=1) of << "Number of collisions=" << number_of_collisions << endl;
-    if(howverb>=1) of << "Number of points Sampled=" << number_of_points_sampled << endl;
-    if(howverb>=1) of << "Number of points Constructed=" << number_of_points_constructed << endl;
-    if(howverb>=1) of << "Number of approx. scalar products=" << number_of_scprods << endl;
-    if(howverb>=1) of << "Number of exact scalar products=" << number_of_exact_scprods << endl;
-    if(howverb>=1) of << "Number of mispredictions=" << number_of_mispredictions << endl;
-    if(howverb>=1) of << "Current List Size=" << get_current_list_size() << endl;
-    if(howverb>=1) of << "Current Queue Size="<< get_current_queue_size()<< endl;
-    if(howverb>=1) of << "Best vector found so far=" << shortest_vector_found << endl; //TODO : Display length seperately
-    //TODO: Check output
-    // if(howverb>=1) {of << "sv is: "; main_list.cbegin().get_exact_point().printLatticePoint();} //TODO: Remove (shortest_vector_found above should rather do this).
-	// to check the ratio between the shortest and the longest vectors in the list
-//    if(howverb>=1) {
-//		auto it = main_list.cend();
-//		// operator--() is needed for tests
-//		--(it);
-//		of << "longest vector is: "; it.get_exact_point().printLatticePoint();
-//    }
-    if(howverb>=1) of << "--End of Statistics--" << endl << endl;
-    if(howverb>=3)
-    {
-        of << "--Main List--" << endl;
-
-        //TODO: ACTUALLY OUTPUT THE LIST
-
-//        for(auto it = main_list.cbegin(); it!=main_list.cend(); ++it)
-//        {
-//            of << (*it);
-//        }
-        of << "--End of Main List--" << endl << endl;
-        of << "--Main Queue--" << endl;
-//  for(auto it = main_queue.begin();it!=main_queue.end();++it)
-        cerr << "Dumping of main queue not supported yet.";
-        of << "--End of Main Queue--";
-        {
-
-        }
-    }
-}
 
 #define SIEVE_JOINT_H
 #endif // DO_INCLUDE_SIEVE_JOINT_H

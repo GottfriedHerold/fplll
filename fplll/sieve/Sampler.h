@@ -133,7 +133,7 @@ class Sampler
     virtual istream & read_from_stream(istream &is){return is;};    //dummy implementation of >> operator.
     protected:
     MTPRNG<Engine, MT, Sseq> engine; //or engines
-    Sieve<ET,MT> * sieveptr; //pointer to parent sieve. Set in init();
+    Sieve<ET,MT,nfixed> * sieveptr; //pointer to parent sieve. Set in init();
 };
 
 template <class ET,bool MT, class Engine, class Sseq, int nfixed> Sampler<ET,MT, Engine,Sseq,nfixed>::~Sampler() {} //actually needed, even though destructor is pure virtual as the base class destructor is eventually called implicitly.

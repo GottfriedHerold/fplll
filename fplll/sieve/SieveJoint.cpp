@@ -1,42 +1,149 @@
-#undef DO_INCLUDE_SIEVE_JOINT_CPP
+//#undef DO_INCLUDE_SIEVE_JOINT_CPP
+//#ifndef GAUSS_SIEVE_IS_MULTI_THREADED
+//    #error wrong usage of SieveJoint.cpp --1
+//#endif
+//
+//#if GAUSS_SIEVE_IS_MULTI_THREADED == false
+//    #if !defined(SIEVE_GAUSS_SINGLE_THREADED)
+//        #error wrong usage of SieveJoint.cpp -- 2
+//    #endif
+//
+//    #ifndef SIEVE_JOINT_CPP_ST
+//        #define SIEVE_JOINT_CPP_ST
+//        #define DO_INCLUDE_SIEVE_JOINT_CPP
+//    #endif
+//#elif GAUSS_SIEVE_IS_MULTI_THREADED == true
+//    #if !defined(SIEVE_GAUSS_MULTI_THREADED)
+//        #error wrong usage of SieveJoint.cpp -- 3
+//    #endif
+//    #ifndef SIEVE_JOINT_CPP_MT
+//        #define SIEVE_JOINT_CPP_MT
+//        #define DO_INCLUDE_SIEVE_JOINT_CPP
+//    #endif
+//#endif
+//
+//#ifdef DO_INCLUDE_SIEVE_JOINT_CPP
+//
+////actual code starts here.
+////Be aware that code may be read twice.
+//
+//#ifndef SIEVE_JOINT_CPP //code in this block only read once.
+//
+//
+//
+////End of things included only once.
+//#endif // SIEVE_JOINT_CPP
+
 #ifndef GAUSS_SIEVE_IS_MULTI_THREADED
-#error wrong usage of SieveJoint.cpp --1
+    #error wrong usage of SieveJoint.cpp --1
 #endif
 
-#if GAUSS_SIEVE_IS_MULTI_THREADED == false
+#define SIEVE_GAUSS_H //This means that SieveGauss.h is already included. SieveGauss really is a wrapper around SieveJoint.h, and here we have to call SieveJoint.h direcly.
+#include "SieveJoint.h" //will include it with GAUSS_SIEVE_IS_MULTI_THREADED set correctly. This file is actually allowed to include SieveJoint.h directly.
 
-#if !defined(SIEVE_GAUSS_SINGLE_THREADED)
-#error wrong usage of SieveJoint.cpp -- 2
-#endif
+#define SIEVE_FILE_ID "kTuple-Sieve dump file"
+//version string for dump file
+#define SIEVE_VER_STR "Version TEST1"
 
-#ifndef SIEVE_JOINT_CPP_ST
-#define SIEVE_JOINT_CPP_ST
-#define DO_INCLUDE_SIEVE_JOINT_CPP
-#endif
+template<class ET,int nfixed>
+void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::dump_status_to_file(std::string const &outfilename, bool overwrite)
+{
+    assert(!check_whether_sieve_is_running());
+    if(verbosity>=2)
+    {
+        cout << "Dumping to file " << outfilename << " ..." << endl;
+    }
+    if(!overwrite)
+    {
+        //checks if file exists
+        struct stat buffer;
+        if (::stat(outfilename.c_str(), &buffer) == 0)
+        {
+            if (verbosity>=1)
+            {
+                cerr << "Trying to dump to existing file without overwrite flag set. Aborting dump." << endl;
+            }
+            return;
+        }
+    }
+    std::ofstream of(outfilename,std::ofstream::out | std::ofstream::trunc);
+    dump_status_to_stream(of, 3); //verbosity set to 3 to dump everything.
+    if(verbosity>=2)
+    {
+        cout << "Dump finished." << endl;
+    }
+}
 
-#elif GAUSS_SIEVE_IS_MULTI_THREADED == true
-#if !defined(SIEVE_GAUSS_MULTI_THREADED)
-#error wrong usage of SieveJoint.cpp -- 3
-#endif
+template<class ET,int nfixed>
+void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::dump_status_to_stream(ostream &of, int verb)
+{
+    int howverb = verb==-1 ? verbosity : verb;
+    if(howverb>=2) of << SIEVE_FILE_ID << endl;
+    if(howverb>=2) of << SIEVE_VER_STR << endl;
+    if(howverb>=2) of << "--Params--" << endl;
+    if(howverb>=2) of << "Multithreaded version=" << class_multithreaded << endl;
+    if(howverb>=1) of << "Multithreaded is wanted" << multi_threaded_wanted << endl;
+    #if GAUSS_SIEVE_IS_MULTI_THREADED==true
+    if(howverb>=1) of << "Number of Threads=" << num_threads_wanted << endl;
+    #endif
+    if(howverb>=2) of << "k=" << sieve_k << endl;
+    if(howverb>=2) of << "verbosity=" << verbosity << endl;
+    if(howverb>=1) of << "sieve_status=" << static_cast<int>(sieve_status) << endl;
+    if(howverb>=2) of << "Lattice rank=" << lattice_rank << endl;
+    if(howverb>=2) of << "Ambient dimension=" << ambient_dimension << endl;
+    if(howverb>=2) of << "Termination Conditions:" << endl;
+    if(howverb>=2) of << term_cond;
+    if(howverb>=2) of << "Sampler:"<< endl;
+    //if(howverb>=2) of << "Sampler Initialized" << static_cast<bool>(sampler!=nullptr) << endl;
+    //if(sampler!=nullptr)
+    //{
+    //    if(howverb>=3) cerr << "Note : Dumping of internal data of sampler not yet supported" << endl;
+    //    //dump internals of sampler?
+    //}
+    if(howverb>=3) of << "Original Basis:" << endl;
+    if(howverb>=3) of << original_basis;
+    if(howverb>=2) of << "--End of Params--" << endl << endl;
+    if(howverb>=1) of << "--Statistics--" << endl;
+    if(howverb>=1) of << "Number of collisions=" << number_of_collisions << endl;
+    if(howverb>=1) of << "Number of points Sampled=" << number_of_points_sampled << endl;
+    if(howverb>=1) of << "Number of points Constructed=" << number_of_points_constructed << endl;
+    if(howverb>=1) of << "Number of approx. scalar products=" << number_of_scprods << endl;
+    if(howverb>=1) of << "Number of exact scalar products=" << number_of_exact_scprods << endl;
+    if(howverb>=1) of << "Number of mispredictions=" << number_of_mispredictions << endl;
+    if(howverb>=1) of << "Current List Size=" << get_current_list_size() << endl;
+    if(howverb>=1) of << "Current Queue Size="<< get_current_queue_size()<< endl;
+    if(howverb>=1) of << "Best vector found so far=" << shortest_vector_found << endl; //TODO : Display length seperately
+    //TODO: Check output
+    // if(howverb>=1) {of << "sv is: "; main_list.cbegin().get_exact_point().printLatticePoint();} //TODO: Remove (shortest_vector_found above should rather do this).
+	// to check the ratio between the shortest and the longest vectors in the list
+//    if(howverb>=1) {
+//		auto it = main_list.cend();
+//		// operator--() is needed for tests
+//		--(it);
+//		of << "longest vector is: "; it.get_exact_point().printLatticePoint();
+//    }
+    if(howverb>=1) of << "--End of Statistics--" << endl << endl;
+    if(howverb>=3)
+    {
+        of << "--Main List--" << endl;
 
-#ifndef SIEVE_JOINT_CPP_MT
-#define SIEVE_JOINT_CPP_MT
-#define DO_INCLUDE_SIEVE_JOINT_CPP
-#endif
+        //TODO: ACTUALLY OUTPUT THE LIST
 
-#endif
+//        for(auto it = main_list.cbegin(); it!=main_list.cend(); ++it)
+//        {
+//            of << (*it);
+//        }
+        of << "--End of Main List--" << endl << endl;
+        of << "--Main Queue--" << endl;
+//  for(auto it = main_queue.begin();it!=main_queue.end();++it)
+        cerr << "Dumping of main queue not supported yet.";
+        of << "--End of Main Queue--";
+        {
 
-#ifdef DO_INCLUDE_SIEVE_JOINT_CPP
+        }
+    }
+}
 
-//actual code starts here.
-//Be aware that code may be read twice.
-
-#ifndef SIEVE_JOINT_CPP //code in this block only read once.
-
-
-
-//End of things included only once.
-#endif // SIEVE_JOINT_CPP
 
 template<class ET, int nfixed> //ET : underlying entries of the vectors. Should be a Z_NR<foo> - type.
 #if GAUSS_SIEVE_IS_MULTI_THREADED==true
@@ -123,5 +230,5 @@ bool Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::check_if_done()
 //    sieve_status = SieveStatus::sieve_status_finished;
 //}
 
-#define SIEVE_JOINT_CPP
-#endif
+//#define SIEVE_JOINT_CPP
+//#endif

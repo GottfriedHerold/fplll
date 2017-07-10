@@ -4,10 +4,10 @@
 
 //TODO : explain
 
+#define SIEVE_GAUSS_SINGLE_THREADED
+
 #ifndef SIEVE_GAUSS_H
 #define SIEVE_GAUSS_H
-
-#define SIEVE_GAUSS_SINGLE_THREADED
 
 //SIEVE_GAUSS_SINGLE_THREADED : if defined by user, means that we request the single-threaded implementation
 //SIEVE_GAUSS_MULTI_THREADED  : if defined by user, means that we request the multi -threaded implementation
@@ -49,16 +49,16 @@ using SieveMT = Sieve<ET,true>;
 #ifdef SIEVE_GAUSS_SINGLE_THREADED
 #define GAUSS_SIEVE_IS_MULTI_THREADED false
 #include "SieveJoint.h"
-#include "SieveJoint.cpp"
-#include "SieveST.cpp"
+//#include "SieveJoint.cpp"
+//#include "SieveST.cpp"
 #undef GAUSS_SIEVE_IS_MULTI_THREADED
 #endif // SIEVE_GAUSS_SINGLE_THREADED
 
 #ifdef SIEVE_GAUSS_MULTI_THREADED
 #define GAUSS_SIEVE_IS_MULTI_THREADED true
 #include "SieveJoint.h"
-#include "SieveJoint.cpp"
-#include "SieveMT.cpp"
+//#include "SieveJoint.cpp"
+//#include "SieveMT.cpp"
 #undef GAUSS_SIEVE_IS_MULTI_THREADED
 #endif // SIEVE_GAUSS_MULTI_THREADED
 

@@ -1,4 +1,4 @@
-LatticeApproximationsNew::ApproximationNorm2Type GaussSieve::compute_vec_sc_product(LatticeApproximationsNew::ApproximationEntriesType const * const arg1, LatticeApproximationsNew::ApproximationEntriesType const * const arg2, int const dim)
+inline LatticeApproximationsNew::ApproximationNorm2Type GaussSieve::compute_vec_sc_product(LatticeApproximationsNew::ApproximationEntriesType const * const arg1, LatticeApproximationsNew::ApproximationEntriesType const * const arg2, int const dim)
 {
     return std::inner_product(arg1, arg1+dim, arg2,0);
 }

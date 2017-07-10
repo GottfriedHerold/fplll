@@ -76,7 +76,7 @@ public:
     using size_type = typename QueueType::size_type;
     //using SamplerType =    KleinSampler<typename ET::underlying_data_type, FP_NR<double> > ;
     GaussQueue()=delete;
-    GaussQueue(Sieve<ET,false> *caller_sieve); //only constructor
+    GaussQueue(Sieve<ET,false,nfixed> *caller_sieve); //only constructor
     GaussQueue(GaussQueue const &old) = delete;
     GaussQueue(GaussQueue &&old) = delete;
     GaussQueue& operator= (GaussQueue const &old)=delete;
@@ -103,7 +103,7 @@ public:
 
 private:
     QueueType main_queue;           //actual queue of lattice points to be processed.
-    Sieve<ET,false>* gauss_sieve;   //pointer to caller object.
+    Sieve<ET,false,nfixed>* gauss_sieve;   //pointer to caller object.
     //SamplerType *sampler; //controlled by the GaussSieve currently. TODO: Change that
 public:
     Sampler<ET,false,std::mt19937_64, std::seed_seq> * sampler; //or a type derived from it.

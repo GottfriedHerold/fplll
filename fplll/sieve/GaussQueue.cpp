@@ -1,6 +1,6 @@
 
 
-template<class ET,int nfixed> GaussQueue<ET,false,nfixed>::GaussQueue( Sieve<ET,false> *caller_sieve)  //constructor
+template<class ET,int nfixed> GaussQueue<ET,false,nfixed>::GaussQueue( Sieve<ET,false,nfixed> *caller_sieve)  //constructor
 :
 main_queue(),
 gauss_sieve(caller_sieve),

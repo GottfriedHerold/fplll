@@ -2,7 +2,7 @@
 #define GAUSS_SIEVE_UTILITY_H
 
 #include "PointListNew.h"
-
+#include <type_traits>
 
 //class that ignores its argument. Can be used to optimize away unused parameters in function templates...
 class IgnoreAnyArg{
@@ -14,7 +14,7 @@ class IgnoreAnyArg{
 template<class T>
 class IgnoreArg{
     public:
-    constexpr IgnoreArg(T val){}
+    inline constexpr IgnoreArg(T val){}
 };
 
 template<int nfixed=-1> class Dimension;
@@ -25,7 +25,7 @@ class Dimension<-1>{
     using IsFixed=false_type;
     Dimension(int new_dim):dim(new_dim){assert(false);};
     Dimension(){assert(false);};
-    operator unsigned int() const {return dim;};
+    inline operator unsigned int() const {return dim;};
     unsigned int dim;
 };
 
@@ -35,14 +35,14 @@ class Dimension{
     using IsFixed=true_type;
     Dimension(){};
     Dimension(IgnoreArg<unsigned int> new_dim){}; //assert(new_dim==nfixed);}
-    constexpr operator unsigned int() {return nfixed;};
+    inline constexpr operator unsigned int() {return nfixed;};
     static constexpr unsigned int dim = nfixed;
 };
 
 namespace GaussSieve //helper functions
 {
-    bool string_consume(istream &is, std::string const & str, bool elim_ws= true, bool verbose=true);   //helper function for dumping/reading
-    Z_NR<mpz_t> compute_mink_bound(ZZ_mat<mpz_t> const & basis);                                        //computes a meaningful Minkowski bound for the length of the shortest vector
+inline    bool string_consume(istream &is, std::string const & str, bool elim_ws= true, bool verbose=true);   //helper function for dumping/reading
+inline    Z_NR<mpz_t> compute_mink_bound(ZZ_mat<mpz_t> const & basis);                                        //computes a meaningful Minkowski bound for the length of the shortest vector
 
 //    template<class ET>
 //    inline bool Compare_Sc_Prod(ApproxLatticePoint<ET,false,-1> const & arg1, ApproxLatticePoint<ET,false,-1> const & arg2, ApproxTypeNorm2 abslimit, int limit_exp, int dim);

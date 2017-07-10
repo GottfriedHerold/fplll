@@ -1,3 +1,4 @@
+
 //template<class ET>
 //bool GaussSieve::check_perform_2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2)
 //{
@@ -213,7 +214,7 @@
 //If str is not on the stream, outputs an error.
 //Note that whitespace inside str is OK, as long as it is not at the beginning or end.
 
-bool GaussSieve::string_consume(istream &is, std::string const & str, bool elim_ws, bool verbose)
+inline bool GaussSieve::string_consume(istream &is, std::string const & str, bool elim_ws, bool verbose)
 {
     unsigned int len = str.length();
     char *buf = new char[len+1];
@@ -248,7 +249,8 @@ bool GaussSieve::string_consume(istream &is, std::string const & str, bool elim_
     return true;
 }
 
-Z_NR<mpz_t> GaussSieve::compute_mink_bound(ZZ_mat<mpz_t> const & basis)
+//namespace GaussSieve{
+inline Z_NR<mpz_t> GaussSieve::compute_mink_bound(ZZ_mat<mpz_t> const & basis)
 {
     assert(basis.get_rows() == basis.get_cols()); //Note : Alg might work even otherwise. This assertion failure is just a reminder that this needs to be checked.
     //compute Gram-Schmidt-Orthogonalization.
@@ -286,3 +288,5 @@ Z_NR<mpz_t> GaussSieve::compute_mink_bound(ZZ_mat<mpz_t> const & basis)
     cout << "Mink. bound = " << Minkowski << endl;
     return Minkowski;
 }
+
+//}
