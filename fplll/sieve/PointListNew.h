@@ -5,7 +5,6 @@
 #ifndef POINT_LIST_NEW_H
 #define POINT_LIST_NEW_H
 
-
 //ET : Entry type : type of entries of vectors we are dealing with. Usually an integral type like ET = Z_NR<long> or Z_NR<mpz_t>
 //DT : (fundamental) Data type : entries in our custom containers, i.e. lattice points, usually  DT = LatticePoint<ET>
 
@@ -139,7 +138,7 @@ class GaussIteratorNew<ET,false,nfixed>
     //(i.e. we might store the details in a compressed fashion to reduce memory complexity)
 
     //DetailType * access_details() {return it->get_details_ptr_rw();}; //Note: In multithreaded environment, there is no write access.
-    //ExactType get_exact_point() const {return *(it->get_details_ptr());}; //retrieves a copy of the exact value. preferably use this one.
+    //get_exact_point() const {return *(it->get_details_ptr());}; //retrieves a copy of the exact value. preferably use this one.
     ET get_true_norm2() const  {return it->get_exact_norm2();}; // Use this function to get the true norm2 value.
     //DerefType & deref_rw() {return *it;};
     private:

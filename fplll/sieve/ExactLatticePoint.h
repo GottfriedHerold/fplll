@@ -10,7 +10,7 @@ template <class ET,int nfixed> ExactLatticePoint<ET,nfixed> conv_matrixrow_to_la
 template <class ET,int nfixed> istream & operator>> (istream & is, ExactLatticePoint<ET,nfixed> & exact_point);
 template <class ET,int nfixed> ostream & operator<< (ostream & os, ExactLatticePoint<ET,nfixed> const & exact_point)
 {
-exact_point.print_lattice_point(os); return os;
+exact_point.print_exact_point(os); return os;
 }
 
 

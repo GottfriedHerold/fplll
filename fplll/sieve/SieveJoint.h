@@ -293,6 +293,8 @@ private:
 //TODO: total time spent?
 };
 
+template class Sieve<Z_NR<long>,GAUSS_SIEVE_IS_MULTI_THREADED,-1>;
+
 /*DUMPING / READING ROUTINES */
 
 //Note: Actually, we want an unformatted binary dump. Unfortunately, the underlying FPLLL types support only
@@ -385,22 +387,26 @@ void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::dump_status_to_stream(ostre
     if(howverb>=1) of << "Current List Size=" << get_current_list_size() << endl;
     if(howverb>=1) of << "Current Queue Size="<< get_current_queue_size()<< endl;
     if(howverb>=1) of << "Best vector found so far=" << shortest_vector_found << endl; //TODO : Display length seperately
-    if(howverb>=1) {of << "sv is: "; main_list.cbegin().get_exact_point().printLatticePoint();} //TODO: Remove (shortest_vector_found above should rather do this).
+    //TODO: Check output
+    // if(howverb>=1) {of << "sv is: "; main_list.cbegin().get_exact_point().printLatticePoint();} //TODO: Remove (shortest_vector_found above should rather do this).
 	// to check the ratio between the shortest and the longest vectors in the list
-    if(howverb>=1) {
-		auto it = main_list.cend();
-		// operator--() is needed for tests
-		--(it);
-		of << "longest vector is: "; it.get_exact_point().printLatticePoint();
-    }
+//    if(howverb>=1) {
+//		auto it = main_list.cend();
+//		// operator--() is needed for tests
+//		--(it);
+//		of << "longest vector is: "; it.get_exact_point().printLatticePoint();
+//    }
     if(howverb>=1) of << "--End of Statistics--" << endl << endl;
     if(howverb>=3)
     {
         of << "--Main List--" << endl;
-        for(auto it = main_list.cbegin(); it!=main_list.cend(); ++it)
-        {
-            of << (*it);
-        }
+
+        //TODO: ACTUALLY OUTPUT THE LIST
+
+//        for(auto it = main_list.cbegin(); it!=main_list.cend(); ++it)
+//        {
+//            of << (*it);
+//        }
         of << "--End of Main List--" << endl << endl;
         of << "--Main Queue--" << endl;
 //  for(auto it = main_queue.begin();it!=main_queue.end();++it)
