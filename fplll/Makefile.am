@@ -64,7 +64,7 @@ latsieve_SOURCES=sieve/old_sieving_files/sieve_main.cpp sieve/old_sieving_files/
 latsieve_LDADD=libfplll.la $(LIBQD_LIBADD)
 
 # newlatsieve bin
-newlatsieve_SOURCES=sieve/sieve_main.cpp sieve/SieveGauss.cpp
+newlatsieve_SOURCES=sieve/sieve_main.cpp sieve/SieveGauss.cpp sieve/Sampler.cpp sieve/GaussQueue.cpp
 newlatsieve_LDADD=libfplll.la $(LIBQD_LIBADD)
 newlatsieve_CXXFLAGS=-pthread $(AM_XCCFLAGS)
 

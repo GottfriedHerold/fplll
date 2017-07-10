@@ -1,3 +1,7 @@
+#include "ShiSampler.h"
+#include "Sampler.h"
+#include "LatticePointsNew.h"
+
 template<class ET,bool MT, class Engine, class Sseq> void ShiSampler<ET,MT,Engine,Sseq,-1>::custom_init()
 {
     current_basis = sieveptr->get_original_basis();
@@ -24,12 +28,13 @@ template<class ET,bool MT, class Engine, class Sseq> void ShiSampler<ET,MT,Engin
         maxdeviations[i] = tmp2.get_d() * cutoff;
     }
 }
+
 template<class ET,bool MT, class Engine, class Sseq> ShiSampler<ET,MT,Engine, Sseq>::~ShiSampler()
 {
 
 }
 
-template<class ET,bool MT, class Engine, class Sseq> typename GaussSieve::GaussSampler_ReturnType<ET,MT,-1> ShiSampler<ET,MT,Engine, Sseq>::sample(int thread)
+template<class ET,bool MT, class Engine, class Sseq> typename  Sampler<ET,MT,Engine,Sseq,-1>::SampleReturnType ShiSampler<ET,MT,Engine, Sseq>::sample(int thread)
 {
     assert(sieveptr!=nullptr);
     ExactLatticePoint<ET,-1> *vec = new ExactLatticePoint<ET,-1>(dim);

@@ -2,8 +2,6 @@
 #define GAUSS_QUEUE_H
 /* defines the classes used for the main Queues in the Gauss Sieve */
 
-template <class ET, bool MT, int nfixed> class GaussQueue;
-
 //template <class ET> class IsLongerVector_class; //class wrapper to compare vectors by length. Needs to be wrapped in a class to work seamlessly with some STL containers.
 //template <class ET> class IsLongerVector_classPtr;
 
@@ -27,11 +25,13 @@ template <class ET, bool MT, int nfixed> class GaussQueue;
 //#include "LatticePoint.h"
 #include "LatticePointsNew.h"
 #include "assert.h"
-#include "SieveGauss.h"
 #include "Sampler.h"
 //#include "EllipticSampler.h"
 #include "ShiSampler.h"
 
+template <class ET, bool MT, int nfixed> class GaussQueue;
+
+template<class ET, bool MultiThreaded, int nfixed> class Sieve;
 
 //template<class ET,int nfixed> class IsLongerVector_class //TODO : Move to GaussQueue.h
 //{
@@ -58,7 +58,7 @@ template<class ET,bool MT, int nfixed> class IsLongerVector_ExactPtr
 };
 
 namespace GaussSieve{
-template<class ET,bool MT, int nfixed> using GaussQueue_ReturnType = GaussSampler_ReturnType<ET,MT,nfixed>;
+template<class ET,bool MT, int nfixed> using GaussQueue_ReturnType = typename GaussSieve::GaussSampler_ReturnType<ET,MT,nfixed>;
 template<class ET,bool MT, int nfixed> using GaussQueue_DataType   = GaussQueue_ReturnType<ET,MT,nfixed>;
 };
 
@@ -88,6 +88,7 @@ public:
     size_type size() const          {return main_queue.size();};   //returns size of queue (used for diagnostics and statistics only)
     void push(DataType const &val) = delete; //puts a copy of val in the queue : deleted
     void push(DataType && val);     //uses move semantics for that.
+    [[deprecated("Don't use this, please")]]
     void push(DataType * &val); //uses move semantics! val is changed to nullptr
 
 //    [[deprecated("Ownership transfer clashes with compressed storage.")]]
@@ -103,11 +104,12 @@ public:
 
 private:
     QueueType main_queue;           //actual queue of lattice points to be processed.
-    Sieve<ET,false,nfixed>* gauss_sieve;   //pointer to caller object.
+    Sieve<ET,false, nfixed>* gauss_sieve;   //pointer to caller object.
     //SamplerType *sampler; //controlled by the GaussSieve currently. TODO: Change that
 public:
-    Sampler<ET,false,std::mt19937_64, std::seed_seq> * sampler; //or a type derived from it.
+    Sampler<ET,false,std::mt19937_64, std::seed_seq, nfixed> * sampler; //or a type derived from it.
 };
+
 
 /*
 template<class ET> //multi-threaded version:
@@ -157,8 +159,11 @@ private:
 
 */
 
-#include "GaussQueue.cpp"
-
 template class GaussQueue<Z_NR<long>,false,-1>;
+template class GaussQueue<Z_NR<double>,false,-1>;
+template class GaussQueue<Z_NR<mpz_t>,false,-1>;
+
+//Multi-threaded not implemented yet.
+
 
 #endif // GAUSS_QUEUE_H

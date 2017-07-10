@@ -1,3 +1,5 @@
+#include "SieveGauss.h"
+#include "GaussQueue.h"
 
 
 template<class ET,int nfixed> GaussQueue<ET,false,nfixed>::GaussQueue( Sieve<ET,false,nfixed> *caller_sieve)  //constructor
@@ -9,7 +11,10 @@ sampler(nullptr)
     assert(caller_sieve!=nullptr);
     std::seed_seq seed{1,2,4}; //just some arbitrary numbers
     //sampler = new EllipticSampler<ET,false, std::mt19937_64, std::seed_seq> (seed);
-    sampler = new ShiSampler<ET,false, std::mt19937_64, std::seed_seq> (seed);
+    sampler = new ShiSampler<ET,false, std::mt19937_64, std::seed_seq,nfixed> (seed);
+
+    //TODO: Consider allowing the sampler to be changed by the caller. Forward seed.
+
 }
 
 //template<class ET>

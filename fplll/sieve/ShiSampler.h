@@ -1,10 +1,13 @@
 #ifndef SHI_SAMPLER_H //equivalent to Shi's old sampler, using new framework.
 #define SHI_SAMPLER_H
 
+//Class is completely defined in header.
+
 template<class ET, bool MT, class Engine, class Sseq, int nfixed=-1> class ShiSampler;
 
 #include <random>
 #include "Sampler.h"
+#include "SieveGauss.h"
 
 
 //only defined for nfixed==-1 for now.
@@ -14,10 +17,11 @@ class ShiSampler<ET,MT,Engine,Sseq,-1>: public Sampler<ET,MT, Engine, Sseq,-1>
 {
     public:
     ShiSampler(Sseq & seq, double const _cutoff = 2.0)
-        :   Sampler<ET,MT,Engine,Sseq>(seq), cutoff(_cutoff) {};
+        :   Sampler<ET,MT,Engine,Sseq,-1>(seq), cutoff(_cutoff) {};
     virtual SamplerType  sampler_type() const override                          {return SamplerType::shi_sampler;};
     virtual ~ShiSampler();
-    virtual typename GaussSieve::GaussSampler_ReturnType<ET,MT,-1> sample(int thread=0) override;
+    virtual typename Sampler<ET,MT,Engine,Sseq,-1>::SampleReturnType sample(int thread=0) override;
+    //virtual typename GaussSieve::GaussSampler_ReturnType<ET,MT,-1> sample(int thread=0) override;
     private:
     virtual void custom_init() override;
     ZZ_mat<typename ET::underlying_data_type> current_basis;
@@ -28,12 +32,10 @@ class ShiSampler<ET,MT,Engine,Sseq,-1>: public Sampler<ET,MT, Engine, Sseq,-1>
     unsigned int rank;
     double cutoff;
     protected:
-    using Sampler<ET,MT,Engine,Sseq>::sieveptr;
-    using Sampler<ET,MT,Engine,Sseq>::engine;
+    using Sampler<ET,MT,Engine,Sseq,-1>::sieveptr;
+    using Sampler<ET,MT,Engine,Sseq,-1>::engine;
 };
 
 #include "ShiSampler.cpp"
-
-
 
 #endif
