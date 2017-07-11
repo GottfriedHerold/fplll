@@ -5,6 +5,7 @@
   based on Panagiotis Voulgaris's implementation of the Gauss sieve.
 */
 
+#include "GaussQueue.h"
 #include "Sampler.h"
 #include "sieve_main.h"
 #include "fplll.h"

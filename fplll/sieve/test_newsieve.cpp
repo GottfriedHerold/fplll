@@ -1,5 +1,7 @@
 //#define USE_REGULAR_QUEUE //comment out if you use priority-queue
 
+#include "GaussQueue.h"
+#include "Sampler.h"
 #include "sieve_main.h"
 #include "fplll.h"
 //#include "LatticePoint.h"
@@ -10,7 +12,6 @@
 //#include "LatticePoint2.h"
 #include <iostream>
 #include <fstream>
-#include "Sampler.h"
 #include <random>
 //#include "FilteredList.h"
 
