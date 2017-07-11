@@ -38,6 +38,7 @@ template <class DT> class GarbageBin;
 #include <stack>
 //#include "sieve_common.h"
 #include "LatticePointsNew.h"
+#include "Typedefs.h"
 
 //Class for (weakly?) sorted list of lattice points.
 //includes thread-safe variant(s). May need experiments which implementation is best. (mutex on whole structure on every write, lock-free,...)
@@ -47,14 +48,6 @@ template <class DT> class GarbageBin;
 //The structure of the algorithm allows for relatively simple garbage collection.
 //Note that we do NOT assume a sequentially constistent memory model here. Relaxing from that should gain a bit of performance:
 //Be aware that reading time from the lattice point list even asymptotically leading order.
-
-namespace GaussSieve //Some type declarations used in the GaussList class templates
-{
-    template<class ET, int nfixed> using GaussList_ST_UnderlyingContainer = std::list<CompressedPoint<ET,false,nfixed> >;
-    template<class ET, bool MT, int nfixed> using GaussList_Iterator = GaussIteratorNew<ET,false,nfixed>;
-    template<class ET, bool MT, int nfixed> using GaussList_DereferencesTo = ApproximateLatticePoint<ET,nfixed>;
-    template<class ET, bool MT, int nfixed> using GaussList_StoredPoint = CompressedPoint<ET,MT,nfixed>;
-};
 
 
 template <class ET,int nfixed>
@@ -66,7 +59,7 @@ public:
     using DataType = GaussSieve::GaussList_StoredPoint<ET,false,nfixed>;
     //using DataPointer=DataType *;
     using UnderlyingContainer = typename GaussSieve::GaussList_ST_UnderlyingContainer<ET,nfixed>;
-    using Iterator = typename GaussSieve::GaussList_Iterator<ET,false,nfixed>;
+    using Iterator = GaussIteratorNew<ET,false,nfixed>;
     //using DetailType = typename DataType::DetailType;
     //using ExactType = LatticePoint<ET>;
 

@@ -10,6 +10,8 @@
 
 //forward declarations
 
+template<class ET,bool MT, int nfixed> class Sieve;
+
 template<class ET,bool MT, class Engine, class Sseq, int nfixed=-1> class Sampler;
 template<class ET,bool MT, class Engine, class Sseq, int nfixed> std::ostream & operator<<(std::ostream &os, Sampler<ET,MT, Engine, Sseq, nfixed>* const samplerptr); //printing
 template<class ET,bool MT, class Engine, class Sseq, int nfixed> std::istream & operator>>(std::istream &is, Sampler<ET,MT, Engine, Sseq, nfixed>* const samplerptr); //reading (may also be used by constructor from istream)
@@ -44,7 +46,6 @@ namespace GaussSieve
 }
 
 //includes
-#include "SieveGauss.h"
 #include "LatticePointsNew.h"
 
 //The class MTPRNG is just a wrapper around a PRNG engine to facilitate switching to multi-threaded.
@@ -70,7 +71,7 @@ template<class Engine, class Sseq>  class MTPRNG<Engine,true, Sseq> //multithrea
                                                 //Reducing the number of threads and increasing it back saves the random state (unless we reseed).
     Engine & rnd(unsigned int const thread)                                 {return engines[thread];};
     private:
-    std::mt19937 seeder; //seeded with initial seq and consecutively used to seed the children PRNGs.
+    std::mt19937_64 seeder; //seeded with initial seq and consecutively used to seed the children PRNGs.
     std::vector<Engine> engines;
     unsigned int num_threads; //number of initialized engines. May differ from size of the vector. In particular, num_threads = 0 means uninitialized.
     Sseq seq;
@@ -129,6 +130,10 @@ class Sampler
     Sieve<ET,MT,nfixed> * sieveptr; //pointer to parent sieve. Set in init();
 };
 
+
+#include "SieveGauss.h"
+
+
 template <class ET,bool MT, class Engine, class Sseq, int nfixed> Sampler<ET,MT, Engine,Sseq,nfixed>::~Sampler() {} //actually needed, even though destructor is pure virtual as the base class destructor is eventually called implicitly.
 
 template <class ET,bool MT, class Engine, class Sseq, int nfixed> void Sampler<ET,MT,Engine,Sseq,nfixed>::init(Sieve<ET,MT,nfixed> * const sieve)
@@ -145,9 +150,9 @@ template<class ET,bool MT, class Engine, class Sseq> std::istream & operator>>(s
 
 #include "Sampler.cpp"
 
-template class MTPRNG<std::mt19937,false, std::seed_seq>;
+template class MTPRNG<std::mt19937_64,false, std::seed_seq>;
 //template class MTPRNG<std::mt19937,true,  std::seed_seq>;
-template class Sampler<Z_NR<long>, false, std::mt19937,std::seed_seq>;
+template class Sampler<Z_NR<long>, false, std::mt19937_64,std::seed_seq>;
 //template class Sampler<Z_NR<long>, true,  std::mt19937,std::seed_seq>;
 
 #endif

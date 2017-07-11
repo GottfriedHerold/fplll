@@ -31,7 +31,7 @@ template<class Engine, class Sseq> void MTPRNG<Engine,true,Sseq>::init(unsigned 
 
 template<class Engine, class Sseq> void MTPRNG<Engine,false,Sseq>::reseed(Sseq & _seq)
 {
-    std::mt19937 seeder(_seq);
+    std::mt19937_64 seeder(_seq);
     uint32_t per_engine_seed[seed_length];
     for(unsigned int j=0;j<seed_length;++j)
     {

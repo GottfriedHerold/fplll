@@ -24,12 +24,11 @@ template <class ET, bool MT, int nfixed> class GaussQueue;
 #include <atomic>
 #include <queue>
 #include <utility>
+#include <random>
 //#include "LatticePoint.h"
-#include "ShiSampler.h"
 #include "LatticePointsNew.h"
 #include "assert.h"
-#include "SieveGauss.h"
-#include "Sampler.h"
+#include "Typedefs.h"
 //#include "EllipticSampler.h"
 
 
@@ -49,6 +48,10 @@ template <class ET, bool MT, int nfixed> class GaussQueue;
 //    }
 //};
 
+//forward-declarations:
+template<class ET,bool MT, int nfixed> class Sieve;
+template<class ET,bool MT, class Engine, class Sseq, int nfixed> class Sampler;
+
 template<class ET,bool MT, int nfixed> class IsLongerVector_ExactPtr
 {
     public: bool operator() (CompressedPoint<ET,MT,nfixed>* const &A, CompressedPoint<ET,MT,nfixed>* const & B)
@@ -57,10 +60,6 @@ template<class ET,bool MT, int nfixed> class IsLongerVector_ExactPtr
     }
 };
 
-namespace GaussSieve{
-template<class ET,bool MT, int nfixed> using GaussQueue_ReturnType = GaussSampler_ReturnType<ET,MT,nfixed>;
-template<class ET,bool MT, int nfixed> using GaussQueue_DataType   = GaussQueue_ReturnType<ET,MT,nfixed>;
-};
 
 template<class ET,int nfixed> //single-threaded version:
 class GaussQueue<ET,false,nfixed>
@@ -106,8 +105,14 @@ private:
     Sieve<ET,false,nfixed>* gauss_sieve;   //pointer to caller object.
     //SamplerType *sampler; //controlled by the GaussSieve currently. TODO: Change that
 public:
-    Sampler<ET,false,std::mt19937_64, std::seed_seq> * sampler; //or a type derived from it.
+    Sampler<ET,false,std::mt19937_64, std::seed_seq,nfixed> * sampler; //or a type derived from it.
 };
+
+#include "SieveGauss.h"
+#include "ShiSampler.h"
+#include "Sampler.h"
+
+
 
 /*
 template<class ET> //multi-threaded version:

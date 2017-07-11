@@ -17,4 +17,18 @@ long double constexpr   pi          = 3.1415926535897932384626433832795028841971
 };
 
 
+namespace GaussSieve{
+template<class ET,bool MT, int nfixed> using GaussQueue_ReturnType = GaussSampler_ReturnType<ET,MT,nfixed>;
+template<class ET,bool MT, int nfixed> using GaussQueue_DataType   = GaussQueue_ReturnType<ET,MT,nfixed>;
+};
+
+namespace GaussSieve //Some type declarations used in the GaussList class templates
+{
+    template<class ET, int nfixed> using GaussList_ST_UnderlyingContainer = std::list<CompressedPoint<ET,false,nfixed> >;
+    //template<class ET, bool MT, int nfixed> using GaussList_Iterator = GaussIteratorNew<ET,false,nfixed>;
+    template<class ET, bool MT, int nfixed> using GaussList_DereferencesTo = ApproximateLatticePoint<ET,nfixed>;
+    template<class ET, bool MT, int nfixed> using GaussList_StoredPoint = CompressedPoint<ET,MT,nfixed>;
+};
+
+
 #endif
