@@ -233,18 +233,7 @@ template<> class MaybeRational<Z_NR<double>> {public: static bool constexpr val=
 //}
 
 
-#include "LatticePointsNew.cpp"
 
-//instantiate for appropriate types
-template class ExactLatticePoint<Z_NR<long>>;
-template class ExactLatticePoint<Z_NR<double>>;
-template class ExactLatticePoint<Z_NR<mpz_t>>;
-template class ApproximateLatticePoint<Z_NR<long>>;
-template class ApproximateLatticePoint<Z_NR<double>>;
-template class ApproximateLatticePoint<Z_NR<mpz_t>>;
-template class CompressedPoint<Z_NR<long>,false>;
-template class CompressedPoint<Z_NR<mpz_t>,false>;
-template class CompressedPoint<Z_NR<double>,false>;
 
 #endif
 

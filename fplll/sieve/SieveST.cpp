@@ -5,7 +5,8 @@
 #error SieveST.cpp included with wrong macro settings
 #endif
 
-#include "Utility.h"
+//We may always assumed that SieveJoint.cpp is prepended before this file
+
 
 //class next_block;
 //using namespace LatticeApproximations; // to be able to use ApproxTypeNorm2 to store inner-produces scaled by length

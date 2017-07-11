@@ -2,6 +2,7 @@
 #define SHI_SAMPLER_CPP
 
 #include "ShiSampler.h"
+#include "Sampler.cpp"
 
 template<class ET,bool MT, class Engine, class Sseq> void ShiSampler<ET,MT,Engine,Sseq,-1>::custom_init()
 {

@@ -108,9 +108,7 @@ public:
     Sampler<ET,false,std::mt19937_64, std::seed_seq,nfixed> * sampler; //or a type derived from it.
 };
 
-#include "SieveGauss.h"
-#include "ShiSampler.h"
-#include "Sampler.h"
+
 
 
 
@@ -162,8 +160,6 @@ private:
 
 */
 
-#include "GaussQueue.cpp"
 
-template class GaussQueue<Z_NR<long>,false,-1>;
 
 #endif // GAUSS_QUEUE_H

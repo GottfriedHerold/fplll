@@ -1,3 +1,5 @@
+#pragma deprecated //actually not deprecated, just not working ATM
+
 #ifndef SIEVE_GAUSS_MULTI_THREADED_CPP
 #define SIEVE_GAUSS_MULTI_THREADED_CPP
 

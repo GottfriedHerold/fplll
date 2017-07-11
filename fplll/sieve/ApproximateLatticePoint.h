@@ -2,9 +2,6 @@
 #define APPROXIMATE_LATTICE_POINT_H
 
 
-#include "assert.h"
-#include <cmath>
-
 /*
     ApproximateLatticePoint stores an approximation to a lattice point in the form
     2^exponent * (mantissa), where exponent is shared among coordinates and
@@ -83,8 +80,5 @@ inline                                 LatticeApproximationsNew::ApproximationNo
 //FIXME: templating by nfixed does not work here. Correct way is to make ApproxEntryType* a template.
 //The error message is weird and makes me suspect compiler bugs (the issue is with template function signature not depending on template param, but it give namespace errors (GCC)
 };
-
-
-#include "ApproximateLatticePoint.cpp"
 
 #endif // APPROX_LATTICE_POINT_H

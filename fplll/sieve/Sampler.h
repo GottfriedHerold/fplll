@@ -148,11 +148,6 @@ template<class ET,bool MT, class Engine, class Sseq> std::istream & operator>>(s
 
 
 
-#include "Sampler.cpp"
 
-template class MTPRNG<std::mt19937_64,false, std::seed_seq>;
-//template class MTPRNG<std::mt19937,true,  std::seed_seq>;
-template class Sampler<Z_NR<long>, false, std::mt19937_64,std::seed_seq>;
-//template class Sampler<Z_NR<long>, true,  std::mt19937,std::seed_seq>;
 
 #endif

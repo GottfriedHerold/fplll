@@ -717,8 +717,5 @@ void GarbageBin<DT>::empty_trash()
 
 */
 
-#include "PointListNew.cpp"
-
-template class GaussListNew<Z_NR<long>,false,-1>;
 
 #endif

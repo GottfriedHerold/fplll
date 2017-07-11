@@ -13,7 +13,7 @@
 //#include "PointList.h"
 #include <thread>
 #include <chrono>
-#include "SieveGauss.h"
+#include "SieveGauss.cpp"
 //#include "LatticePoint2.h"
 #include "TermCondNew.h"
 //#include "FilteredPoint.h"

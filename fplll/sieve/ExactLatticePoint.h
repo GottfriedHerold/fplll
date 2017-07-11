@@ -1,14 +1,16 @@
 #ifndef EXACT_LATTICE_POINT_H
 #define EXACT_LATTICE_POINT_H
 
+#include <iostream>
+
 /*
     ExactLatticePoint stores an (exact) lattice point, together with its squared length.
     We also have some elementary arithmetic (addition, substraction etc. ) defined on them.
 */
 
 template <class ET,int nfixed> ExactLatticePoint<ET,nfixed> conv_matrixrow_to_lattice_point (MatrixRow<ET> const &row);
-template <class ET,int nfixed> istream & operator>> (istream & is, ExactLatticePoint<ET,nfixed> & exact_point);
-template <class ET,int nfixed> ostream & operator<< (ostream & os, ExactLatticePoint<ET,nfixed> const & exact_point)
+template <class ET,int nfixed> std::istream & operator>> (std::istream & is, ExactLatticePoint<ET,nfixed> & exact_point);
+template <class ET,int nfixed> std::ostream & operator<< (std::ostream & os, ExactLatticePoint<ET,nfixed> const & exact_point)
 {
 exact_point.print_exact_point(os); return os;
 }
@@ -40,8 +42,8 @@ public:
         std::swap(A.data, B.data);
         std::swap(A.norm2,B.norm2);
     }
-    friend ostream & operator<< <ET,nfixed>(ostream &os, ExactLatticePoint<ET,nfixed> const & exact_point);     //printing
-    friend istream & operator>> <ET,nfixed>(istream &is, ExactLatticePoint<ET,nfixed> & exact_point) = delete;  //reading (may also be used by constructor from istream)
+    friend std::ostream & operator<< <ET,nfixed>(std::ostream &os, ExactLatticePoint<ET,nfixed> const & exact_point);     //printing
+    friend std::istream & operator>> <ET,nfixed>(std::istream &is, ExactLatticePoint<ET,nfixed> & exact_point) = delete;  //reading (may also be used by constructor from istream)
 
 
     NV const & access_vector() const {return *this;} //Probably not needed anyway.
@@ -50,7 +52,7 @@ public:
     //inline void get_norm2 (ET &norm_to_return) const {norm_to_return = norm2;}
     //inline void setNorm2 (ET norm) {this->norm2 = norm;} //should not be required, actually.
 
-    void print_exact_point(ostream & os = cout) const
+    void print_exact_point(std::ostream & os = cout) const
     {
         os << * (static_cast<NumVect<ET> const *>(this)) << " of norm: " << this->norm2 << endl;
     }
@@ -67,6 +69,5 @@ template <class ET,int nfixed> void scalar_mult (ExactLatticePoint<ET,nfixed> &A
 //template <class ET,int nfixed> void compute_exact_sc_product (ET &result, const ExactLatticePoint<ET,nfixed> &p1, const ExactLatticePoint<ET,nfixed> &p2); only use version above, for simplicity. With Return Value Optimization mandated by now, there is no reason for this.
 template <class ET,int nfixed> ExactLatticePoint<ET,nfixed> conv_matrixrow_to_lattice_point (MatrixRow<ET> const &row);
 template <class ET,int nfixed> ET exact_scalar_product(ExactLatticePoint<ET,nfixed> const &p1, ExactLatticePoint<ET,nfixed> const & p2);
-#include "ExactLatticePoint.cpp"
 
 #endif

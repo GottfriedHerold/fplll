@@ -1,6 +1,8 @@
 #ifndef COMPRESSED_LATTICE_POINT_H
 #define COMPRESSED_LATTICE_POINT_H
 
+#include "ExactLatticePoint.h"
+
 template<class ET, bool MT, int nfixed>
 class CompressedPoint
 {
@@ -67,5 +69,5 @@ template<class ET, bool MT, int nfixed> CompressedPoint<ET,MT,nfixed>::~Compress
 {
     delete details;
 }
-#include "CompressedPoint.cpp"
+
 #endif

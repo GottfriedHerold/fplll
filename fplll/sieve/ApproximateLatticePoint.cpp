@@ -2,6 +2,8 @@
 #define APPROXIMATE_LATTICE_POINT_CPP
 
 #include "ApproximateLatticePoint.h"
+#include "assert.h"
+#include <cmath>
 
 inline LatticeApproximationsNew::ApproximationNorm2Type GaussSieve::compute_vec_sc_product(LatticeApproximationsNew::ApproximationEntriesType const * const arg1, LatticeApproximationsNew::ApproximationEntriesType const * const arg2, int const dim)
 {

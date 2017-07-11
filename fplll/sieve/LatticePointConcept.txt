@@ -1,0 +1,24 @@
+CONCEPT LatticePoints:
+
+A LatticePoint is a class T with the following interface:
+
+typedefs:
+
+IsLatticePoint<T> = true (default:false)
+HasAppproximation<T>
+HasExact
+HasNorm
+
+?IsCopyable
+?IsMovable
+
+members:
+
+
+
+Example types:
+
+Compressed_Point
+Lattice_Point
+NumVect-Wrapper?
+

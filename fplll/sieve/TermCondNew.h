@@ -56,7 +56,7 @@ enum class TerminationConditionType
 
 
 #include "SieveGauss.h"
-#include "Utility.h"
+#include "Utility.cpp"
 
 
 template<class ET,bool MT, int nfixed> class TerminationCondition

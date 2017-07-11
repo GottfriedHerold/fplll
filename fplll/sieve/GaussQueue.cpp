@@ -2,6 +2,9 @@
 #define GAUSS_QUEUE_CPP
 
 #include "GaussQueue.h"
+#include "SieveGauss.cpp"
+#include "ShiSampler.cpp"
+#include "Sampler.cpp"
 
 template<class ET,int nfixed> GaussQueue<ET,false,nfixed>::GaussQueue( Sieve<ET,false,nfixed> *caller_sieve)  //constructor
 :
@@ -187,5 +190,7 @@ template<class ET, int nfixed> GaussQueue<ET,false,nfixed>::~GaussQueue()
 //        main_queue.pop();
 //    }
 //}
+
+template class GaussQueue<Z_NR<long>,false,-1>;
 
 #endif

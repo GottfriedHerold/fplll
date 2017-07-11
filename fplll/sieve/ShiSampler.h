@@ -33,8 +33,6 @@ class ShiSampler<ET,MT,Engine,Sseq,-1>: public Sampler<ET,MT, Engine, Sseq,-1>
     using Sampler<ET,MT,Engine,Sseq>::engine;
 };
 
-#include "ShiSampler.cpp"
-
 
 
 #endif

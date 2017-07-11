@@ -3,6 +3,7 @@
 
 #include "PointListNew.h"
 #include <type_traits>
+#include "LatticePointsNew.cpp"
 
 //class that ignores its argument. Can be used to optimize away unused parameters in function templates...
 class IgnoreAnyArg{
@@ -153,5 +154,4 @@ template<class ET,bool MT, int nfixed> CompressedPoint<ET,MT,nfixed> GaussSieve:
 
 
 
-#include "Utility.cpp"
 #endif // GAUSS_SIEVE_UTILITY_H

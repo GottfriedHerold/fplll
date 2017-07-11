@@ -3,6 +3,12 @@
 
 #include "LatticePointsNew.h"
 
+
+#include "ExactLatticePoint.cpp"
+#include "ApproximateLatticePoint.cpp"
+#include "CompressedPoint.cpp"
+
+
 //ApproxType do_approximate(X val, int delta) returns 2^(-delta)*val, converted to appropriate ApproxType.
 
 template<class ApproxType, class ET>
@@ -66,5 +72,16 @@ template <class ET> //fallback version, should never be called anyway.
         return res;
     }
 }
+
+//instantiate for appropriate types
+template class ExactLatticePoint<Z_NR<long>>;
+template class ExactLatticePoint<Z_NR<double>>;
+template class ExactLatticePoint<Z_NR<mpz_t>>;
+template class ApproximateLatticePoint<Z_NR<long>>;
+template class ApproximateLatticePoint<Z_NR<double>>;
+template class ApproximateLatticePoint<Z_NR<mpz_t>>;
+template class CompressedPoint<Z_NR<long>,false>;
+template class CompressedPoint<Z_NR<mpz_t>,false>;
+template class CompressedPoint<Z_NR<double>,false>;
 
 #endif

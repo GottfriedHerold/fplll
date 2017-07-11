@@ -3,4 +3,6 @@
 
 #include "PointListNew.h"
 
+template class GaussListNew<Z_NR<long>,false,-1>;
+
 #endif
