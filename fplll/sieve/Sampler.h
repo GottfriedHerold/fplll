@@ -6,6 +6,7 @@
 #include <iostream>
 #include <cfenv>
 #include <type_traits>
+#include "Typedefs.h"
 
 //forward declarations
 
@@ -26,10 +27,6 @@ namespace GaussSieve
 {
 
 
-    // unfortunately, trigonometric functions to compute pi don't have constexpr variants on all compilers we want to support, so we just define pi directly
-    long double constexpr   pi_long     = 3.14159265358979323846264338327950288419716939937510L;
-    double constexpr        pi_double   = 3.14159265358979323846264338327950288419716939937510;
-    long double constexpr   pi          = 3.14159265358979323846264338327950288419716939937510L;
 
     template<class Z, class Engine>     Z sample_z_gaussian(double s, double const center, Engine & engine, double const cutoff);
     template<class Z, class Engine>     Z sample_z_gaussian_VMD(double const s2pi, double const center, Engine & engine, double const maxdeviation);
@@ -98,11 +95,7 @@ template<class Engine, class Sseq>  class MTPRNG<Engine, false, Sseq>           
 
 
 
-//This typedef defines the return type that the Sampler should have.
 
-namespace GaussSieve{
-template<class ET,bool MT, int nfixed> using GaussSampler_ReturnType = CompressedPoint<ET,MT,nfixed>;
-};
 
 //generic Sampler. All other sampler are derived from it.
 template<class ET,bool MT, class Engine, class Sseq, int nfixed> //Sseq is supposed to satisfy the C++ concept "SeedSequence". The standard library has std::seed_seq as a canonical example.

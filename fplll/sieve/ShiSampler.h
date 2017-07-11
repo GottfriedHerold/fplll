@@ -5,6 +5,7 @@ template<class ET, bool MT, class Engine, class Sseq, int nfixed=-1> class ShiSa
 
 #include <random>
 #include "Sampler.h"
+#include "Typedefs.h"
 
 
 //only defined for nfixed==-1 for now.
