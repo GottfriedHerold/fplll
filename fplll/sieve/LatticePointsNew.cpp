@@ -1,3 +1,7 @@
+#ifndef LATTICE_VECTOR_CLASS_NEW_CPP
+#define LATTICE_VECTOR_CLASS_NEW_CPP
+
+#include "LatticePointsNew.h"
 
 //ApproxType do_approximate(X val, int delta) returns 2^(-delta)*val, converted to appropriate ApproxType.
 
@@ -62,3 +66,5 @@ template <class ET> //fallback version, should never be called anyway.
         return res;
     }
 }
+
+#endif

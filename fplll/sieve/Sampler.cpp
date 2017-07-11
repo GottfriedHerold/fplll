@@ -1,3 +1,8 @@
+#ifndef SAMPLER_CPP
+#define SAMPLER_CPP
+
+#include "Sampler.h"
+
 template<class Engine, class Sseq> void MTPRNG<Engine,true,Sseq>::reseed(Sseq & _seq)
 {
     seeder.seed(_seq);
@@ -123,3 +128,5 @@ template<class Z, class Engine> Z GaussSieve::sample_z_gaussian_VMD(double const
         }
     }
 }
+
+#endif

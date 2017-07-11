@@ -1,3 +1,7 @@
+#ifndef GAUSS_SIEVE_UTILITY_CPP
+#define GAUSS_SIEVE_UTILITY_CPP
+
+#include "Utility.h"
 
 //template<class ET>
 //bool GaussSieve::check_perform_2red (LatticePoint<ET> &p1, const LatticePoint<ET> &p2)
@@ -290,3 +294,4 @@ inline Z_NR<mpz_t> GaussSieve::compute_mink_bound(ZZ_mat<mpz_t> const & basis)
 }
 
 //}
+#endif

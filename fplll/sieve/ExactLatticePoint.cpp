@@ -1,3 +1,8 @@
+#ifndef EXACT_LATTICE_POINT_CPP
+#define EXACT_LATTICE_POINT_CPP
+
+#include "ExactLatticePoint.h"
+
 /*  header file continuation from ExactLatticePoint.h
     This file contains the implementations
 */
@@ -94,3 +99,5 @@ template <class ET,int nfixed> ExactLatticePoint<ET,nfixed> conv_matrixrow_to_la
 	//NumVect<ET> tmp(row.get_underlying_row());
 	return res;
 }
+
+#endif

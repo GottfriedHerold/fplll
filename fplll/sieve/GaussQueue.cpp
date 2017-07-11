@@ -1,4 +1,7 @@
+#ifndef GAUSS_QUEUE_CPP
+#define GAUSS_QUEUE_CPP
 
+#include "GaussQueue.h"
 
 template<class ET,int nfixed> GaussQueue<ET,false,nfixed>::GaussQueue( Sieve<ET,false,nfixed> *caller_sieve)  //constructor
 :
@@ -184,3 +187,5 @@ template<class ET, int nfixed> GaussQueue<ET,false,nfixed>::~GaussQueue()
 //        main_queue.pop();
 //    }
 //}
+
+#endif

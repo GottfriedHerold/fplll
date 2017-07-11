@@ -1,3 +1,5 @@
+#pragma deprecated
+
 //continuation from PointList.h
 //no include guards or anything needed.
 

@@ -1,3 +1,8 @@
+#ifndef APPROXIMATE_LATTICE_POINT_CPP
+#define APPROXIMATE_LATTICE_POINT_CPP
+
+#include "ApproximateLatticePoint.h"
+
 inline LatticeApproximationsNew::ApproximationNorm2Type GaussSieve::compute_vec_sc_product(LatticeApproximationsNew::ApproximationEntriesType const * const arg1, LatticeApproximationsNew::ApproximationEntriesType const * const arg2, int const dim)
 {
     return std::inner_product(arg1, arg1+dim, arg2,0);
@@ -85,3 +90,5 @@ template<class ET> double ApproximateLatticePoint<ET,-1>::get_norm2_d() const
 {
     return ldexp(approxn2,2*length_exponent);
 }
+
+#endif

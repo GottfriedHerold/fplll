@@ -76,6 +76,7 @@ template<class ET, bool MultiThreaded, int nfixed> class Sieve;
 //#include "PointList.h"
 #include "PointListNew.h"
 #include "Utility.h"
+#include "Typedefs.h"
 
 #endif //end of ONLY-ONCE part
 

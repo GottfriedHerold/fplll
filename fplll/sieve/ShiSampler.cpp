@@ -1,3 +1,8 @@
+#ifndef SHI_SAMPLER_CPP
+#define SHI_SAMPLER_CPP
+
+#include "ShiSampler.h"
+
 template<class ET,bool MT, class Engine, class Sseq> void ShiSampler<ET,MT,Engine,Sseq,-1>::custom_init()
 {
     current_basis = sieveptr->get_original_basis();
@@ -49,3 +54,5 @@ template<class ET,bool MT, class Engine, class Sseq> typename GaussSieve::GaussS
 
     return static_cast<CompressedPoint<ET,MT,-1> > (vec); //Note: This makes copies, which are unneccessary...
 }
+
+#endif

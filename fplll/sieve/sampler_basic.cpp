@@ -1,3 +1,5 @@
+#pragma deprecated
+
 #include "sampler_basic.h"
 #include <math.h>
 #include <stdio.h>
