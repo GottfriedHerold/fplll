@@ -16,6 +16,7 @@
 		<Unit filename="../nr/numvect.h" />
 		<Unit filename="ApproximateLatticePoint.cpp" />
 		<Unit filename="ApproximateLatticePoint.h" />
+		<Unit filename="ApproximateLatticePointNew.h" />
 		<Unit filename="CompressedPoint.cpp" />
 		<Unit filename="CompressedPoint.h" />
 		<Unit filename="EllipticSampler.h" />

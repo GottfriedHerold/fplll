@@ -10,24 +10,19 @@ template<class ET,int nfixed> class MyLatticePoint;
 //template <class ET,int nfixed> ET compute_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B, Dimension<nfixed> const & auxdata);
 
 
-
-
 template<class ET,int nfixed>
 class MyLatticePoint{
-    
+
     using LatticePointType = true_type;
     using AuxDataType = Dimension<nfixed>;
     using ScalarProductReturnType = ET;
-    
+
 public:
     MyLatticePoint()=delete;
     MyLatticePoint(MyLatticePoint const &Point) = delete;
     MyLatticePoint(MyLatticePoint &&Point) = default ;
-    
-    MyLatticePoint& operator=(MyLatticePoint const &that) =delete;
-    MyLatticePoint& operator=(MyLatticePoint && that) =default;
+
     ~MyLatticePoint() {}
-    
     
     //explicit MyLatticePoint(Dimension<nfixed> dim={}, IgnoreArg<AuxDataType const &> auxdata = {}){ 'auxdata = {}' <- ERRS!
     explicit MyLatticePoint(Dimension<nfixed> dim, IgnoreArg<AuxDataType const &> auxdata ){
@@ -36,8 +31,8 @@ public:
         norm = 0;
         norm2 = norm;
     };
-    
-    
+
+
     explicit MyLatticePoint(MatrixRow<ET> const & row, Dimension<nfixed> const & dim) {
         data = (row.get_underlying_row()).get();
         update_norm2( dim);
@@ -59,6 +54,7 @@ public:
     void update_norm2(Dimension<nfixed> const & dim)
     {
         this->norm2 = compute_sc_product(*this, *this, dim);
+
     };
     
     ET get_norm2() {return this->norm2;};
@@ -76,9 +72,10 @@ public:
         
         os <<"]" << endl;
     }
-    
-    
-    
+
+
+    //friend std::ostream & operator<< <ET, nfixed> (std::ostream &os, MyLatticePoint<ET,nfixed> const &A);
+
 public:
     std::vector<ET> data;
     ET norm2;
