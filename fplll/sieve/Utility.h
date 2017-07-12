@@ -24,8 +24,8 @@ template<>
 class Dimension<-1>{
     public:
     using IsFixed=false_type;
-    Dimension(int new_dim):dim(new_dim){assert(false);};
-    Dimension(){assert(false);};
+    Dimension(unsigned int const new_dim):dim(new_dim){};
+    Dimension()=delete;
     inline operator unsigned int() const {return dim;};
     unsigned int dim;
 };
