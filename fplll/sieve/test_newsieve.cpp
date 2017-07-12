@@ -33,8 +33,8 @@ template <class ZT> void test_run_sieve(int dim, std::ofstream &ofs)
     //BTest.gen_trg(1.1);
     srand (1);
     BTest.gen_qary_prime(1, 10*dim);
-    
-    
+
+
 
     if (dim >= 60)
         bkz_reduction(BTest, 8, BKZ_DEFAULT, FT_DEFAULT, 0);
@@ -83,10 +83,10 @@ Matrix<Z_NR<mpz_t> > g;
 srand (1);
     //generates GM lattice
 //B.gen_qary_prime(1, 15);
-    
+
     MyLatticePoint<Z_NR<mpz_t>, -1> test_point =  MyLatticePoint<Z_NR<mpz_t>, -1>(B[0], 10);
-    
-    
+
+
 
 
 //        //int dim[] = {52, 54, 56, 58, 60, 62, 64};

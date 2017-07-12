@@ -14,26 +14,26 @@ template<class ET,int nfixed> class MyLatticePoint;
 
 template<class ET,int nfixed>
 class MyLatticePoint{
-    
+
     using LatticePointType = true_type;
     using AuxDataType = Dimension<nfixed>;
     using ScalarProductReturnType = ET;
-    
+
 public:
     MyLatticePoint()=delete;
     MyLatticePoint(const MyLatticePoint &Point) = delete;
     MyLatticePoint(MyLatticePoint &&Point) = default ;
-    
+
     MyLatticePoint& operator=(MyLatticePoint const &that) =default;
     MyLatticePoint& operator=(MyLatticePoint && that) =default;
     ~MyLatticePoint() {}
-    
+
     explicit MyLatticePoint(Dimension<nfixed> dim={}, IgnoreArg<AuxDataType const &> auxdata = {}){
         data = std::vector<ET>(dim.dim);
         norm2 = ET(0);
     };
-    
-    
+
+
     explicit MyLatticePoint(MatrixRow<ET> const & row, Dimension<nfixed> const & dim) {
         data = (row.get_underlying_row()).get();
         update_norm2( dim);
@@ -43,12 +43,12 @@ public:
     {
         this->norm2 = compute_sc_product(*this, *this, dim);
     }
-    
+
     ET get_norm2() {return this->norm2;}
-    
+
     //friend std::ostream & operator<< <ET, nfixed> (std::ostream &os, MyLatticePoint<ET,nfixed> const &A);
-    
-    
+
+
 public:
     std::vector<ET> data;
     ET norm2;

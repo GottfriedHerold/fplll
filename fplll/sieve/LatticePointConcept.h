@@ -1,6 +1,11 @@
 #ifndef LATTICE_POINT_CONCEPT_H
 #define LATTICE_POINT_CONCEPT_H
 
+//TODO: Remove the concept idea below, we replace it by CRTP (i.e. inheritance without virtual functions, using templates)
+
+#include "Utility.h"
+
+
 /**
 
 Lattice points represent points in the lattice.
@@ -40,5 +45,70 @@ bool compare_sc_product(LatticePoint const &A, LatticePoint const & B, ScalarPro
 
 
 */
+
+template<class T> class DeclaresScalarProductReturnType
+{
+    private:
+    template<class TT>
+    static typename TT::ScalarProductReturnType foo(int);
+    template<class ...>
+    static void foo(...);
+public:
+    using value = std::is_void<decltype(foo<T>(0))>::value;
+}
+
+template<class Implementation>
+class GeneralLatticePoint
+{
+    public:
+    using LatticePointTag = true_type;
+    using AuxDataType = IgnoreAnyArg;
+    static_assert(DeclaresScalarProductReturnType<Implementation>::value, "Lattice Point class does not typedef its scalar product type");
+    explicit constexpr GeneralLatticePoint()=default; //only ever called from its children
+    GeneralLatticePoint(GeneralLatticePoint const &other)=delete; //This is just to match the implementation of a typical instantiation. Only the default constructor is ever used.
+    GeneralLatticePoint(GeneralLatticePoint &&other)=default;
+    GeneralLatticePoint& operator=(GeneralLatticePoint const & other) = delete;
+    GeneralLatticePoint& operator=(GeneralLatticePoint && other) = default;
+    ~GeneralLatticePoint()=default;
+    typename Implementation::ScalarProductReturnType
+    //The calling syntax for the derived object (i.e. Implementation) is supposed to be Implementation(DIM dim, AUX aux={}),
+    //where DIM is convertible from int
+    //and AUX is convertible from Implementation::AuxDataType
+}
+
+
+
+template<class ET,int nfixed>
+
+    explicit MyLatticePoint(MatrixRow<ET> const & row, Dimension<nfixed> const & dim) {
+        data = (row.get_underlying_row()).get();
+        update_norm2( dim);
+    };
+
+    void update_norm2(Dimension<nfixed> const & dim)
+    {
+        this->norm2 = compute_sc_product(*this, *this, dim);
+    }
+
+    ET get_norm2() {return this->norm2;}
+
+    //friend std::ostream & operator<< <ET, nfixed> (std::ostream &os, MyLatticePoint<ET,nfixed> const &A);
+
+
+public:
+    std::vector<ET> data;
+    ET norm2;
+};
+
+
+template <class ET,int nfixed> MyLatticePoint<ET, nfixed> add (MyLatticePoint<ET,nfixed> const &A, MyLatticePoint<ET,nfixed> const &B, Dimension<nfixed> const & auxdata);
+template <class ET,int nfixed> MyLatticePoint<ET,nfixed> minus (MyLatticePoint<ET,nfixed> const &A, MyLatticePoint<ET, nfixed> const &B, Dimension<nfixed> const & auxdata);
+template <class ET,int nfixed> MyLatticePoint<ET,nfixed> negate (MyLatticePoint<ET,nfixed> const &A, Dimension<nfixed> const & auxdata);
+template <class ET,int nfixed> void scalar_mult (MyLatticePoint <ET,nfixed> &A, ET const & multiple, Dimension<nfixed> const & auxdata);
+template <class ET,int nfixed> bool comapre_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B,  ET target);
+template <class ET,int nfixed> bool comapre_abs_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B,  ET target);
+template <class ET,int nfixed> ET compute_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B, Dimension<nfixed> const & auxdata);
+template <class ET,int nfixed> MyLatticePoint<ET, nfixed> make_copy (MyLatticePoint<ET,nfixed> const &A, Dimension<nfixed> auxdata);
+
 
 #endif
