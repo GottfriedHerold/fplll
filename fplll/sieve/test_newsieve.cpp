@@ -82,12 +82,31 @@ Matrix<Z_NR<mpz_t> > g;
 
 srand (1);
     //generates GM lattice
-//B.gen_qary_prime(1, 15);
+    B.gen_qary_prime(1, 15);
     
-    MyLatticePoint<Z_NR<mpz_t>, -1> test_point =  MyLatticePoint<Z_NR<mpz_t>, -1>(B[0], 10);
+    MyLatticePoint<Z_NR<mpz_t>, -1> test_pointA =  MyLatticePoint<Z_NR<mpz_t>, -1>(B[0], 10);
+    MyLatticePoint<Z_NR<mpz_t>, -1> test_pointB =  MyLatticePoint<Z_NR<mpz_t>, -1>(B[1], 10);
+    test_pointA.print(cout, 10);
+    test_pointB.print(cout, 10);
     
+    Dimension<-1> dim (10);
+    MyLatticePoint<Z_NR<mpz_t>, -1> test_pointSum = add(test_pointA, test_pointB, dim);
     
-
+    //MyLatticePoint<Z_NR<mpz_t>, -1> test_pointSum1 = add(test_pointA, test_pointB, 10); --DOES NOT WORK. WHY DOES THE ABOVE WORK?
+    
+    test_pointSum.print(cout, 10);
+    
+    MyLatticePoint<Z_NR<mpz_t>, -1> test_pointSub = sub(test_pointA, test_pointB, dim);
+    test_pointSub.print(cout, 10);
+    
+    MyLatticePoint<Z_NR<mpz_t>, -1> test_pointA_neg = negateP(test_pointA, dim);
+    test_pointA_neg.print(cout, 10);
+    
+    Z_NR<mpz_t> mult;
+    mult = 2;
+    MyLatticePoint<Z_NR<mpz_t>, -1> test_pointA_mult = scalar_mult(test_pointA, mult, dim);
+    test_pointA_mult.print(cout, 10);
+    
 
 //        //int dim[] = {52, 54, 56, 58, 60, 62, 64};
 //        int dim = 62;

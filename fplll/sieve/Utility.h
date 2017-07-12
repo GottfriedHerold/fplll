@@ -15,7 +15,8 @@ class IgnoreAnyArg{
 template<class T>
 class IgnoreArg{
     public:
-    inline constexpr IgnoreArg(T val){}
+    inline constexpr IgnoreArg(T val){};
+    //IgnoreAnyArg(){};
 };
 
 template<int nfixed=-1> class Dimension;
