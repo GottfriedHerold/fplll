@@ -36,6 +36,7 @@
 		<Unit filename="Sampler.h" />
 		<Unit filename="ShiSampler.cpp" />
 		<Unit filename="ShiSampler.h" />
+		<Unit filename="SieveGauss.cpp" />
 		<Unit filename="SieveGauss.h" />
 		<Unit filename="SieveJoint.cpp" />
 		<Unit filename="SieveJoint.h" />
@@ -44,10 +45,11 @@
 		<Unit filename="SieveST2.cpp" />
 		<Unit filename="SieveST3.cpp" />
 		<Unit filename="SieveSTk.cpp" />
+		<Unit filename="TermCondNew.cpp" />
 		<Unit filename="TermCondNew.h" />
+		<Unit filename="Typedefs.h" />
 		<Unit filename="Utility.cpp" />
 		<Unit filename="Utility.h" />
-		<Unit filename="notes.txt" />
 		<Unit filename="sampler_basic.cpp" />
 		<Unit filename="sampler_basic.h" />
 		<Unit filename="sampler_main.cpp" />

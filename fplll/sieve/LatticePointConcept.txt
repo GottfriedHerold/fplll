@@ -4,13 +4,42 @@ A LatticePoint is a class T with the following interface:
 
 typedefs:
 
-IsLatticePoint<T> = true (default:false)
-HasAppproximation<T>
-HasExact
-HasNorm
+IsALatticePointClass = true_type
+ScalarProductReturnType
+//CanComputeLenght : true_type or false_type
+AuxData = some class, defaults to IgnoreAnyArg
+
 
 ?IsCopyable
 ?IsMovable
+
+
+methods:
+
+T operator+ (T,T) adds two points
+<
+> - compare by length
+move constructor
+NO COPY CONSTRUCTOR
+
+non-member function
+
+T::ScalarProductReturnType scalar_product(T,T,AuxData)
+T::add(T,T,AuxData)
+T::neg(AuxData)
+T::minus(T,T,AuxData)
+T::scalar_mult(Integral Class, AuxData)
+get_norm2(AuxData)
+optional get_norm(AuxData) ???
+optional make_copy(AuxData)
+
+
+specific functions required by the sieve(s), e.g.
+compare_scalar_product
+
+
+
+T MakeCopy();
 
 members:
 
