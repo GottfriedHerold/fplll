@@ -13,7 +13,7 @@
 #include <iostream>
 #include <fstream>
 #include <random>
-//#include "FilteredList.h"
+#include "MyLatticePointClass.cpp"
 
 using namespace fplll;
 
@@ -33,6 +33,8 @@ template <class ZT> void test_run_sieve(int dim, std::ofstream &ofs)
     //BTest.gen_trg(1.1);
     srand (1);
     BTest.gen_qary_prime(1, 10*dim);
+    
+    
 
     if (dim >= 60)
         bkz_reduction(BTest, 8, BKZ_DEFAULT, FT_DEFAULT, 0);
@@ -67,8 +69,8 @@ template <class Z> void sample_gaussians(int number, double s, double center, do
 
 int main(int argc, char **argv)
 {
-sample_gaussians<long>(50, 10.0, 0.3, 4.0);
-sample_gaussians<long>(50, 0.0000001, 0.48, 4.0); //should still be fast.
+//sample_gaussians<long>(50, 10.0, 0.3, 4.0);
+//sample_gaussians<long>(50, 0.0000001, 0.48, 4.0); //should still be fast.
 
 
 ZZ_mat<mpz_t> B,u,u_inv;
@@ -80,20 +82,11 @@ Matrix<Z_NR<mpz_t> > g;
 
 srand (1);
     //generates GM lattice
-B.gen_qary_prime(1, 15);
-
-
-auto pGSO = new MatGSO<Z_NR<mpz_t>, FP_NR<double>>(B, u, u_inv, 1);
-
-  pGSO->update_gso();
-  mu = pGSO->get_mu_matrix();
-  r  = pGSO->get_r_matrix();
-  g  = pGSO->get_g_matrix();
-
-cout << B << endl;
-cout << mu<< endl;
-cout << r << endl;
-cout << g << endl;
+//B.gen_qary_prime(1, 15);
+    
+    MyLatticePoint<Z_NR<mpz_t>, -1> test_point =  MyLatticePoint<Z_NR<mpz_t>, -1>(B[0], 10);
+    
+    
 
 
 //        //int dim[] = {52, 54, 56, 58, 60, 62, 64};
