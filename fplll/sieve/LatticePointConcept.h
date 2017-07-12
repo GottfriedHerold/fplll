@@ -4,6 +4,7 @@
 //TODO: Remove the concept idea below, we replace it by CRTP (i.e. inheritance without virtual functions, using templates)
 
 #include "Utility.h"
+#include <iostream>
 
 
 /**
@@ -54,14 +55,26 @@ template<class T> class DeclaresScalarProductReturnType
     template<class ...>
     static void foo(...);
 public:
-    using value = std::is_void<decltype(foo<T>(0))>::value;
+    using value = !std::is_void<decltype(foo<T>(0))>::value;
 }
+
+template<class T> class IsALatticePoint
+{
+    private:
+    template<class TT>
+    static typename TT::LatticePointTag foo(int);
+    template<class ...>
+    static std::false_type foo(...);
+public:
+    using value = decltype(foo<T>(0));
+}
+
 
 template<class Implementation>
 class GeneralLatticePoint
 {
     public:
-    using LatticePointTag = true_type;
+    using LatticePointTag = std::true_type;
     using AuxDataType = IgnoreAnyArg;
     static_assert(DeclaresScalarProductReturnType<Implementation>::value, "Lattice Point class does not typedef its scalar product type");
     explicit constexpr GeneralLatticePoint()=default; //only ever called from its children
@@ -70,35 +83,49 @@ class GeneralLatticePoint
     GeneralLatticePoint& operator=(GeneralLatticePoint const & other) = delete;
     GeneralLatticePoint& operator=(GeneralLatticePoint && other) = default;
     ~GeneralLatticePoint()=default;
-    typename Implementation::ScalarProductReturnType
-    //The calling syntax for the derived object (i.e. Implementation) is supposed to be Implementation(DIM dim, AUX aux={}),
+
+    //The calling syntax for the constructor of the derived object(i.e. Implementation) is supposed to be
+    //Implementation(DIM dim, AUX aux={}),
     //where DIM is convertible from int
     //and AUX is convertible from Implementation::AuxDataType
+
+    //Note:
+    //Once the derived class Implementation defines a member function with the same name f as a function below,
+    //then overload resolution to a call LP.f(blah) will *first* look at whatever is declared by Implementation.
+    //If any viable function is found, GeneralLatticePoints' functions are no longre looked at.
+    //This is exactly what we want, s.t. derived functions can use types that are convertible from AuxDataType instead.
+    //
+    //A using GeneralLatticePoint - directive in the derived class changes that behavior, so you may not want to do that.
+
+    Implementation make_copy(typename Implementation::AuxDataType const & aux_data={}) = delete;
+    typename Implementation::ScalarProductReturnType get_norm2(typename Implementation::AuxDataType const & aux_data={})=delete;
+    unsigned int get_dim(typename Implementation::AuxDataType const &aux_data={}) = delete;
+    std::istream & read_from_stream(std::istream &is = std::cin, Implementation::AuxDataType const &aux_data={})=delete;
+    std::ostream & write_to_stream(std::ostream &os = std::cout, Implementation::AuxDataType const &aux_data={}); //=delete;
+}
+
+template<class LP>
+std::istream & operator>> (std::istream & is, typename std::enable_if<IsALatticePoint<LP>::value, LP> &lp)
+{
+    static_assert(std::is_same< typename LP::AuxDataType>, IgnoreAnyArg>::value == true, "This Lattice Point class requires auxiliary data for input");
+    is.read_from_stream(is, 0);
+    return is;
+}
+
+template<class ET, int nfixed>
+class PlainLatticePoint : public GeneralLatticePoint<PlainLatticePoint>
+{
+    public:
+    using AuxDataType = Dimension<nfixed>;
+
+
+
 }
 
 
 
-template<class ET,int nfixed>
-
-    explicit MyLatticePoint(MatrixRow<ET> const & row, Dimension<nfixed> const & dim) {
-        data = (row.get_underlying_row()).get();
-        update_norm2( dim);
-    };
-
-    void update_norm2(Dimension<nfixed> const & dim)
-    {
-        this->norm2 = compute_sc_product(*this, *this, dim);
-    }
-
-    ET get_norm2() {return this->norm2;}
 
     //friend std::ostream & operator<< <ET, nfixed> (std::ostream &os, MyLatticePoint<ET,nfixed> const &A);
-
-
-public:
-    std::vector<ET> data;
-    ET norm2;
-};
 
 
 template <class ET,int nfixed> MyLatticePoint<ET, nfixed> add (MyLatticePoint<ET,nfixed> const &A, MyLatticePoint<ET,nfixed> const &B, Dimension<nfixed> const & auxdata);
