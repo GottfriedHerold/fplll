@@ -4,19 +4,14 @@ A LatticePoint is a class T with the following interface:
 
 typedefs:
 
-IsALatticePointClass = true_type
+LatticePointTag = true_type
 ScalarProductReturnType
 //CanComputeLenght : true_type or false_type
 AuxData = some class, defaults to IgnoreAnyArg
 
 
-?IsCopyable
-?IsMovable
-
-
 methods:
 
-T operator+ (T,T) adds two points
 <
 > - compare by length
 move constructor
