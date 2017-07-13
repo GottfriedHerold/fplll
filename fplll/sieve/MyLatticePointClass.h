@@ -96,6 +96,16 @@ public:
     {
         return norm2;
     }
+    
+    void fill_with_zero (Dimension<nfixed> const & dim)
+    {
+        ET zero;
+        zero = 0;
+        for (unsigned int i=0; i<dim; i++)
+        {
+            data[i] = zero;
+        }
+         }
 
 
 public:
