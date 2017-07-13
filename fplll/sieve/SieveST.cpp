@@ -55,7 +55,7 @@ template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run()
 
     switch (sieve_k)
     {
-        //case 2: run_2_sieve(); break;
+        case 2: run_2_sieve(); break;
         //case 3: run_3_sieve(); break;
         //default:run_k_sieve(); break;
     }
@@ -70,15 +70,18 @@ template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run()
     */
 }
 
-/*
+
 template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run_2_sieve()
 {
-    CompressedPoint<ET,false,nfixed> p;
+    GaussSieve::GaussQueue_ReturnType<ET,false,nfixed> p(ambient_dimension);
     int i=0;
     while (!check_if_done() )
     {
         p=main_queue.true_pop();
-        sieve_2_iteration(p);
+        
+        //convert here???
+        
+        //sieve_2_iteration(p);
         ++i;
         if (( i % 1000 == 0) && (verbosity >=2))
         {
@@ -86,7 +89,7 @@ template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run_2_sieve()
         }
     }
 }
-*/
+
 
 /*
 template<class ET>
