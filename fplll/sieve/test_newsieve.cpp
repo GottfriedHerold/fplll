@@ -117,7 +117,7 @@ void TestMyLatticePointClass()
     test_pointB.write_to_stream(cout, 10);
 
 //    static_assert(IsALatticePoint< MyLatticePoint< Z_NR<mpz_t> ,-1> >::value," XXX");
-    cout << test_pointA;
+//    cout << test_pointA;
 
     Z_NR<mpz_t> sc_prod = compute_sc_product(test_pointA, test_pointB, dim);
     cout << sc_prod << endl;
