@@ -10,6 +10,8 @@
 
 /**
 
+TODO: Rewrite explanation, we use CRTP instead.
+
 Lattice points represent points in the lattice.
 
 We treat LatticePoints as a concept, in the sense that a lattice point is any class that implements the following interface:
@@ -45,8 +47,9 @@ A::ScalarProductReturnType compute_sc_product(LatticePoint const &A, LatticePoin
 bool compare_abs_sc_product(LatticePoint const &A, LatticePoint const & B, ScalarProductReturnType target, AuxDataType const &aux_data); //compares whether the absolute value of the scalar product is at least target. This function might err.
 bool compare_sc_product(LatticePoint const &A, LatticePoint const & B, ScalarProductReturnType target, AuxDataType const &aux_data); // Checks whether <A,B> > t
 
-
 */
+
+
 
 //This class template stores the typedefs that the individual lattice point classes have
 //There has to be a specialization for each lattice point class
@@ -59,32 +62,8 @@ class ImplementationTraitsBase
 template<class Implementation> class ImplementationTraits;
 template<class Implementation> class GeneralLatticePoint;
 
-
-template<class T> class DeclaresScalarProductReturnType
-{
-    private:
-    template<class TT>  static typename TT::ScalarProductReturnType foo(int);
-
-    template<class ...> static void                                 foo(...);
-
-public:
-    using value_t = std::integral_constant<bool, !(std::is_void<decltype(foo<T>(0))>::value)>;
-    static bool constexpr value = value_t::value;
-};
-
-template<class T> class IsALatticePoint
-{
-    private:
-    template<class TT>
-    static typename TT::LatticePointTag foo(int);
-    template<class ...>
-    static std::false_type foo(...);
-public:
-//    using value_t = std::is_base_of<GeneralLatticePoint<T>, T>;
-    using value_t = std::integral_constant<bool, std::is_same< decltype(foo<T>(0)), std::true_type>::value>  ;
-    static bool constexpr value = value_t::value;
-};
-
+CREATE_MEMBER_TYPEDEF_CHECK_CLASS(ScalarProductReturnType, DeclaresScalarProductReturnType);
+CREATE_MEMBER_TYPEDEF_CHECK_CLASS_EQUALS(LatticePointTag, std::true_type, IsALatticePoint);
 
 template<class Implementation>
 class GeneralLatticePoint
@@ -120,6 +99,8 @@ class GeneralLatticePoint
     std::istream & read_from_stream(std::istream &is = std::cin, AuxDataType const &aux_data={})=delete;
     std::ostream & write_to_stream(std::ostream &os = std::cout, AuxDataType const &aux_data={}); //=delete;
     static std::string class_name() {return "General Lattice Point";};
+    void increment_by(GeneralLatticePoint const &how_much, AuxDataType const &aux_data={})=delete;
+    void decrement_by(GeneralLatticePoint const &how_much, AuxDataType const &aux_data={})=delete;
 };
 
 //template<class Implementation>
@@ -148,44 +129,5 @@ std::ostream & operator<< (std::ostream & os, typename std::enable_if<IsALattice
     lp.write_to_stream(os,IgnoreAnyArg{});
     return os;
 }
-
-//example Lattice Point
-
-template<class ET, int nfixed> class PlainLatticePoint;
-
-template<class ET,int nfixed>
-class ImplementationTraits< PlainLatticePoint<ET,nfixed> > : public ImplementationTraitsBase
-{
-    public:
-    using AuxDataType = Dimension<nfixed>;
-    using ScalarProductReturnType = ET;
-};
-
-template<class ET, int nfixed> class PlainLatticePoint;
-
-template<class ET, int nfixed>
-class PlainLatticePoint : public GeneralLatticePoint< PlainLatticePoint<ET,nfixed> >
-{
-    public:
-    using LatticePointTag = std::true_type;
-    //using AuxDataType = typename ImplementationTraits<PlainLatticePoint>::AuxDataType;
-    //using ScalarProductReturnType = typename ImplementationTraits<PlainLatticePoint>::ScalarProductReturnType;
-};
-
-
-
-
-    //friend std::ostream & operator<< <ET, nfixed> (std::ostream &os, MyLatticePoint<ET,nfixed> const &A);
-
-
-//template <class ET,int nfixed> MyLatticePoint<ET, nfixed> add (MyLatticePoint<ET,nfixed> const &A, MyLatticePoint<ET,nfixed> const &B, Dimension<nfixed> const & auxdata);
-//template <class ET,int nfixed> MyLatticePoint<ET,nfixed> sub (MyLatticePoint<ET,nfixed> const &A, MyLatticePoint<ET, nfixed> const &B, Dimension<nfixed> const & auxdata);
-//template <class ET,int nfixed> MyLatticePoint<ET,nfixed> negate_point (MyLatticePoint<ET,nfixed> const &A, Dimension<nfixed> const & auxdata);
-//template <class ET,int nfixed> MyLatticePoi scalar_mult (MyLatticePoint <ET,nfixed> &A, ET const & multiple, Dimension<nfixed> const & auxdata);
-//template <class ET,int nfixed> bool compare_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B,  ET target);
-//template <class ET,int nfixed> bool compare_abs_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B,  ET target);
-//template <class ET,int nfixed> ET compute_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B, Dimension<nfixed> const & auxdata);
-//template <class ET,int nfixed> MyLatticePoint<ET, nfixed> make_copy (MyLatticePoint<ET,nfixed> const &A, Dimension<nfixed> auxdata);
-//
 
 #endif

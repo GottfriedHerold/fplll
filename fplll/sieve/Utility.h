@@ -4,6 +4,59 @@
 #include <type_traits>
 #include "LatticePointsNew.cpp"
 
+
+/**
+This macro is used to test the presence of a (public) member typedef in a class
+Args:   TypeToCheck - typename whose presence to check
+        CheckerClassName - Name of the checker class
+This macro emits a new template class definition with the name CheckerClassName.
+TypeToCheck must not be void.
+
+Usage:
+CREATE_MEMBER_TYPEDEF_CHECK_CLASS(NiceTypedef, IsMyClassGood);
+This creates the template class IsMyClassGood.
+
+Then CheckerClassName<SomeSuspiciousClass>::value will be true if
+SomeSuspicousClass::NiceTypedef exists, false otherwise
+
+Note that the missing semicolon at the end is intentional.
+The user needs to put it.
+*/
+
+// clang-format off
+
+#define CREATE_MEMBER_TYPEDEF_CHECK_CLASS(TypeToCheck, CheckerClassName)\
+template<class ClassToCheck> class CheckerClassName                     \
+{                                                                       \
+private:                                                                \
+    template<class Arg> static typename Arg:: TypeToCheck foo(int);     \
+    template<class ...> void                              foo(...);     \
+public:                                                                 \
+    using value_t = std::integral_constant<bool,                        \
+        !(std::is_void<decltype(foo< ClassToCheck >(0))>::value)>;      \
+    static bool constexpr value = value_t::value;                       \
+}
+
+/**
+Similar to the above, creates a checker template class that checks wether
+TypeToCheck exists and is equal to TypeShouldBe
+*/
+
+#define CREATE_MEMBER_TYPEDEF_CHECK_CLASS_EQUALS(TypeToCheck,TypeShouldBe,CheckerClassName) \
+template<class ClassToCheck> class CheckerClassName                                         \
+{                                                                                           \
+private:                                                                                    \
+    template<class Arg> static typename Arg:: TypeToCheck foo(int);                         \
+    template<class ...> void                              foo(...);                         \
+public:                                                                                     \
+    using value_t = std::integral_constant<bool, std::is_same< TypeShouldBe,                \
+                decltype(foo< ClassToCheck > (0)) >::value>;                                \
+                static bool constexpr value = value_t::value;                               \
+}
+
+// clang-format on
+
+
 //class that ignores its argument. Can be used to optimize away unused parameters in function templates...
 class IgnoreAnyArg{
     public:
