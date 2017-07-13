@@ -103,6 +103,7 @@ GO HERE.
 #error Something very bad just happened
 #endif
 
+
 template<class ET, int nfixed> class Sieve<ET, GAUSS_SIEVE_IS_MULTI_THREADED,nfixed >
 {
 public:
