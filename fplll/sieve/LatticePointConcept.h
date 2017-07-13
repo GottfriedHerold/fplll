@@ -55,7 +55,7 @@ template<class T> class DeclaresScalarProductReturnType
     template<class ...>
     static void foo(...);
 public:
-    using value = !std::is_void<decltype(foo<T>(0))>::value;
+    using value = !(std::is_void<decltype(foo<T>(0))>::value);
 }
 
 template<class T> class IsALatticePoint
@@ -112,13 +112,14 @@ std::istream & operator>> (std::istream & is, typename std::enable_if<IsALattice
     return is;
 }
 
+
+//example Lattice Point
+
 template<class ET, int nfixed>
 class PlainLatticePoint : public GeneralLatticePoint<PlainLatticePoint>
 {
     public:
     using AuxDataType = Dimension<nfixed>;
-
-
 
 }
 

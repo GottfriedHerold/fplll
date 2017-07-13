@@ -37,6 +37,7 @@ class Dimension{
     using IsFixed=true_type;
     Dimension(){};
     Dimension(IgnoreArg<unsigned int> new_dim){}; //assert(new_dim==nfixed);}
+//    Dimension(unsigned int){};
     inline constexpr operator unsigned int() {return nfixed;};
     static constexpr unsigned int dim = nfixed;
 };
