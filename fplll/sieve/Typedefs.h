@@ -2,7 +2,7 @@
 #define TYPEDEFS_H
 
 #include "LatticePointsNew.h"
-//#include "MyLatticePointClass.cpp"
+#include "MyLatticePointClass.cpp"
 
 //various typedef declarations that control the types used by our classes.
 //This typedef defines the return type that the Sampler should have.
@@ -19,8 +19,8 @@ long double constexpr   pi          = 3.1415926535897932384626433832795028841971
 
 
 namespace GaussSieve{
-    
-    //template<class ET,bool MT, int nfixed> using GaussList_ReturnType = MyLatticePoint<ET, nfixed>;
+
+    template<class ET,bool MT, int nfixed> using GaussList_ReturnType = MyLatticePoint<ET, nfixed>;
     template<class ET,bool MT, int nfixed> using GaussQueue_ReturnType = GaussSampler_ReturnType<ET,MT,nfixed>;
     template<class ET,bool MT, int nfixed> using GaussQueue_DataType   = GaussQueue_ReturnType<ET,MT,nfixed>;
 

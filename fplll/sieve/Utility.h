@@ -1,7 +1,6 @@
 #ifndef GAUSS_SIEVE_UTILITY_H
 #define GAUSS_SIEVE_UTILITY_H
 
-#include "PointListNew.h"
 #include <type_traits>
 #include "LatticePointsNew.cpp"
 
