@@ -42,11 +42,9 @@ public:
     
     
     //In order to be able to make a copy
-    MyLatticePoint(MyLatticePoint<ET, nfixed> const & point_, Dimension<nfixed> dim)
+    explicit MyLatticePoint(MyLatticePoint<ET, nfixed> const & point_, Dimension<nfixed> dim)
     {
-        int n = dim.dim;
-        data =  std::vector<ET>(n);
-        //std::memcpy(&data, &point_.data, n*sizeof(ET));
+        data =  std::vector<ET>(dim);
         norm2 = point_.norm2;
         data = point_.data;
         //norm2 =point_.norm2;
