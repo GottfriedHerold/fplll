@@ -68,10 +68,31 @@ MyLatticePoint<ET,nfixed> scalar_mult (MyLatticePoint<ET,nfixed> &A, ET const & 
     
 }
 
+/**
+    Assume target>=0
+**/
 template <class ET,int nfixed>
-bool compare_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B,  ET target)
+bool compare_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B,  ET const & target, Dimension<nfixed> const & auxdata)
 {
-    return false;
+    ET sc_product = compute_sc_product(A, B, auxdata);
+    bool res;
+    (sc_product>target) ? (res = true) : (res = false);
+    return res;
+}
+
+
+/**
+ Assume target>=0
+ **/
+template <class ET,int nfixed>
+bool compare_abs_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B, ET const & target,  Dimension<nfixed> const & auxdata)
+{
+    
+    ET sc_product = compute_sc_product(A, B, auxdata);
+    ET abs_sc_prod;
+    abs_sc_prod.abs(sc_product);
+    
+    return  (abs_sc_prod>target) ? (true) : (false);
 }
 
 

@@ -119,6 +119,12 @@ void TestMyLatticePointClass()
     cout << sc_prod << endl;
 
 
+    Z_NR<mpz_t> sc_prod_target;
+    sc_prod_target = 5000;
+    cout << compare_sc_product(test_pointA, test_pointB, sc_prod_target, dim) << endl;
+    cout << compare_abs_sc_product(test_pointA, test_pointB, sc_prod_target, dim) << endl;
+
+
 }
 
 

@@ -42,11 +42,9 @@ public:
     
     
     //In order to be able to make a copy
-    MyLatticePoint(MyLatticePoint<ET, nfixed> const & point_, Dimension<nfixed> dim)
+    explicit MyLatticePoint(MyLatticePoint<ET, nfixed> const & point_, Dimension<nfixed> dim)
     {
-        int n = dim.dim;
-        data =  std::vector<ET>(n);
-        //std::memcpy(&data, &point_.data, n*sizeof(ET));
+        data =  std::vector<ET>(dim);
         norm2 = point_.norm2;
         data = point_.data;
         //norm2 =point_.norm2;
@@ -90,8 +88,8 @@ template <class ET,int nfixed> MyLatticePoint<ET,nfixed> negateP (MyLatticePoint
 
 
 template <class ET,int nfixed> MyLatticePoint<ET,nfixed> scalar_mult (MyLatticePoint <ET,nfixed> &A, ET const & multiple, Dimension<nfixed> const & auxdata);
-template <class ET,int nfixed> bool compare_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B,  ET const & target);
-template <class ET,int nfixed> bool compare_abs_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B,  ET const & target);
+template <class ET,int nfixed> bool compare_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B, ET const & target,  Dimension<nfixed> const & auxdata);
+template <class ET,int nfixed> bool compare_abs_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B, ET const & target,  Dimension<nfixed> const & auxdata);
 template <class ET,int nfixed> ET compute_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B, Dimension<nfixed> const & auxdata);
 template <class ET,int nfixed> MyLatticePoint<ET, nfixed> make_copy (MyLatticePoint<ET,nfixed> const &A, Dimension<nfixed> const & auxdata);
 //template <class ET,int nfixed> MyLatticePoint<ET, nfixed> void print (std::ostream &os = cout, MyLatticePoint<ET,nfixed> const &A, Dimension<nfixed> const & auxdata);
