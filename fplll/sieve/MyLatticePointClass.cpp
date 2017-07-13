@@ -12,7 +12,7 @@ MyLatticePoint<ET, nfixed> add (MyLatticePoint<ET,nfixed> const &A, MyLatticePoi
     
     //MyLatticePoint<ET, nfixed> sum = make_copy(A, auxdata);
     
-    for (int i=0; i<auxdata; ++i)
+    for (unsigned int i=0; i<auxdata; ++i)
     {
         //sum.data[i] = sum.data[i]+B.data[i];
         sum.data[i].add(A.data[i], B.data[i]); //IS CORRECT?
@@ -29,7 +29,7 @@ MyLatticePoint<ET,nfixed> sub (MyLatticePoint<ET,nfixed> const &A, MyLatticePoin
 {
     MyLatticePoint<ET, nfixed> sum = MyLatticePoint<ET, nfixed>(auxdata.dim, auxdata);
     
-    for (int i=0; i<auxdata; ++i)
+    for (unsigned int i=0; i<auxdata; ++i)
     {
         sum.data[i].sub(A.data[i], B.data[i]);
     }
@@ -44,7 +44,7 @@ template <class ET,int nfixed> MyLatticePoint<ET,nfixed> negateP (MyLatticePoint
     ET zero;
     zero = 0;
     MyLatticePoint<ET, nfixed> neg = MyLatticePoint<ET, nfixed>(auxdata.dim, auxdata);
-    for (int i=0; i<auxdata; ++i)
+    for (unsigned int i=0; i<auxdata; ++i)
     {
         neg.data[i].sub(zero, A.data[i]);
     }
@@ -56,7 +56,7 @@ MyLatticePoint<ET,nfixed> scalar_mult (MyLatticePoint<ET,nfixed> &A, ET const & 
 {
     MyLatticePoint<ET, nfixed> res = MyLatticePoint<ET, nfixed>(auxdata.dim, auxdata);
     
-    for (int i=0; i<auxdata; ++i)
+    for (unsigned int i=0; i<auxdata; ++i)
     {
         res.data[i].mul(A.data[i], multiple);
     }
@@ -82,9 +82,11 @@ ET compute_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nf
     res = 0;
     if (auxdata>0)
     {
-        //res.mul(A[0],B[0]);
-        //for (int i=1; i<auxdata; ++i)
-            
+        res.mul(A.data[0],B.data[0]);
+        for (unsigned int i=1; i<auxdata; i++)
+        {
+            res.addmul(A.data[i], B.data[i]);
+        }
         
     }
     
