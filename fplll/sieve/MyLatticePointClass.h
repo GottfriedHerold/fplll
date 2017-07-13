@@ -24,8 +24,10 @@ public:
 
     ~MyLatticePoint() {}
     
-    //explicit MyLatticePoint(Dimension<nfixed> dim={}, IgnoreArg<AuxDataType const &> auxdata = {}){ 'auxdata = {}' <- ERRS!
-    explicit MyLatticePoint(Dimension<nfixed> dim, IgnoreArg<AuxDataType const &> auxdata ){
+    explicit MyLatticePoint(Dimension<nfixed> dim={}, IgnoreArg<AuxDataType const &> auxdata = {})
+    {
+    //{ 'auxdata = {}' <- ERRS!
+    //explicit MyLatticePoint(Dimension<nfixed> dim, IgnoreArg<AuxDataType const &> auxdata ){
         data = std::vector<ET>(dim.dim);
         ET norm;
         norm = 0;
