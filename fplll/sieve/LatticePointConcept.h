@@ -115,12 +115,23 @@ class GeneralLatticePoint
     //A using GeneralLatticePoint - directive in the derived class changes that behavior, so you may not want to do that.
 
     Implementation make_copy(AuxDataType const & aux_data={}) = delete;
-    ScalarProductReturnType get_norm2(AuxDataType const & aux_data={})=delete;
-    unsigned int get_dim(AuxDataType const &aux_data={}) = delete;
+    ScalarProductReturnType get_norm2(AuxDataType const & aux_data={}) const = delete;
+    unsigned int get_dim(AuxDataType const &aux_data={}) const = delete;
     std::istream & read_from_stream(std::istream &is = std::cin, AuxDataType const &aux_data={})=delete;
     std::ostream & write_to_stream(std::ostream &os = std::cout, AuxDataType const &aux_data={}); //=delete;
     static std::string class_name() {return "General Lattice Point";};
 };
+
+//template<class Implementation>
+//ScalarProductReturnType
+//GeneralLatticePoint<Implementation>::get_norm2(AuxDataType const &aux_data) const
+//{
+//    ScalarProductReturnType res;
+//    for(unsigned int i=0; i < Implementation::get_dim();++i)
+//    {
+//
+//    }
+//}
 
 template<class LP>
 std::istream & operator>> (std::istream & is, typename std::enable_if<IsALatticePoint<LP>::value, LP>::type &lp)

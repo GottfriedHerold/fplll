@@ -52,6 +52,7 @@ template <class ET, bool MT, int nfixed> class GaussQueue;
 template<class ET,bool MT, int nfixed> class Sieve;
 template<class ET,bool MT, class Engine, class Sseq, int nfixed> class Sampler;
 
+/*
 template<class ET,bool MT, int nfixed> class IsLongerVector_ExactPtr
 {
     public: bool operator() (CompressedPoint<ET,MT,nfixed>* const &A, CompressedPoint<ET,MT,nfixed>* const & B)
@@ -59,7 +60,7 @@ template<class ET,bool MT, int nfixed> class IsLongerVector_ExactPtr
         return (A->get_exact_norm2() > B->get_exact_norm2() );
     }
 };
-
+*/
 
 template<class ET,int nfixed> //single-threaded version:
 class GaussQueue<ET,false,nfixed>
@@ -82,12 +83,12 @@ public:
     GaussQueue& operator= (GaussQueue &&old) = delete;
     ~GaussQueue();
 
-    [[deprecated("The queue is never empty")]]
+    [[deprecated("The queue is never empty from the callers POV")]]
     bool empty() const              {return main_queue.empty();};  //we might as well always return false (or make this private)!
     size_type size() const          {return main_queue.size();};   //returns size of queue (used for diagnostics and statistics only)
     void push(DataType const &val) = delete; //puts a copy of val in the queue : deleted
     void push(DataType && val);     //uses move semantics for that.
-    void push(DataType * &val); //uses move semantics! val is changed to nullptr
+    //void push(DataType * &val); //uses move semantics! val is changed to nullptr
 
 //    [[deprecated("Ownership transfer clashes with compressed storage.")]]
 //    void give_ownership(LPType * const valptr); //takes a pointer to a list point and puts the point into the queue, moves ownership (avoids copying)

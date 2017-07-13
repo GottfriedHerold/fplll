@@ -1,4 +1,4 @@
-//#define USE_REGULAR_QUEUE //comment out if you use priority-queue
+#define USE_REGULAR_QUEUE //comment out if you use priority-queue
 
 #include "GaussQueue.h"
 #include "Sampler.h"
@@ -127,9 +127,9 @@ void TestMyLatticePointClass()
     sc_prod_target = 5000;
     cout << compare_sc_product(test_pointA, test_pointB, sc_prod_target, dim) << endl;
     cout << compare_abs_sc_product(test_pointA, test_pointB, sc_prod_target, dim) << endl;
-    
+
     cout << test_pointA.get_norm2(dim) << endl;
-    
+
     test_pointA.fill_with_zero(dim);
     test_pointA.write_to_stream(cout, dim);
 

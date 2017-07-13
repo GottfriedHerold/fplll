@@ -27,10 +27,7 @@ template<class Engine, bool MT, class Sseq> class MTPRNG;       //wrapper around
                                                                 //This is used to unify the single and multi-threaded case
 namespace GaussSieve
 {
-
-
-
-    template<class Z, class Engine>     Z sample_z_gaussian(double s, double const center, Engine & engine, double const cutoff);
+template<class Z, class Engine>     Z sample_z_gaussian(double s, double const center, Engine & engine, double const cutoff);
     template<class Z, class Engine>     Z sample_z_gaussian_VMD(double const s2pi, double const center, Engine & engine, double const maxdeviation);
     //samples from a discrete Gaussian distribution with parameter s and center c. We cutoff the Gaussian at s*cutoff.
     //i.e. the distribution is discrete on Z with output probability for x being proportional to exp(- pi(x-c)^2/s^2). Note the scaling by pi in the exponent.
@@ -105,7 +102,7 @@ class Sampler
 //Note :    In multi-threaded environment, we only have 1 sampler object. thread-number is given to sample();
 {
     public:
-    using SampleReturnType = typename GaussSieve::GaussSampler_ReturnType<ET,MT,nfixed>;
+    using GaussSampler_ReturnType = typename GaussSieve::GaussSampler_ReturnType<ET,MT,nfixed>;
     friend std::ostream & operator<< <ET,MT>(std::ostream &os, Sampler<ET,MT,Engine,Sseq,nfixed>* const samplerptr);
     friend std::istream & operator>> <ET,MT>(std::istream &is, Sampler<ET,MT,Engine,Sseq,nfixed>* const samplerptr);
 
@@ -118,7 +115,7 @@ class Sampler
                                                                     //defaults to user-defined.
                                                                     //Other values mean that the GaussSieve dumping routine is aware of the type, simplifying the syntax for dumping / reading.
     //TODO : Write some explanation how to do that.
-    virtual SampleReturnType sample(int thread=0)=0; //thread is the index of the calling thread (we need to keep separate PRNGs for each thread)
+    virtual GaussSampler_ReturnType sample(int thread=0)=0; //thread is the index of the calling thread (we need to keep separate PRNGs for each thread)
     //TODO : Allow sampling in subspaces, updating basis.
 
     private:

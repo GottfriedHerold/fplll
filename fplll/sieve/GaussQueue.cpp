@@ -15,7 +15,7 @@ sampler(nullptr)
     assert(caller_sieve!=nullptr);
     std::seed_seq seed{1,2,4}; //just some arbitrary numbers
     //sampler = new EllipticSampler<ET,false, std::mt19937_64, std::seed_seq> (seed);
-    sampler = new ShiSampler<ET,false, std::mt19937_64, std::seed_seq> (seed);
+    sampler = new ShiSampler<ET,false, std::mt19937_64, std::seed_seq,nfixed> (seed);
 }
 
 //template<class ET>
@@ -132,12 +132,18 @@ void GaussQueue<ET,false,nfixed>::push(DataType && val)
     main_queue.push(new_lp);
 }
 
+/*
+Commented out, we avoid pointers at this interface level.
+(or name the function differently)
+
 template<class ET, int nfixed>
 void GaussQueue<ET,false,nfixed>::push(DataType * &val)
 {
     main_queue.push(val);
     val = nullptr;
 }
+
+*/
 
 //template<class ET>
 //void GaussQueue<ET,true>::push(LPType && val)

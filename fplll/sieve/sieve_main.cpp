@@ -1,4 +1,4 @@
-//#define USE_REGULAR_QUEUE //comment our if you use priority-queue
+#define USE_REGULAR_QUEUE //comment out to not use priority-queue
 /*
   This provides an implementation of Gauss sieving, including using
   tuples of vectors in fplll framework. The Gauss Sieve code is

@@ -4,10 +4,10 @@
 #include "ShiSampler.h"
 #include "Sampler.cpp"
 
-template<class ET,bool MT, class Engine, class Sseq> void ShiSampler<ET,MT,Engine,Sseq,-1>::custom_init()
+template<class ET,bool MT, class Engine, class Sseq, int nfixed> void ShiSampler<ET,MT,Engine,Sseq,nfixed>::custom_init()
 {
-    current_basis = sieveptr->get_original_basis();
-    dim = sieveptr->get_ambient_dimension();
+//    current_basis = sieveptr->get_original_basis();
+    dim = static_cast<Dimension<nfixed>>( sieveptr->get_ambient_dimension() );
     rank = sieveptr->get_lattice_rank();
     Matrix<ET> u, u_inv,g; //intentionally uninitialized.
     MatGSO<ET, FP_NR<double> > GSO(current_basis, u, u_inv, MatGSOFlags::GSO_INT_GRAM);
@@ -29,31 +29,43 @@ template<class ET,bool MT, class Engine, class Sseq> void ShiSampler<ET,MT,Engin
         tmp2.sqrt(tmp2);
         maxdeviations[i] = tmp2.get_d() * cutoff;
     }
+    auto it = helper_current_basis.cbegin();
+    for(unsigned int i = 0; i < dim ; ++i)
+    {
+        helper_current_basis.emplace(it, current_basis[i],dim);
+    }
 }
-template<class ET,bool MT, class Engine, class Sseq> ShiSampler<ET,MT,Engine, Sseq>::~ShiSampler()
+template<class ET,bool MT, class Engine, class Sseq, int nfixed> ShiSampler<ET,MT,Engine, Sseq, nfixed>::~ShiSampler()
 {
 
 }
 
-template<class ET,bool MT, class Engine, class Sseq> typename GaussSieve::GaussSampler_ReturnType<ET,MT,-1> ShiSampler<ET,MT,Engine, Sseq>::sample(int thread)
+template<class ET,bool MT, class Engine, class Sseq, int nfixed> typename GaussSieve::GaussSampler_ReturnType<ET,MT,nfixed> ShiSampler<ET,MT,Engine, Sseq,nfixed>::sample(int thread)
 {
     assert(sieveptr!=nullptr);
-    ExactLatticePoint<ET,-1> *vec = new ExactLatticePoint<ET,-1>(dim);
-    vec->NumVect<ET>::fill(0); //current vector built up so far. //Note: We treat vec as a NumVect until the end, because we don't want to normalize intermediate results.
+//    MyLatticePoint<ET,nfixed> *vec = new MyLatticePoint<ET,nfixed>(dim);
+    MyLatticePoint<ET,nfixed> vec(dim);
+    vec.fill_with_zero(dim);
+    //vec->NumVect<ET>::fill(0); //current vector built up so far. //Note: We treat vec as a NumVect until the end, because we don't want to normalize intermediate results.
     vector<double> shifts(rank, 0.0); //shift, expressed in coordinates wrt the Gram-Schmidt basis.
     for(int j=rank-1; j>=0; --j)
     {
         long const newcoeff = GaussSieve::sample_z_gaussian_VMD<long,Engine>(s2pi[j],shifts[j],engine.rnd(),maxdeviations[j]); //coefficient of b_j in vec.
+        ET newcoeffET;
+        newcoeffET = newcoeff;
         //vec+= current_basis[j].get_underlying_row(); //build up vector
-        vec->NumVect<ET>::addmul_si(current_basis[j].get_underlying_row(), newcoeff);
+
+        vec = add(vec, scalar_mult(helper_current_basis[j], newcoeffET, dim), dim);
+
+//        vec->NumVect<ET>::addmul_si(current_basis[j].get_underlying_row(), newcoeff);
         for(int i=0;i<j;++i) //adjust shifts
         {
             shifts[i]-=newcoeff* (mu[j][i].get_d() );
         }
     }
-    vec->normalize();
-
-    return static_cast<CompressedPoint<ET,MT,-1> > (vec); //Note: This makes copies, which are unneccessary...
+//    vec->normalize();
+    return vec;
+//    return static_cast<CompressedPoint<ET,MT,-1> > (vec); //Note: This makes copies, which are unneccessary...
 }
 
 #endif
