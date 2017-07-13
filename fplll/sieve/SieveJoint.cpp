@@ -233,17 +233,21 @@ template<class ET, int nfixed>
 bool Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::check_if_done()
 {
     return (term_cond->check(this) != 0)?true:false;
-}
+};
 
-//template<class ET>
-//void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED>::run() //runs the sieve specified by the parameters.
-//{
-//    assert(sieve_k == 2); //for now
-//    sieve_status =SieveStatus::sieve_status_running;
-//    check_if_done(); //this updates the Minkowski condition, if needed.
-//    run_2_sieve();
-//    sieve_status = SieveStatus::sieve_status_finished;
-//}
+
+//TODO: ERROR: redefinition of run() DO NO NEED IT
+/*
+template<class ET, int nfixed>
+void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::run() //runs the sieve specified by the parameters.
+{
+    assert(sieve_k == 2); //for now
+    //sieve_status =SieveStatus::sieve_status_running;
+    //check_if_done(); //this updates the Minkowski condition, if needed.
+    //run_2_sieve();
+    //sieve_status = SieveStatus::sieve_status_finished;
+}
+ */
 
 #define SIEVE_JOINT_CPP
 #endif

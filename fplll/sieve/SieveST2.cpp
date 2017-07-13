@@ -1,7 +1,7 @@
 /* DO NOT INCLUDE THIS FILE DIRECTLY
 */
 
-template<class ET, int nfixed> void Sieve<ET,false,nfixed>::sieve_2_iteration (CompressedPoint<ET,false,nfixed> &p) //note : Queue might output Approx ?
+template<class ET, int nfixed> void Sieve<ET,false,nfixed>::sieve_2_iteration (FastAccess_Point &p) //note : Queue might output Approx ?
 {
     int const n = get_ambient_dimension();
     if (p.access_exact_point_r().norm2==0) return; //cerr << "Trying to reduce 0"; //TODO: Ensure sampler does not output 0 (currently, it happens).
