@@ -127,6 +127,8 @@ void TestMyLatticePointClass()
     sc_prod_target = 5000;
     cout << compare_sc_product(test_pointA, test_pointB, sc_prod_target, dim) << endl;
     cout << compare_abs_sc_product(test_pointA, test_pointB, sc_prod_target, dim) << endl;
+    
+    cout << test_pointA.get_norm2(dim) << endl;
 
 
 }

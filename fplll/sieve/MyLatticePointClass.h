@@ -91,12 +91,18 @@ public:
     //friend std::ostream & operator<< <ET, nfixed> (std::ostream &os, MyLatticePoint<ET,nfixed> const &A);
 
     MyLatticePoint make_copy (Dimension<nfixed> const & auxdata={}) const;
+    
+    ScalarProductReturnType get_norm2 (AuxDataType const & aux_data)
+    {
+        return norm2;
+    }
 
 
 public:
     std::vector<ET> data;
     ET norm2;
 };
+
 
 
 
