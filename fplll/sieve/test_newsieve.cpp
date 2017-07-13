@@ -15,6 +15,7 @@
 #include <random>
 #include "MyLatticePointClass.cpp"
 #include "LatticePointConcept.h"
+#include "PlainLatticePoint.h"
 
 
 
