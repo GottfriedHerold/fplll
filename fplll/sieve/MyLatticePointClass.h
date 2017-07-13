@@ -26,7 +26,7 @@ template<class ET,int nfixed>
 class MyLatticePoint : public GeneralLatticePoint< MyLatticePoint<ET, nfixed> >
 {
     public:
-    using LatticePointType = true_type;
+    using LatticePointTag = true_type;
     using AuxDataType = typename ImplementationTraits<MyLatticePoint>::AuxDataType;
     using ScalarProductReturnType = ET;
 

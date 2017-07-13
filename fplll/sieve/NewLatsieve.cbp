@@ -27,8 +27,11 @@
 		<Unit filename="GaussQueue.h" />
 		<Unit filename="LatticePoint.h_old" />
 		<Unit filename="LatticePoint2.h_old" />
+		<Unit filename="LatticePointConcept.h" />
 		<Unit filename="LatticePointsNew.cpp" />
 		<Unit filename="LatticePointsNew.h" />
+		<Unit filename="MyLatticePointClass.cpp" />
+		<Unit filename="MyLatticePointClass.h" />
 		<Unit filename="PointList.cpp" />
 		<Unit filename="PointList.h_old" />
 		<Unit filename="PointListNew.cpp" />

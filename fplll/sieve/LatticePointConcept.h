@@ -57,7 +57,7 @@ class ImplementationTraitsBase
 };
 
 template<class Implementation> class ImplementationTraits;
-
+template<class Implementation> class GeneralLatticePoint;
 
 
 template<class T> class DeclaresScalarProductReturnType
@@ -80,6 +80,7 @@ template<class T> class IsALatticePoint
     template<class ...>
     static std::false_type foo(...);
 public:
+//    using value_t = std::is_base_of<GeneralLatticePoint<T>, T>;
     using value_t = std::integral_constant<bool, std::is_same< decltype(foo<T>(0)), std::true_type>::value>  ;
     static bool constexpr value = value_t::value;
 };
@@ -122,7 +123,7 @@ class GeneralLatticePoint
 };
 
 template<class LP>
-std::istream & operator>> (std::istream & is, typename std::enable_if<IsALatticePoint<LP>::value, LP> &lp)
+std::istream & operator>> (std::istream & is, typename std::enable_if<IsALatticePoint<LP>::value, LP>::type &lp)
 {
     static_assert(std::is_same< typename LP::AuxDataType, IgnoreAnyArg>::value == true, "This Lattice Point class requires auxiliary data for input");
     lp.read_from_stream(is, IgnoreAnyArg{});
@@ -130,13 +131,12 @@ std::istream & operator>> (std::istream & is, typename std::enable_if<IsALattice
 }
 
 template<class LP>
-std::ostream & operator<< (std::ostream & os, typename std::enable_if<IsALatticePoint<LP>::value,LP> &lp )
+std::ostream & operator<< (std::ostream & os, typename std::enable_if<IsALatticePoint<LP>::value,LP>::type &lp )
 {
     static_assert(std::is_same< typename LP::AuxDataType, IgnoreAnyArg>::value == true, "This Lattice Point class requires auxiliary data for output");
     lp.write_to_stream(os,IgnoreAnyArg{});
     return os;
 }
-
 
 //example Lattice Point
 
