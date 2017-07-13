@@ -96,6 +96,7 @@ srand (1);
     
     //MyLatticePoint<Z_NR<mpz_t>, -1> test_pointSum1 = add(test_pointA, test_pointB, 10); --DOES NOT WORK. WHY DOES THE ABOVE WORK?
     
+  
     test_pointSum.print(cout, 10);
     
     MyLatticePoint<Z_NR<mpz_t>, -1> test_pointSub = sub(test_pointA, test_pointB, dim);

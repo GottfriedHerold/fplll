@@ -8,12 +8,11 @@
 template <class ET,int nfixed>
 MyLatticePoint<ET, nfixed> add (MyLatticePoint<ET,nfixed> const &A, MyLatticePoint<ET,nfixed> const &B, Dimension<nfixed> const & auxdata)
 {
-    int n = auxdata.dim;
-    MyLatticePoint<ET, nfixed> sum = MyLatticePoint<ET, nfixed>(n, auxdata);
+    MyLatticePoint<ET, nfixed> sum = MyLatticePoint<ET, nfixed>(auxdata.dim, auxdata);
     
     //MyLatticePoint<ET, nfixed> sum = make_copy(A, auxdata);
     
-    for (int i=0; i<n; ++i)
+    for (int i=0; i<auxdata; ++i)
     {
         //sum.data[i] = sum.data[i]+B.data[i];
         sum.data[i].add(A.data[i], B.data[i]); //IS CORRECT?
@@ -28,10 +27,9 @@ MyLatticePoint<ET, nfixed> add (MyLatticePoint<ET,nfixed> const &A, MyLatticePoi
 template <class ET, int nfixed>
 MyLatticePoint<ET,nfixed> sub (MyLatticePoint<ET,nfixed> const &A, MyLatticePoint<ET, nfixed> const &B, Dimension<nfixed> const & auxdata)
 {
-    int n = auxdata.dim;
-    MyLatticePoint<ET, nfixed> sum = MyLatticePoint<ET, nfixed>(n, auxdata);
+    MyLatticePoint<ET, nfixed> sum = MyLatticePoint<ET, nfixed>(auxdata.dim, auxdata);
     
-    for (int i=0; i<n; ++i)
+    for (int i=0; i<auxdata; ++i)
     {
         sum.data[i].sub(A.data[i], B.data[i]);
     }
@@ -43,11 +41,10 @@ MyLatticePoint<ET,nfixed> sub (MyLatticePoint<ET,nfixed> const &A, MyLatticePoin
 
 template <class ET,int nfixed> MyLatticePoint<ET,nfixed> negateP (MyLatticePoint<ET,nfixed> const &A, Dimension<nfixed> const & auxdata)
 {
-    int n = auxdata.dim;
     ET zero;
     zero = 0;
-    MyLatticePoint<ET, nfixed> neg = MyLatticePoint<ET, nfixed>(n, auxdata);
-    for (int i=0; i<n; ++i)
+    MyLatticePoint<ET, nfixed> neg = MyLatticePoint<ET, nfixed>(auxdata.dim, auxdata);
+    for (int i=0; i<auxdata; ++i)
     {
         neg.data[i].sub(zero, A.data[i]);
     }
@@ -57,10 +54,9 @@ template <class ET,int nfixed> MyLatticePoint<ET,nfixed> negateP (MyLatticePoint
 template <class ET,int nfixed>
 MyLatticePoint<ET,nfixed> scalar_mult (MyLatticePoint<ET,nfixed> &A, ET const & multiple, Dimension<nfixed> const & auxdata)
 {
-    int n = auxdata.dim;
-    MyLatticePoint<ET, nfixed> res = MyLatticePoint<ET, nfixed>(n, auxdata);
+    MyLatticePoint<ET, nfixed> res = MyLatticePoint<ET, nfixed>(auxdata.dim, auxdata);
     
-    for (int i=0; i<n; ++i)
+    for (int i=0; i<auxdata; ++i)
     {
         res.data[i].mul(A.data[i], multiple);
     }
@@ -73,7 +69,7 @@ MyLatticePoint<ET,nfixed> scalar_mult (MyLatticePoint<ET,nfixed> &A, ET const & 
 }
 
 template <class ET,int nfixed>
-bool comapre_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B,  ET target)
+bool compare_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B,  ET target)
 {
     return false;
 }
@@ -84,6 +80,14 @@ ET compute_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nf
 {
     ET res;
     res = 0;
+    if (auxdata>0)
+    {
+        //res.mul(A[0],B[0]);
+        //for (int i=1; i<auxdata; ++i)
+            
+        
+    }
+    
     return res;
 }
 
