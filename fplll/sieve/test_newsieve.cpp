@@ -14,6 +14,9 @@
 #include <fstream>
 #include <random>
 #include "MyLatticePointClass.cpp"
+#include "LatticePointConcept.h"
+
+
 
 using namespace fplll;
 
@@ -72,49 +75,49 @@ void TestMyLatticePointClass()
     B.resize(10, 10);
     //generates a lower-triangular matrix B; the argument determines (in a complicated way) the bit-size of entries
     //B.gen_trg(1.1);
-    
+
     srand (1);
     //generates GM lattice
-    
+
     B.gen_qary_prime(1, 15);
-    
-   
+
+
     MyLatticePoint<Z_NR<mpz_t>, -1> test_pointA =  MyLatticePoint<Z_NR<mpz_t>, -1>(B[0], 10);
     MyLatticePoint<Z_NR<mpz_t>, -1> test_pointB =  MyLatticePoint<Z_NR<mpz_t>, -1>(B[1], 10);
     test_pointA.print(cout, 10);
     test_pointB.print(cout, 10);
-    
+
     Dimension<-1> dim (10);
     //unsigned int dim = 10;
-    
+
     MyLatticePoint<Z_NR<mpz_t>, -1> test_pointSum = add(test_pointA, test_pointB, dim);
-    
+
     //MyLatticePoint<Z_NR<mpz_t>, -1> test_pointSum1 = add(test_pointA, test_pointB, 10); --DOES NOT WORK. WHY DOES THE ABOVE WORK?
-    
-    
+
+
     test_pointSum.print(cout, 10);
-    
+
     MyLatticePoint<Z_NR<mpz_t>, -1> test_pointSub = sub(test_pointA, test_pointB, dim);
     test_pointSub.print(cout, 10);
-    
+
     MyLatticePoint<Z_NR<mpz_t>, -1> test_pointA_neg = negateP(test_pointA, dim);
     test_pointA_neg.print(cout, 10);
-    
+
     Z_NR<mpz_t> mult;
     mult = 2;
     MyLatticePoint<Z_NR<mpz_t>, -1> test_pointA_mult = scalar_mult(test_pointA, mult, dim);
     test_pointA_mult.print(cout, 10);
-    
+
     //B.gen_qary_prime(1, 15);
-    
+
     MyLatticePoint<Z_NR<mpz_t>, -1> test_point =  MyLatticePoint<Z_NR<mpz_t>, -1>(B[0], 10);
-    
-    
+
+
     test_pointA.print(cout, 10);
     test_pointB.print(cout, 10);
     Z_NR<mpz_t> sc_prod = compute_sc_product(test_pointA, test_pointB, dim);
     cout << sc_prod << endl;
-    
+
 
 }
 
@@ -124,6 +127,7 @@ int main(int argc, char **argv)
 //sample_gaussians<long>(50, 10.0, 0.3, 4.0);
 //sample_gaussians<long>(50, 0.0000001, 0.48, 4.0); //should still be fast.
 
+    PlainLatticePoint<Z_NR<mpz_t>,-1> X;
 
     TestMyLatticePointClass<Z_NR<mpz_t>, -1>();
 
