@@ -5,6 +5,7 @@
 
 #include "Utility.h"
 #include <iostream>
+#include <string>
 
 
 /**
@@ -55,8 +56,8 @@ template<class T> class DeclaresScalarProductReturnType
     template<class ...>
     static void foo(...);
 public:
-    using value = !(std::is_void<decltype(foo<T>(0))>::value);
-}
+    using value = std::is_void<decltype(foo<T>(0))>;
+};
 
 template<class T> class IsALatticePoint
 {
@@ -67,7 +68,7 @@ template<class T> class IsALatticePoint
     static std::false_type foo(...);
 public:
     using value = decltype(foo<T>(0));
-}
+};
 
 
 template<class Implementation>
@@ -76,7 +77,7 @@ class GeneralLatticePoint
     public:
     using LatticePointTag = std::true_type;
     using AuxDataType = IgnoreAnyArg;
-    static_assert(DeclaresScalarProductReturnType<Implementation>::value, "Lattice Point class does not typedef its scalar product type");
+    static_assert(DeclaresScalarProductReturnType<Implementation>::value, "Lattice Point class does not typedef its scalar product type, class is");
     explicit constexpr GeneralLatticePoint()=default; //only ever called from its children
     GeneralLatticePoint(GeneralLatticePoint const &other)=delete; //This is just to match the implementation of a typical instantiation. Only the default constructor is ever used.
     GeneralLatticePoint(GeneralLatticePoint &&other)=default;
@@ -100,15 +101,16 @@ class GeneralLatticePoint
     Implementation make_copy(typename Implementation::AuxDataType const & aux_data={}) = delete;
     typename Implementation::ScalarProductReturnType get_norm2(typename Implementation::AuxDataType const & aux_data={})=delete;
     unsigned int get_dim(typename Implementation::AuxDataType const &aux_data={}) = delete;
-    std::istream & read_from_stream(std::istream &is = std::cin, Implementation::AuxDataType const &aux_data={})=delete;
-    std::ostream & write_to_stream(std::ostream &os = std::cout, Implementation::AuxDataType const &aux_data={}); //=delete;
-}
+    std::istream & read_from_stream(std::istream &is = std::cin, typename Implementation::AuxDataType const &aux_data={})=delete;
+    std::ostream & write_to_stream(std::ostream &os = std::cout, typename Implementation::AuxDataType const &aux_data={}); //=delete;
+    static std::string constexpr class_name(){return "General Lattice Point";};
+};
 
 template<class LP>
 std::istream & operator>> (std::istream & is, typename std::enable_if<IsALatticePoint<LP>::value, LP> &lp)
 {
     static_assert(std::is_same< typename LP::AuxDataType>, IgnoreAnyArg>::value == true, "This Lattice Point class requires auxiliary data for input");
-    is.read_from_stream(is, 0);
+    lp.read_from_stream(is, 0);
     return is;
 }
 
