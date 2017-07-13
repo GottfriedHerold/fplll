@@ -115,7 +115,13 @@ void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::dump_status_to_stream(ostre
     if(howverb>=1) of << "Number of mispredictions=" << number_of_mispredictions << endl;
     if(howverb>=1) of << "Current List Size=" << get_current_list_size() << endl;
     if(howverb>=1) of << "Current Queue Size="<< get_current_queue_size()<< endl;
-    if(howverb>=1) of << "Best vector found so far=" << shortest_vector_found << endl; //TODO : Display length seperately
+    if(howverb>=1) {
+        of << "Best vector found so far=";
+        shortest_vector_found.write_to_stream(of,ambient_dimension);
+        of << endl;
+    }
+    //of << "Best vector found so far=" << shortest_vector_found << endl; //TODO : Display length seperately
+
     //TODO: Check output
     // if(howverb>=1) {of << "sv is: "; main_list.cbegin().get_exact_point().printLatticePoint();} //TODO: Remove (shortest_vector_found above should rather do this).
 	// to check the ratio between the shortest and the longest vectors in the list
@@ -168,7 +174,7 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::Sieve(LatticeBasisType B, unsign
     verbosity(verbosity_),
     term_cond(termcond),
     sieve_status(SieveStatus::sieve_status_init),
-    shortest_vector_found(), //TODO : initialize to meaningful value, e.g. any vector of B.
+    shortest_vector_found(static_cast<Dimension<nfixed>>(ambient_dimension)), //TODO : initialize to meaningful value, e.g. any vector of B.
     number_of_collisions(0),
     number_of_points_sampled(0),
     number_of_points_constructed(0),
@@ -192,15 +198,21 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::Sieve(LatticeBasisType B, unsign
     auto it = main_list.cbegin();
     for (unsigned int i=0; i<lattice_rank; ++i)
     {
-        ExactLatticePoint<ET,nfixed> * new_basis_vector = new ExactLatticePoint<ET,nfixed> ( conv_matrixrow_to_lattice_point<ET,nfixed> (original_basis[i]));
-        main_list.insert_before(it,  static_cast<CompressedPoint<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed> >(new_basis_vector) );
+        FastAccess_Point tmppoint(original_basis[i],ambient_dimension);
+        main_list.insert_before(it, std::move(tmppoint));
+//        ExactLatticePoint<ET,nfixed> * new_basis_vector = new ExactLatticePoint<ET,nfixed> ( conv_matrixrow_to_lattice_point<ET,nfixed> (original_basis[i]));
+//        main_list.insert_before(it,  static_cast<CompressedPoint<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed> >(new_basis_vector) );
     }
     current_list_size+=lattice_rank;
 //    #if GAUSS_SIEVE_IS_MULTI_THREADED == false
     if(verbosity>=2)    {cout << "Sorting ...";}
     //main_list.sort();
     if(verbosity>=2)    {cout << "is finished." << endl;}
-    shortest_vector_found = main_list.cbegin().dereference_exactly_r();
+
+
+    //FIXME: Initialize shortest vector
+
+    shortest_vector_found = main_list.cbegin()->make_copy(static_cast<Dimension<nfixed>>(ambient_dimension) );
 //    #endif // GAUSS_SIEVE_IS_MULTI_THREADED
     //TODO : enable sorting for multithreaded case.
     #if GAUSS_SIEVE_IS_MULTI_THREADED==true

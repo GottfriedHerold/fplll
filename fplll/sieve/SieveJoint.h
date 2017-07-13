@@ -108,7 +108,8 @@ template<class ET, int nfixed> class Sieve<ET, GAUSS_SIEVE_IS_MULTI_THREADED,nfi
 {
 public:
     /*DATA TYPES*/
-    using LPType           = ExactLatticePoint<ET,nfixed>;
+    //using LPType           = ExactLatticePoint<ET,nfixed>;
+    using FastAccess_Point = GaussSieve::FastAccess_Point<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>;
     using MainQueueType    = GaussQueue<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>; //FIXME
     using MainListType     = GaussListNew<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>;
     using LatticeBasisType = ZZ_mat<typename ET::underlying_data_type>;
@@ -165,7 +166,7 @@ public:
 
     void run();                 //runs the sieve specified by the parameters. Dispatches to the corresponding k-sieve
 
-    void run_2_sieve(); //actually runs the Gauss Sieve with k=2
+    //void run_2_sieve(); //actually runs the Gauss Sieve with k=2
     //void run_3_sieve(); //actually runs the Gauss Sieve with k=3
     //void run_k_sieve(); //runs Gauss Sieve with arbitrary k
 
@@ -202,10 +203,10 @@ public:
     static unsigned int constexpr get_num_threads()             {return 1;};
     #endif // GAUSS_SIEVE_IS_MULTI_THREADED
 
-    bool update_shortest_vector_found(LPType const & newvector);
+    bool update_shortest_vector_found(FastAccess_Point const & newvector);
     LatticeBasisType const & get_original_basis()               {return original_basis;};
 //  LPType get_shortest_vector_found() const                    {return shortest_vector_found;}; //TODO: Thread-safety
-    LPType get_shortest_vector_found();
+    FastAccess_Point const & get_shortest_vector_found();
 //  ET get_best_length2() const                                 {return get_shortest_vector_found().norm2;};
     ET get_best_length2();                                       //{return (main_list.cbegin())->get_details().norm2;}; //TODO: Change to above
     bool check_whether_sieve_is_running() const                 {return (sieve_status==SieveStatus::sieve_status_running);};
@@ -261,7 +262,7 @@ private:
         sieve_status_suspended=3,       //sieve is currently suspended. Useful for dumping / cleanup of internal data structures.
         sieve_status_finished=100       //sieve has finished
     } sieve_status; //thread safety?
-    LPType shortest_vector_found; //including its length //TODO: Thread-safety
+    FastAccess_Point shortest_vector_found; //including its length //TODO: Thread-safety
 
 //statistics
 #if GAUSS_SIEVE_IS_MULTI_THREADED == false

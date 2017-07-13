@@ -6,29 +6,21 @@
 #define POINT_LIST_NEW_H
 
 //ET : Entry type : type of entries of vectors we are dealing with. Usually an integral type like ET = Z_NR<long> or Z_NR<mpz_t>
-//DT : (fundamental) Data type : entries in our custom containers, i.e. lattice points, usually  DT = LatticePoint<ET>
 
 //forward declarations.
 
-template <class ET, bool MT, int n_fixed = -1>
-class GaussListNew; //holds approximations
-
-template <class ET, bool MT, int n_fixed = -1>
-class GaussIteratorNew;
-//template<class ET>
-//using PointListSingleThreaded = GaussList<ET, false>;
-
-//template <class ET>
-//using PointListSingleThreaded = std::forward_list<LatticePoint <ET> >; //list or forward_list?
-//
-//Note: PointListMultiThreaded owns all its lattice vectors that are reachable by forward iteration.
-
-/*
-template <class DT> class ListMultiThreaded;
-template <class DT> class ListMTNode;
-template <class DT> class MTListIterator;
-template <class DT> class GarbageBin;
+/**
+    GaussListNew is the data type of our main list.
+    Template Parameters:
+    ET: Underlying data type (meaning the coordinates, not the vectors).
+    Currently ET is expected to be of Z_NR<foo> type.
+    MT: Multi-threaded version?
+    nfixed: Is the dimension fixed? -1 means dynamic.
 */
+
+//forward declarations with default arguments
+template <class ET, bool MT, int n_fixed> class GaussListNew; //holds approximations
+template <class ET, bool MT, int n_fixed> class GaussIteratorNew;
 
 #include <mutex>
 #include <atomic>
@@ -55,14 +47,9 @@ class GaussListNew<ET, false, nfixed>
 {
 public:
     friend GaussIteratorNew<ET,false,nfixed>;
-    //using EntryType= ET;
-    using DataType = GaussSieve::GaussList_StoredPoint<ET,false,nfixed>;
-    //using DataPointer=DataType *;
-    using UnderlyingContainer = typename GaussSieve::GaussList_ST_UnderlyingContainer<ET,nfixed>;
+    using StoredPoint = GaussSieve::GaussList_StoredPoint<ET,false,nfixed>;
+    using UnderlyingContainer = std::list<StoredPoint>;
     using Iterator = GaussIteratorNew<ET,false,nfixed>;
-    //using DetailType = typename DataType::DetailType;
-    //using ExactType = LatticePoint<ET>;
-
 
     explicit GaussListNew() = default;
     GaussListNew(GaussListNew const & old) = delete;
@@ -70,24 +57,29 @@ public:
     GaussListNew & operator= (GaussListNew const &other) = delete;
     GaussListNew & operator= (GaussListNew &&other) = delete;
     ~GaussListNew() = default; //FIXME: CHECK!!!
+
     Iterator cbegin()                                                   {return static_cast<Iterator>(actual_list.begin()) ;};
     Iterator cend()                                                     {return static_cast<Iterator>(actual_list.end());};
 
     //These functions insert (possibly a copy of val) into the list.
     //TODO: include ownership transfer semantics to avoid some copying, possibly include refcounts in LatticePoints.
     //This becomes really tricky if overwrite is allowed in multithreaded case.
-    Iterator insert_before(Iterator pos, DataType const & val) = delete;    //no copying
-    Iterator insert_before(Iterator pos, DataType && val)                {return static_cast<Iterator> (actual_list.emplace(pos.it, std::move(val)));};
+
+    Iterator insert_before(Iterator pos, StoredPoint const & val) = delete;    //no copying
+    Iterator insert_before(Iterator pos, StoredPoint && val)                {return static_cast<Iterator> (actual_list.emplace(pos.it, std::move(val)));};
 
     /*Iterator insert_before_give_ownership(Iterator pos, DetailType * const val) = delete;  //TODO
     Iterator insert_before(Iterator pos, DataType const & val) =  delete; //TODO
     Iterator insert_before_give_ownership(Iterator pos, DataType const & val) = delete;                          //TODO
     */
     //Iterator insert_before(Iterator pos, DetailType && val)           {return actual_list.insert(pos,std::move(val));};
+
+
     Iterator erase(Iterator pos)                                        {return static_cast<Iterator> (actual_list.erase(pos.it));}; //only for single-threaded
     //void unlink(Iterator pos)=delete;     //MT only                              //{actual_list.erase(pos);};
 
-    void sort()                                                         {actual_list.sort();};  //only for single-threaded (for now). Uses exact length.
+    //TODO: Use aux_data, sort by calling comparison function
+    //void sort()                                                         {actual_list.sort();};  //only for single-threaded (for now). Uses exact length.
 
 private:
     UnderlyingContainer actual_list;
@@ -100,31 +92,41 @@ class GaussIteratorNew<ET,false,nfixed>
 {
     friend GaussListNew<ET,false,nfixed>;
     public:
-    using UnderlyingIterator = typename GaussSieve::GaussList_ST_UnderlyingContainer<ET,nfixed>::iterator; //non-const
-//    using CUnderlyingIterator= typename GaussList<ET,false,-1>::UnderlyingContainer::const_iterator;
-    using DerefType  = typename GaussSieve::GaussList_DereferencesTo <ET,false,nfixed>; //without cv - spec.
-//    using DetailType = LatticePoint<ET>;
-//    using ExactType  = LatticePoint<ET>; //need not be the same!
+
+    /*
+    What this class wraps around:
+    */
+    using UnderlyingIterator = typename GaussListNew<ET,false,nfixed>::UnderlyingContainer::iterator; //non-const
+//    using CUnderlyingIterator= typename GaussList<ET,false,-1>::UnderlyingContainer::const_iterator; //const-version
+
+    /*
+    This is what dereferencing will give us (modulo cv - qualifiers)
+    */
+    using DerefType  = typename GaussSieve::GaussList_ReturnType<ET,false,nfixed>; //without cv - spec.
+
     GaussIteratorNew () = delete; // ???
     GaussIteratorNew (GaussIteratorNew const & other) = default;
     GaussIteratorNew (GaussIteratorNew && other) = default;
     GaussIteratorNew & operator= (GaussIteratorNew const & other) = default;
     GaussIteratorNew & operator= (GaussIteratorNew && other) = default;
     ~GaussIteratorNew() = default;
-    ExactLatticePoint<ET,nfixed> const & dereference_exactly_r() {return it -> access_exact_point_r();};
+
+    //ExactLatticePoint<ET,nfixed> const & dereference_exactly_r() {return it -> access_exact_point_r();};
     //LatticePoint<ET> * access_details() { assert(  (*this)->get_details_ptr_rw()!=nullptr );  return (*this)-> get_details_ptr_rw() ;};
     explicit GaussIteratorNew(UnderlyingIterator const & other) : it(other) {}; //make iterator from pointer
+
     GaussIteratorNew&  operator++() {++it; return *this;}; //prefix version
     GaussIteratorNew  operator++(int){return it++;}; //postfix version
 
     [[deprecated("Decrement operator is deprecated") ]] GaussIteratorNew&  operator--() {--it; return *this;}; //For tests only
     bool operator==( GaussIteratorNew const & other) const {return it==(other.it);};
     bool operator!=( GaussIteratorNew const & other) const {return it!=(other.it);};
+
     bool is_end() const = delete; //not implemented for single-threaded yet.
     //intrinsic check for end, validity etc?
     //operator DerefType const *();
-    DerefType const  & operator*() const    {return it->access_approximation_r();};
-    DerefType const *  operator->() const    {return it->get_approximation_const_ptr();};
+    DerefType const &  operator*() const    {return *it;};
+    DerefType const *  operator->() const   {return &(*it);};
     //CUnderlyingIterator const operator->() const {return static_cast<CUnderlyingIterator>(it);};
 
     //Note : access_details may become deprecated at some point, if details only store difference to approximation or coefficients wrt other vectors.
@@ -132,7 +134,7 @@ class GaussIteratorNew<ET,false,nfixed>
 
     //DetailType * access_details() {return it->get_details_ptr_rw();}; //Note: In multithreaded environment, there is no write access.
     //get_exact_point() const {return *(it->get_details_ptr());}; //retrieves a copy of the exact value. preferably use this one.
-    ET get_true_norm2() const  {return it->get_exact_norm2();}; // Use this function to get the true norm2 value.
+    //ET get_true_norm2() const  {return it->get_exact_norm2();}; // Use this function to get the true norm2 value.
     //DerefType & deref_rw() {return *it;};
     private:
     UnderlyingIterator it;

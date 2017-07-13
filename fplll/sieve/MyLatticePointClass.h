@@ -32,8 +32,10 @@ class MyLatticePoint : public GeneralLatticePoint< MyLatticePoint<ET, nfixed> >
 
 public:
     MyLatticePoint()=delete;
-    MyLatticePoint(MyLatticePoint const &Point) = delete;
-    MyLatticePoint(MyLatticePoint &&Point) = default ;
+    MyLatticePoint(MyLatticePoint const &point) = delete;
+    MyLatticePoint(MyLatticePoint &&point) = default;
+    MyLatticePoint& operator=(MyLatticePoint const & other) = delete;
+    MyLatticePoint& operator=(MyLatticePoint && other) = default;
 
     ~MyLatticePoint() {}
 
@@ -88,10 +90,14 @@ public:
 
     //friend std::ostream & operator<< <ET, nfixed> (std::ostream &os, MyLatticePoint<ET,nfixed> const &A);
 
+    MyLatticePoint make_copy (Dimension<nfixed> const & auxdata={}) const;
+
+
 public:
     std::vector<ET> data;
     ET norm2;
 };
+
 
 
 template <class ET,int nfixed> MyLatticePoint<ET, nfixed> add (MyLatticePoint<ET,nfixed> const &A, MyLatticePoint<ET,nfixed> const &B, Dimension<nfixed> const & auxdata);
@@ -103,7 +109,6 @@ template <class ET,int nfixed> MyLatticePoint<ET,nfixed> scalar_mult (MyLatticeP
 template <class ET,int nfixed> bool compare_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B, ET const & target,  Dimension<nfixed> const & auxdata);
 template <class ET,int nfixed> bool compare_abs_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B, ET const & target,  Dimension<nfixed> const & auxdata);
 template <class ET,int nfixed> ET compute_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B, Dimension<nfixed> const & auxdata);
-template <class ET,int nfixed> MyLatticePoint<ET, nfixed> make_copy (MyLatticePoint<ET,nfixed> const &A, Dimension<nfixed> const & auxdata);
 //template <class ET,int nfixed> MyLatticePoint<ET, nfixed> void print (std::ostream &os = cout, MyLatticePoint<ET,nfixed> const &A, Dimension<nfixed> const & auxdata);
 
 

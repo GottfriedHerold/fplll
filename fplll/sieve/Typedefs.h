@@ -21,12 +21,16 @@ long double constexpr   pi          = 3.1415926535897932384626433832795028841971
 namespace GaussSieve{
 
     template<class ET,bool MT, int nfixed> using GaussList_ReturnType = MyLatticePoint<ET, nfixed>;
+    template<class ET,bool MT, int nfixed> using GaussList_StoredPoint = MyLatticePoint<ET,nfixed>;
+    //template<class ET,bool MT, int nfixed> using GaussList_DereferencesTo = ApproximateLatticePoint<ET,nfixed>;
+
     template<class ET,bool MT, int nfixed> using GaussQueue_ReturnType = GaussSampler_ReturnType<ET,MT,nfixed>;
     template<class ET,bool MT, int nfixed> using GaussQueue_DataType   = GaussQueue_ReturnType<ET,MT,nfixed>;
 
-    template<class ET, int nfixed> using GaussList_ST_UnderlyingContainer = std::list<CompressedPoint<ET,false,nfixed> >;
-    template<class ET, bool MT, int nfixed> using GaussList_DereferencesTo = ApproximateLatticePoint<ET,nfixed>;
-    template<class ET, bool MT, int nfixed> using GaussList_StoredPoint = CompressedPoint<ET,MT,nfixed>;
+    template<class ET,bool MT, int nfixed> using FastAccess_Point      = MyLatticePoint<ET, nfixed>; //for a small number of lattice points that we need to access very often.
+
+    //template<class ET, int nfixed> using GaussList_ST_UnderlyingContainer = std::list<CompressedPoint<ET,false,nfixed> >;
+
 };
 
 

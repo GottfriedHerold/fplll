@@ -13,17 +13,17 @@
 
 //class main_list;
 
-template<class ET,int nfixed> bool Sieve<ET,false,nfixed>::update_shortest_vector_found(LPType const & newvector)
+template<class ET,int nfixed> bool Sieve<ET,false,nfixed>::update_shortest_vector_found(FastAccess_Point const & newvector)
 {
     if(newvector.norm2 < shortest_vector_found.norm2)
     {
-        shortest_vector_found = newvector;
+        shortest_vector_found = newvector.make_copy(ambient_dimension);
         return true;
     }
     return false;
 }
 
-template<class ET,int nfixed> typename Sieve<ET,false,nfixed>::LPType Sieve<ET,false,nfixed>::get_shortest_vector_found()
+template<class ET,int nfixed> typename Sieve<ET,false,nfixed>::FastAccess_Point const & Sieve<ET,false,nfixed>::get_shortest_vector_found()
 {
     return shortest_vector_found;
 }
@@ -35,7 +35,7 @@ template<class ET,int nfixed> ET Sieve<ET,false,nfixed>::get_best_length2()
 
 template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run()
 {
-    if (verbosity >=2) cout << "the shortest vector in the input basis has norm2 = " << main_list.cbegin().dereference_exactly_r().norm2 << endl;
+    if (verbosity >=2) cout << "the shortest vector in the input basis has norm2 = " << original_basis[0] << endl;
     //int MaxIteration = 8000;
     if (term_cond==nullptr)
     {
@@ -55,7 +55,7 @@ template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run()
 
     switch (sieve_k)
     {
-        case 2: run_2_sieve(); break;
+        //case 2: run_2_sieve(); break;
         //case 3: run_3_sieve(); break;
         //default:run_k_sieve(); break;
     }
@@ -70,6 +70,7 @@ template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run()
     */
 }
 
+/*
 template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run_2_sieve()
 {
     CompressedPoint<ET,false,nfixed> p;
@@ -85,6 +86,7 @@ template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run_2_sieve()
         }
     }
 }
+*/
 
 /*
 template<class ET>
@@ -209,7 +211,7 @@ else if(count % 100 == 80)
 }
 */
 
-#include "SieveST2.cpp"
+//#include "SieveST2.cpp"
 //#include "SieveST3.cpp"
 //#include "SieveSTk.cpp"
 
