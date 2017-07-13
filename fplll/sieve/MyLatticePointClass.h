@@ -92,11 +92,12 @@ public:
 
     MyLatticePoint make_copy (Dimension<nfixed> const & auxdata={}) const;
     
-    ScalarProductReturnType get_norm2 (AuxDataType const & aux_data)
+    /*
+    ScalarProductReturnType get_norm2 ()
     {
         return norm2;
     }
-    
+    */
     void fill_with_zero (Dimension<nfixed> const & dim)
     {
         ET zero;

@@ -4,18 +4,27 @@
 template<class ET, int nfixed> void Sieve<ET,false,nfixed>::sieve_2_iteration (FastAccess_Point &p) //note : Queue might output Approx ?
 {
     int const n = get_ambient_dimension();
+    
+    /*
+    if (p.get_norm2() == 0) return;
+    bool loop = true;
+    
+    typename MainListType::Iterator it_comparison_flip=main_list.cend(); 
+    */
+    
+    
+    /*
     if (p.access_exact_point_r().norm2==0) return; //cerr << "Trying to reduce 0"; //TODO: Ensure sampler does not output 0 (currently, it happens).
     ApproximateLatticePoint<ET,nfixed> p_approx (p.access_approximation_r(), n); //makes a copy.
     ET p_exact_norm = p.get_exact_norm2();
     ExactLatticePoint<ET,nfixed> p_exact = p.get_exact_point();
-    //simplified the code, because main_list supports deleting AT pos and inserting BEFORE pos now. -- Gotti
 
     bool loop = true;
 
     ET scalar; //reduction multiple output by check2red_new
 
     typename MainListType::Iterator it_comparison_flip=main_list.cend(); //used to store the point where the list elements become larger than p.
-
+    
     while (loop) //while p keeps changing
     {
         loop = false;
@@ -31,16 +40,6 @@ template<class ET, int nfixed> void Sieve<ET,false,nfixed>::sieve_2_iteration (F
 //        bool predict = LatticeApproximations::Compare_Sc_Prod(p_approx,*it,it->get_approx_norm2(),2* it->get_length_exponent()-1,n   );
 	    if(!predict) continue;
 
-	/* OLD IMPLEMENTATION: check2red both check and reduces p
-	    if(GaussSieve::check2red(p, *(it.access_details()) ) ) //p was changed
-            {
-		        if(p.norm2!=0)  p_approx = static_cast< ApproxLatticePoint<ET,false> >(p);
-		cout << "p = ";
-		p.printLatticePoint();
-                loop = true;
-                break;
-            }
-	*/
             ++number_of_exact_scprods;
             if ( GaussSieve::check2red_exact<ET,nfixed>(p_exact, it.dereference_exactly_r(), scalar) )
             {
