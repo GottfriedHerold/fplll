@@ -84,8 +84,8 @@ void TestMyLatticePointClass()
 
     MyLatticePoint<Z_NR<mpz_t>, -1> test_pointA =  MyLatticePoint<Z_NR<mpz_t>, -1>(B[0], 10);
     MyLatticePoint<Z_NR<mpz_t>, -1> test_pointB =  MyLatticePoint<Z_NR<mpz_t>, -1>(B[1], 10);
-    test_pointA.print(cout, 10);
-    test_pointB.print(cout, 10);
+    test_pointA.write_to_stream(cout, 10);
+    test_pointB.write_to_stream(cout, 10);
 
     Dimension<-1> dim (10);
     //unsigned int dim = 10;
@@ -95,26 +95,30 @@ void TestMyLatticePointClass()
     //MyLatticePoint<Z_NR<mpz_t>, -1> test_pointSum1 = add(test_pointA, test_pointB, 10); --DOES NOT WORK. WHY DOES THE ABOVE WORK?
 
 
-    test_pointSum.print(cout, 10);
+    test_pointSum.write_to_stream(cout, 10);
 
     MyLatticePoint<Z_NR<mpz_t>, -1> test_pointSub = sub(test_pointA, test_pointB, dim);
-    test_pointSub.print(cout, 10);
+    test_pointSub.write_to_stream(cout, 10);
 
     MyLatticePoint<Z_NR<mpz_t>, -1> test_pointA_neg = negateP(test_pointA, dim);
-    test_pointA_neg.print(cout, 10);
+    test_pointA_neg.write_to_stream(cout, 10);
 
     Z_NR<mpz_t> mult;
     mult = 2;
     MyLatticePoint<Z_NR<mpz_t>, -1> test_pointA_mult = scalar_mult(test_pointA, mult, dim);
-    test_pointA_mult.print(cout, 10);
+    test_pointA_mult.write_to_stream(cout, 10);
 
     //B.gen_qary_prime(1, 15);
 
     MyLatticePoint<Z_NR<mpz_t>, -1> test_point =  MyLatticePoint<Z_NR<mpz_t>, -1>(B[0], 10);
 
 
-    test_pointA.print(cout, 10);
-    test_pointB.print(cout, 10);
+    test_pointA.write_to_stream(cout, 10);
+    test_pointB.write_to_stream(cout, 10);
+
+//    static_assert(IsALatticePoint< MyLatticePoint< Z_NR<mpz_t> ,-1> >::value," XXX");
+//    cout << test_pointA;
+
     Z_NR<mpz_t> sc_prod = compute_sc_product(test_pointA, test_pointB, dim);
     cout << sc_prod << endl;
 

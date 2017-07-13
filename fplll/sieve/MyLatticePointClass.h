@@ -5,16 +5,29 @@
 #include <type_traits>
 #include "Utility.h"
 #include <vector>
+#include "LatticePointConcept.h"
+
 
 template<class ET,int nfixed> class MyLatticePoint;
+
+template<class ET,int nfixed>
+class ImplementationTraits<MyLatticePoint<ET,nfixed> > : public ImplementationTraitsBase
+{
+    public:
+    using AuxDataType = Dimension<nfixed>;
+    using ScalarProductReturnType = ET;
+};
+
+//template<class ET,int nfixed> class MyLatticePoint : public GeneralLatticePoint< MyLatticePoint<ET, nfixed>  >
 //template <class ET,int nfixed> ET compute_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B, Dimension<nfixed> const & auxdata);
 
 
 template<class ET,int nfixed>
-class MyLatticePoint{
-
+class MyLatticePoint : public GeneralLatticePoint< MyLatticePoint<ET, nfixed> >
+{
+    public:
     using LatticePointType = true_type;
-    using AuxDataType = Dimension<nfixed>;
+    using AuxDataType = typename ImplementationTraits<MyLatticePoint>::AuxDataType;
     using ScalarProductReturnType = ET;
 
 public:
@@ -23,7 +36,7 @@ public:
     MyLatticePoint(MyLatticePoint &&Point) = default ;
 
     ~MyLatticePoint() {}
-    
+
     explicit MyLatticePoint(Dimension<nfixed> dim={}, IgnoreArg<AuxDataType const &> auxdata = {})
     {
     //{ 'auxdata = {}' <- ERRS!
@@ -39,8 +52,8 @@ public:
         data = (row.get_underlying_row()).get();
         update_norm2( dim);
     };
-    
-    
+
+
     //In order to be able to make a copy
     explicit MyLatticePoint(MyLatticePoint<ET, nfixed> const & point_, Dimension<nfixed> dim)
     {
@@ -49,30 +62,29 @@ public:
         data = point_.data;
         //norm2 =point_.norm2;
     }
-    
-    
+
+
     void update_norm2(Dimension<nfixed> const & dim)
     {
         this->norm2 = compute_sc_product(*this, *this, dim);
 
     };
-    
+
     ET get_norm2() {return this->norm2;};
-    
+
     //friend std::ostream & operator<< <ET, nfixed> (std::ostream &os, MyLatticePoint<ET,nfixed> const &A);
-    
-    void print (std::ostream &os, Dimension<nfixed> const & dim)
+
+    std::ostream & write_to_stream (std::ostream &os, Dimension<nfixed> const & dim)
     {
         os << "[";
-        int n = dim.dim;
-        for (int i =0; i<n; ++i)
+        for (unsigned int i =0; i<dim; ++i)
         {
             os << this->data[i] << " " ;
         }
-        
-        os <<"]" << endl;
-    }
 
+        os <<"]" << endl;
+        return os;
+    }
 
     //friend std::ostream & operator<< <ET, nfixed> (std::ostream &os, MyLatticePoint<ET,nfixed> const &A);
 

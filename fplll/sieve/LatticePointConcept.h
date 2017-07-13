@@ -80,7 +80,7 @@ template<class T> class IsALatticePoint
     template<class ...>
     static std::false_type foo(...);
 public:
-    using value_t = decltype(foo<T>(0));
+    using value_t = std::integral_constant<bool, std::is_same< decltype(foo<T>(0)), std::true_type>::value>  ;
     static bool constexpr value = value_t::value;
 };
 
