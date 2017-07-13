@@ -8,7 +8,8 @@
 //class that ignores its argument. Can be used to optimize away unused parameters in function templates...
 class IgnoreAnyArg{
     public:
-    template<class T> constexpr IgnoreAnyArg(T val){}
+    template<class T> constexpr IgnoreAnyArg(T val){};
+    constexpr IgnoreAnyArg(){};
 };
 
 //same, but enforces the type of the ignored argument.

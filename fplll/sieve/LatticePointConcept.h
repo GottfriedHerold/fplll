@@ -118,7 +118,7 @@ class GeneralLatticePoint
     unsigned int get_dim(AuxDataType const &aux_data={}) = delete;
     std::istream & read_from_stream(std::istream &is = std::cin, AuxDataType const &aux_data={})=delete;
     std::ostream & write_to_stream(std::ostream &os = std::cout, AuxDataType const &aux_data={}); //=delete;
-    static std::string constexpr class_name(){return "General Lattice Point";};
+    static std::string class_name() {return "General Lattice Point";};
 };
 
 template<class LP>
