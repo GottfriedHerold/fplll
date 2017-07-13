@@ -1,6 +1,7 @@
 /* DO NOT INCLUDE THIS FILE DIRECTLY
 */
 
+#include "Typedefs.h";
 template<class ET, int nfixed> void Sieve<ET,false,nfixed>::sieve_2_iteration (FastAccess_Point &p) //note : Queue might output Approx ?
 {
     int const n = get_ambient_dimension();

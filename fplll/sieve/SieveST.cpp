@@ -82,7 +82,7 @@ template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run_2_sieve()
         //convert here???
         
         GaussSieve::FastAccess_Point<ET, false, nfixed> p_converted (std::move(p));
-        
+        //Sieve<ET,false,nfixed>::sieve_2_iteration(p_converted);
         //sieve_2_iteration(p_converted);
         ++i;
         if (( i % 1000 == 0) && (verbosity >=2))
