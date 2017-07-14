@@ -52,7 +52,7 @@ template <class ET,int nfixed> MyLatticePoint<ET,nfixed> negateP (MyLatticePoint
 }
 
 template <class ET,int nfixed>
-MyLatticePoint<ET,nfixed> scalar_mult (MyLatticePoint<ET,nfixed> &A, ET const & multiple, Dimension<nfixed> const & auxdata)
+MyLatticePoint<ET,nfixed> scalar_mult (MyLatticePoint<ET,nfixed> const &A, ET const & multiple, Dimension<nfixed> const & auxdata)
 {
     MyLatticePoint<ET, nfixed> res = MyLatticePoint<ET, nfixed>(auxdata.dim, auxdata);
 

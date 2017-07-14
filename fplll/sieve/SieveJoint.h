@@ -215,7 +215,8 @@ public:
     unsigned long long get_number_of_points_constructed() const {return number_of_points_constructed;};
     unsigned long int get_current_list_size() const             {return current_list_size;};
     unsigned long int get_current_queue_size()                  {return main_queue.size();}; //TODO : fix const-correctness
-    unsigned long long get_number_of_scprods() const            {return number_of_scprods;};
+    unsigned long long get_number_of_scprods_level1() const     {return number_of_total_scprods_level1;};
+    //TODO:DO the same for all levels
     void set_termination_condition(TermCondType termcond)       {term_cond = termcond;}; //TODO: If we default - initialize (and own in this case), may need to delete previous value.
 private:
 
@@ -270,7 +271,10 @@ private:
     unsigned long int number_of_points_sampled;
     unsigned long long int number_of_points_constructed; //sampling  + succesful pairs
     unsigned long int current_list_size;
-    unsigned long long int number_of_scprods;
+    unsigned long long int number_of_total_scprods;
+    unsigned long long int number_of_total_scprods_level1; //for k=2, case
+    unsigned long long int number_of_total_scprods_level2; //for k=2,3 cases
+    unsigned long long int number_of_total_scprods_level3; //for k=2,3,4 cases
     unsigned long long int number_of_exact_scprods;
     unsigned long long int number_of_mispredictions; //could not reduce in spite of approximation saying so.
 #else //note: we might collect statistics per-thread and merge occasionally. This means these statistics might be inaccurate.
@@ -279,6 +283,7 @@ private:
     atomic_ullong number_of_points_constructed;
     atomic_ulong current_list_size;
     atomic_ullong number_of_scprods;
+    atomic_ullong number_of_total_scprods_level1;
     atomic_ullong number_of_exact_scprods;
     atomic_ullong number_of_mispredictions;
 #endif // GAUSS_SIEVE_IS_MULTI_THREADED

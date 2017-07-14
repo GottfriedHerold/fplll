@@ -72,7 +72,7 @@ public:
 
     };
 
-    ET get_norm2() {return this->norm2;};
+    ET get_norm2() const {return norm2;};
 
     //friend std::ostream & operator<< <ET, nfixed> (std::ostream &os, MyLatticePoint<ET,nfixed> const &A);
 
@@ -122,7 +122,7 @@ template <class ET,int nfixed> MyLatticePoint<ET,nfixed> sub (MyLatticePoint<ET,
 template <class ET,int nfixed> MyLatticePoint<ET,nfixed> negateP (MyLatticePoint<ET,nfixed> const &A, Dimension<nfixed> const & auxdata);
 
 
-template <class ET,int nfixed> MyLatticePoint<ET,nfixed> scalar_mult (MyLatticePoint <ET,nfixed> &A, ET const & multiple, Dimension<nfixed> const & auxdata);
+template <class ET,int nfixed> MyLatticePoint<ET,nfixed> scalar_mult (MyLatticePoint <ET,nfixed> const &A, ET const & multiple, Dimension<nfixed> const & auxdata);
 template <class ET,int nfixed> bool compare_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B, ET const & target,  Dimension<nfixed> const & auxdata);
 template <class ET,int nfixed> bool compare_abs_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B, ET const & target,  Dimension<nfixed> const & auxdata);
 template <class ET,int nfixed> ET compute_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B, Dimension<nfixed> const & auxdata);
