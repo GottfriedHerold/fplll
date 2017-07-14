@@ -80,7 +80,6 @@ template<class ET, int nfixed> void Sieve<ET,false,nfixed>::sieve_2_iteration (G
                          p = perform2red(p, *it, scalar, Dimension<nfixed>(n) );
                 }
                
-                
                 loop = true;
                 break;
             }
@@ -113,9 +112,29 @@ template<class ET, int nfixed> void Sieve<ET,false,nfixed>::sieve_2_iteration (G
 
     for (typename MainListType::Iterator it =it_comparison_flip; it!=main_list.cend(); ++it)
     {
+        
+        ++number_of_total_scprods_level1;
         if (compare_abs_sc_product(*it, p, target_scprod, Dimension<nfixed>(n)))
         {
-            
+            ET scalar;
+            if ( check2red(*it, p, scalar, Dimension<nfixed>(n)) )
+            {
+                GaussSieve::FastAccess_Point<ET,false,nfixed> v_new (n);
+                v_new = perform2red(*it, p, scalar, Dimension<nfixed>(n) );
+                
+                if (v_new.get_norm2() == 0)
+                {
+                    number_of_collisions++;
+                    ++it;
+                    continue;
+                }
+                
+                //TODO: Must convert to GaussQueue_DataType ??
+                main_queue.push(std::move(v_new));
+                it = main_list.erase(it);
+                --current_list_size;
+            }
+
         }
     
     
@@ -225,8 +244,8 @@ template<class ET, int nfixed> void Sieve<ET,false,nfixed>::sieve_2_iteration (G
 			++it;
 		}
     }
-
-    /* print for debugging */
+     */
+    // print for debugging
     //for (it1 = main_list.begin(); it1!=main_list.end(); ++it1) {
     //	(*it1).printLatticePoint();
     //}
