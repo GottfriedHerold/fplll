@@ -15,9 +15,10 @@
 
 template<class ET,int nfixed> bool Sieve<ET,false,nfixed>::update_shortest_vector_found(FastAccess_Point const & newvector)
 {
-    if(newvector.norm2 < shortest_vector_found.norm2)
+    if(newvector.norm2 < shortest_vector_found->norm2)
     {
-        shortest_vector_found = newvector.make_copy(ambient_dimension);
+        delete shortest_vector_found;
+        shortest_vector_found = new FastAccess_Point (newvector.make_copy());
         return true;
     }
     return false;
@@ -25,12 +26,12 @@ template<class ET,int nfixed> bool Sieve<ET,false,nfixed>::update_shortest_vecto
 
 template<class ET,int nfixed> typename Sieve<ET,false,nfixed>::FastAccess_Point const & Sieve<ET,false,nfixed>::get_shortest_vector_found()
 {
-    return shortest_vector_found;
+    return *shortest_vector_found;
 }
 
 template<class ET,int nfixed> ET Sieve<ET,false,nfixed>::get_best_length2()
 {
-    return shortest_vector_found.norm2;
+    return shortest_vector_found->norm2;
 }
 
 template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run()
@@ -73,14 +74,14 @@ template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run()
 
 template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run_2_sieve()
 {
-    GaussSieve::GaussQueue_ReturnType<ET,false,nfixed> p(ambient_dimension);
+    GaussSieve::GaussQueue_ReturnType<ET,false,nfixed> p;
     int i=0;
     while (!check_if_done() )
     {
-        p=main_queue.true_pop();
-        
+        p = main_queue.true_pop();
+
         //convert here???
-        
+
         GaussSieve::FastAccess_Point<ET, false, nfixed> p_converted (std::move(p));
         //Sieve<ET,false,nfixed>::sieve_2_iteration(p_converted);
         sieve_2_iteration(p_converted);

@@ -117,7 +117,7 @@ void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::dump_status_to_stream(ostre
     if(howverb>=1) of << "Current Queue Size="<< get_current_queue_size()<< endl;
     if(howverb>=1) {
         of << "Best vector found so far=";
-        shortest_vector_found.write_to_stream(of,ambient_dimension);
+        shortest_vector_found->write_to_stream(of);
         of << endl;
     }
     //of << "Best vector found so far=" << shortest_vector_found << endl; //TODO : Display length seperately
@@ -174,7 +174,7 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::Sieve(LatticeBasisType B, unsign
     verbosity(verbosity_),
     term_cond(termcond),
     sieve_status(SieveStatus::sieve_status_init),
-    shortest_vector_found(static_cast<Dimension<nfixed>>(ambient_dimension)), //TODO : initialize to meaningful value, e.g. any vector of B.
+    shortest_vector_found(nullptr), //TODO : initialize to meaningful value, e.g. any vector of B.
     number_of_collisions(0),
     number_of_points_sampled(0),
     number_of_points_constructed(0),
@@ -187,6 +187,11 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::Sieve(LatticeBasisType B, unsign
     #endif // GAUSS_SIEVE_IS_MULTI_THREADED
 
 {
+    if (nfixed!=-1)
+    {
+        assert(B.get_cols() == nfixed );
+    }
+    FastAccess_Point::class_init(ambient_dimension);
     #if GAUSS_SIEVE_IS_MULTI_THREADED==true
     if(num_threads_wanted==0) //0 means we take a meaningful default, which is given by thread::hardware_concurrency
     num_threads_wanted = std::max(std::thread::hardware_concurrency(),static_cast<unsigned int>(1)); //Note: hardware_concurrency might return 0 for "unknown".
@@ -198,7 +203,7 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::Sieve(LatticeBasisType B, unsign
     auto it = main_list.cbegin();
     for (unsigned int i=0; i<lattice_rank; ++i)
     {
-        FastAccess_Point tmppoint(original_basis[i],ambient_dimension);
+        FastAccess_Point tmppoint(original_basis[i]);
         main_list.insert_before(it, std::move(tmppoint));
 //        ExactLatticePoint<ET,nfixed> * new_basis_vector = new ExactLatticePoint<ET,nfixed> ( conv_matrixrow_to_lattice_point<ET,nfixed> (original_basis[i]));
 //        main_list.insert_before(it,  static_cast<CompressedPoint<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed> >(new_basis_vector) );
@@ -212,7 +217,7 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::Sieve(LatticeBasisType B, unsign
 
     //FIXME: Initialize shortest vector
 
-    shortest_vector_found = main_list.cbegin()->make_copy(static_cast<Dimension<nfixed>>(ambient_dimension) );
+    shortest_vector_found = new FastAccess_Point (main_list.cbegin()->make_copy());
 //    #endif // GAUSS_SIEVE_IS_MULTI_THREADED
     //TODO : enable sorting for multithreaded case.
     #if GAUSS_SIEVE_IS_MULTI_THREADED==true
@@ -226,6 +231,7 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::~Sieve()
 {
     #if GAUSS_SIEVE_IS_MULTI_THREADED==true
     delete[] garbage_bins;
+    delete shortest_vector_found;
     #endif
 };
 

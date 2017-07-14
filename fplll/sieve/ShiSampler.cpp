@@ -32,7 +32,7 @@ template<class ET,bool MT, class Engine, class Sseq, int nfixed> void ShiSampler
     auto it = helper_current_basis.cbegin();
     for(unsigned int i = 0; i < dim ; ++i)
     {
-        helper_current_basis.emplace(it, current_basis[i],dim);
+        helper_current_basis.emplace(it, current_basis[i]);
     }
 }
 template<class ET,bool MT, class Engine, class Sseq, int nfixed> ShiSampler<ET,MT,Engine, Sseq, nfixed>::~ShiSampler()
@@ -44,8 +44,8 @@ template<class ET,bool MT, class Engine, class Sseq, int nfixed> typename GaussS
 {
     assert(sieveptr!=nullptr);
 //    MyLatticePoint<ET,nfixed> *vec = new MyLatticePoint<ET,nfixed>(dim);
-    MyLatticePoint<ET,nfixed> vec(dim);
-    vec.fill_with_zero(dim);
+    MyLatticePoint<ET,nfixed> vec;
+    vec.fill_with_zero();
     //vec->NumVect<ET>::fill(0); //current vector built up so far. //Note: We treat vec as a NumVect until the end, because we don't want to normalize intermediate results.
     vector<double> shifts(rank, 0.0); //shift, expressed in coordinates wrt the Gram-Schmidt basis.
     for(int j=rank-1; j>=0; --j)
@@ -55,7 +55,7 @@ template<class ET,bool MT, class Engine, class Sseq, int nfixed> typename GaussS
         newcoeffET = newcoeff;
         //vec+= current_basis[j].get_underlying_row(); //build up vector
 
-        vec = add(vec, scalar_mult(helper_current_basis[j], newcoeffET, dim), dim);
+        vec = add(vec, scalar_mult(helper_current_basis[j], newcoeffET));
 
 //        vec->NumVect<ET>::addmul_si(current_basis[j].get_underlying_row(), newcoeff);
         for(int i=0;i<j;++i) //adjust shifts

@@ -72,6 +72,8 @@ template <class Z> void sample_gaussians(int number, double s, double center, do
 template <class ET,int nfixed>
 void TestMyLatticePointClass()
 {
+    Dimension<-1> dim (10);
+    MyLatticePoint<Z_NR<mpz_t>, -1>::class_init(dim);
     ZZ_mat<mpz_t> B;
     B.resize(10, 10);
     //generates a lower-triangular matrix B; the argument determines (in a complicated way) the bit-size of entries
@@ -83,56 +85,56 @@ void TestMyLatticePointClass()
     B.gen_qary_prime(1, 15);
 
 
-    MyLatticePoint<Z_NR<mpz_t>, -1> test_pointA =  MyLatticePoint<Z_NR<mpz_t>, -1>(B[0], 10);
-    MyLatticePoint<Z_NR<mpz_t>, -1> test_pointB =  MyLatticePoint<Z_NR<mpz_t>, -1>(B[1], 10);
-    test_pointA.write_to_stream(cout, 10);
-    test_pointB.write_to_stream(cout, 10);
+    MyLatticePoint<Z_NR<mpz_t>, -1> test_pointA =  MyLatticePoint<Z_NR<mpz_t>, -1>(B[0]);
+    MyLatticePoint<Z_NR<mpz_t>, -1> test_pointB =  MyLatticePoint<Z_NR<mpz_t>, -1>(B[1]);
+    test_pointA.write_to_stream(cout);
+    test_pointB.write_to_stream(cout);
 
-    Dimension<-1> dim (10);
+
     //unsigned int dim = 10;
 
-    MyLatticePoint<Z_NR<mpz_t>, -1> test_pointSum = add(test_pointA, test_pointB, dim);
+    MyLatticePoint<Z_NR<mpz_t>, -1> test_pointSum = add(test_pointA, test_pointB);
 
     //MyLatticePoint<Z_NR<mpz_t>, -1> test_pointSum1 = add(test_pointA, test_pointB, 10); --DOES NOT WORK. WHY DOES THE ABOVE WORK?
 
 
-    test_pointSum.write_to_stream(cout, 10);
+    test_pointSum.write_to_stream(cout);
 
-    MyLatticePoint<Z_NR<mpz_t>, -1> test_pointSub = sub(test_pointA, test_pointB, dim);
-    test_pointSub.write_to_stream(cout, 10);
+    MyLatticePoint<Z_NR<mpz_t>, -1> test_pointSub = sub(test_pointA, test_pointB);
+    test_pointSub.write_to_stream(cout);
 
-    MyLatticePoint<Z_NR<mpz_t>, -1> test_pointA_neg = negateP(test_pointA, dim);
-    test_pointA_neg.write_to_stream(cout, 10);
+    MyLatticePoint<Z_NR<mpz_t>, -1> test_pointA_neg = negative_of(test_pointA);
+    test_pointA_neg.write_to_stream(cout);
 
     Z_NR<mpz_t> mult;
     mult = 2;
-    MyLatticePoint<Z_NR<mpz_t>, -1> test_pointA_mult = scalar_mult(test_pointA, mult, dim);
-    test_pointA_mult.write_to_stream(cout, 10);
+    MyLatticePoint<Z_NR<mpz_t>, -1> test_pointA_mult = scalar_mult(test_pointA, mult);
+    test_pointA_mult.write_to_stream(cout);
 
     //B.gen_qary_prime(1, 15);
 
-    MyLatticePoint<Z_NR<mpz_t>, -1> test_point =  MyLatticePoint<Z_NR<mpz_t>, -1>(B[0], 10);
+    MyLatticePoint<Z_NR<mpz_t>, -1> test_point =  MyLatticePoint<Z_NR<mpz_t>, -1>(B[0]);
 
 
-    test_pointA.write_to_stream(cout, 10);
-    test_pointB.write_to_stream(cout, 10);
+    test_pointA.write_to_stream(cout);
+    test_pointB.write_to_stream(cout);
 
 //    static_assert(IsALatticePoint< MyLatticePoint< Z_NR<mpz_t> ,-1> >::value," XXX");
 //    cout << test_pointA;
 
-    Z_NR<mpz_t> sc_prod = compute_sc_product(test_pointA, test_pointB, dim);
+    Z_NR<mpz_t> sc_prod = compute_sc_product(test_pointA, test_pointB);
     cout << sc_prod << endl;
 
 
     Z_NR<mpz_t> sc_prod_target;
     sc_prod_target = 5000;
-    cout << compare_sc_product(test_pointA, test_pointB, sc_prod_target, dim) << endl;
-    cout << compare_abs_sc_product(test_pointA, test_pointB, sc_prod_target, dim) << endl;
+    cout << compare_sc_product(test_pointA, test_pointB, sc_prod_target) << endl;
+    cout << compare_abs_sc_product(test_pointA, test_pointB, sc_prod_target) << endl;
 
     cout << test_pointA.get_norm2() << endl;
 
-    test_pointA.fill_with_zero(dim);
-    test_pointA.write_to_stream(cout, dim);
+    test_pointA.fill_with_zero();
+    test_pointA.write_to_stream(cout);
 
 
 }

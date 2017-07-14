@@ -192,7 +192,7 @@ public:
     int get_verbosity() const                                   {return verbosity;};                //non-thread-safe
     void set_verbosity(int new_verbosity)                       {verbosity=new_verbosity;return;};  //non-thread-safe
     unsigned int get_lattice_rank() const                       {return lattice_rank;};             //non-thread-safe
-    unsigned int get_ambient_dimension() const                  {return ambient_dimension;};        //non-thread-safe
+    Dimension<nfixed> get_ambient_dimension() const             {return ambient_dimension;};        //non-thread-safe
     unsigned int get_k() const                                  {return sieve_k;};                  //non-thread-safe
     void set_k(unsigned int new_k)                              {sieve_k=new_k;return;};            //non-thread-safe
     bool is_multithreaded_wanted() const                        {return multi_threaded_wanted;};    //Note: No setter
@@ -240,7 +240,7 @@ private:
 
     LatticeBasisType original_basis;
     unsigned int lattice_rank;
-    unsigned int ambient_dimension; //consider merging these into a latticespec struct.
+    Dimension<nfixed> ambient_dimension; //consider merging these into a latticespec struct.
     bool multi_threaded_wanted;
     #if GAUSS_SIEVE_IS_MULTI_THREADED == true
     unsigned int num_threads_wanted;        //number of threads that we spawn
@@ -262,7 +262,7 @@ private:
         sieve_status_suspended=3,       //sieve is currently suspended. Useful for dumping / cleanup of internal data structures.
         sieve_status_finished=100       //sieve has finished
     } sieve_status; //thread safety?
-    FastAccess_Point shortest_vector_found; //including its length //TODO: Thread-safety
+    FastAccess_Point *shortest_vector_found; //including its length //TODO: Thread-safety
 
 //statistics
 #if GAUSS_SIEVE_IS_MULTI_THREADED == false
