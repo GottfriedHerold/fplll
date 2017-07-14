@@ -15,7 +15,10 @@ sampler(nullptr)
     assert(caller_sieve!=nullptr);
     std::seed_seq seed{1,2,4}; //just some arbitrary numbers
     //sampler = new EllipticSampler<ET,false, std::mt19937_64, std::seed_seq> (seed);
+    cout << "Initializing Sampler" << endl << flush;
     sampler = new ShiSampler<ET,false, std::mt19937_64, std::seed_seq,nfixed> (seed);
+    cout << "Finished Initializing Sampler" << endl << flush;
+    assert(sampler!=nullptr);
 }
 
 //template<class ET>

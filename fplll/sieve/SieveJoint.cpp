@@ -206,7 +206,8 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::Sieve(LatticeBasisType B, unsign
     for (unsigned int i=0; i<lattice_rank; ++i)
     {
         FastAccess_Point tmppoint(original_basis[i]);
-        main_list.insert_before(it, std::move(tmppoint));
+        it = main_list.insert_before(it, std::move(tmppoint));
+        ++it;
 //        ExactLatticePoint<ET,nfixed> * new_basis_vector = new ExactLatticePoint<ET,nfixed> ( conv_matrixrow_to_lattice_point<ET,nfixed> (original_basis[i]));
 //        main_list.insert_before(it,  static_cast<CompressedPoint<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed> >(new_basis_vector) );
     }
@@ -222,16 +223,17 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::Sieve(LatticeBasisType B, unsign
     //FIXME: Initialize shortest vector
 
     shortest_vector_found = new FastAccess_Point (main_list.cbegin()->make_copy());
-    cout << "shortest_vector_found is initialized " << endl;
+    cout << "shortest_vector_found is initialized " << endl << flush;
     
 //    #endif // GAUSS_SIEVE_IS_MULTI_THREADED
     //TODO : enable sorting for multithreaded case.
     #if GAUSS_SIEVE_IS_MULTI_THREADED==true
     garbage_bins = new GarbageBin<typename MainListType::DataType>[num_threads_wanted]; //maybe init later.
     #endif
+    assert(main_queue.sampler!=nullptr);
     main_queue.sampler->init(this);
     
-    cout << "sampler is initialized " << endl;
+    cout << "sampler is initialized " << endl << flush;
 
 };
 

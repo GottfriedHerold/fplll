@@ -55,8 +55,12 @@ public:
 
     explicit MyLatticePoint(MatrixRow<ET> const & row)
     {
+        cout << "converting MatrixRow to MyLatticePoint:" << endl << flush;
         data = (row.get_underlying_row()).get();
+        cout << "Copied vector..." << endl << flush;
         update_norm2();
+        cout << "... and updated norm2. Finished." << endl << flush;
+        
     };
 
 

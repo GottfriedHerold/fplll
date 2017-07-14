@@ -6,19 +6,29 @@
 
 template<class ET,bool MT, class Engine, class Sseq, int nfixed> void ShiSampler<ET,MT,Engine,Sseq,nfixed>::custom_init()
 {
-//    current_basis = sieveptr->get_original_basis();
+    current_basis = sieveptr->get_original_basis();
     dim = static_cast<Dimension<nfixed>>( sieveptr->get_ambient_dimension() );
     rank = sieveptr->get_lattice_rank();
     Matrix<ET> u, u_inv,g; //intentionally uninitialized.
+    cout << "Temp1" << endl << flush;
     MatGSO<ET, FP_NR<double> > GSO(current_basis, u, u_inv, MatGSOFlags::GSO_INT_GRAM);
+    cout << "Temp2" << endl << flush;
     GSO.update_gso(); //todo: raise exception in case of error.
+    cout << "Temp3" << endl << flush;
+    
     mu = GSO.get_mu_matrix();
-
+    cout << "Temp4" << endl << flush;
+    
     s2pi.resize(rank);
     maxdeviations.resize(rank);
+    cout << "Temp5" << endl << flush;
+    
     g  = GSO.get_g_matrix();
-
+    cout << "Temp6" << endl << flush;
+    
     FP_NR<double> maxbistar2 = GSO.get_max_bstar();
+    cout << "Temp7" << endl << flush;
+    
     FP_NR<double> tmp;
     FP_NR<double> tmp2;
     for (unsigned int i = 0; i < rank; ++i)
@@ -29,11 +39,17 @@ template<class ET,bool MT, class Engine, class Sseq, int nfixed> void ShiSampler
         tmp2.sqrt(tmp2);
         maxdeviations[i] = tmp2.get_d() * cutoff;
     }
-    auto it = helper_current_basis.cbegin();
-    for(unsigned int i = 0; i < dim ; ++i)
+    cout << "Temp8" << endl << flush;
+    
+    auto it = helper_current_basis.cend();
+    cout << "Temp8.5" << endl << flush;
+    for(unsigned int i = 0; i < rank ; ++i)
     {
+        it = helper_current_basis.cend();
         helper_current_basis.emplace(it, current_basis[i]);
     }
+    cout << "Temp9" << endl << flush;
+    
 }
 template<class ET,bool MT, class Engine, class Sseq, int nfixed> ShiSampler<ET,MT,Engine, Sseq, nfixed>::~ShiSampler()
 {
