@@ -117,8 +117,7 @@ template <class ET,int nfixed> MyLatticePoint<ET, nfixed> add (MyLatticePoint<ET
 template <class ET,int nfixed> MyLatticePoint<ET,nfixed> sub (MyLatticePoint<ET,nfixed> const &A, MyLatticePoint<ET, nfixed> const &B);
 template <class ET,int nfixed> MyLatticePoint<ET,nfixed> negative_of(MyLatticePoint<ET,nfixed> const &A);
 
-
-template <class ET,int nfixed> MyLatticePoint<ET,nfixed> scalar_mult (MyLatticePoint <ET,nfixed> &A, ET const & multiple);
+template <class ET,int nfixed> MyLatticePoint<ET,nfixed> scalar_mult (MyLatticePoint<ET,nfixed> const &A, ET const & multiple);
 template <class ET,int nfixed> bool compare_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B, ET const & target);
 template <class ET,int nfixed> bool compare_abs_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B, ET const & target);
 template <class ET,int nfixed> ET compute_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B);

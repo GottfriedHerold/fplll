@@ -94,6 +94,12 @@ template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run_2_sieve()
 }
 
 
+/**
+    Helper functions for 2-sieve
+*/
+
+
+
 /*
 template<class ET>
 void Sieve<ET,false>::run_3_sieve()

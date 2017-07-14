@@ -47,7 +47,9 @@ template <class ET,int nfixed> MyLatticePoint<ET,nfixed> negative_of(MyLatticePo
 }
 
 template <class ET,int nfixed>
-MyLatticePoint<ET,nfixed> scalar_mult (MyLatticePoint<ET,nfixed> &A, ET const & multiple)
+
+MyLatticePoint<ET,nfixed> scalar_mult (MyLatticePoint<ET,nfixed> const &A, ET const & multiple)
+
 {
     MyLatticePoint<ET, nfixed> res;
 

@@ -110,7 +110,7 @@ void Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::dump_status_to_stream(ostre
     if(howverb>=1) of << "Number of collisions=" << number_of_collisions << endl;
     if(howverb>=1) of << "Number of points Sampled=" << number_of_points_sampled << endl;
     if(howverb>=1) of << "Number of points Constructed=" << number_of_points_constructed << endl;
-    if(howverb>=1) of << "Number of approx. scalar products=" << number_of_scprods << endl;
+    //if(howverb>=1) of << "Number of approx. scalar products=" << number_of_scprods << endl;
     if(howverb>=1) of << "Number of exact scalar products=" << number_of_exact_scprods << endl;
     if(howverb>=1) of << "Number of mispredictions=" << number_of_mispredictions << endl;
     if(howverb>=1) of << "Current List Size=" << get_current_list_size() << endl;
@@ -179,7 +179,9 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::Sieve(LatticeBasisType B, unsign
     number_of_points_sampled(0),
     number_of_points_constructed(0),
     current_list_size(0),
-    number_of_scprods(0),
+    number_of_total_scprods_level1(0),
+    number_of_total_scprods_level2(0),
+    number_of_total_scprods_level3(0),
     number_of_exact_scprods(0),
     number_of_mispredictions(0)
     #if GAUSS_SIEVE_IS_MULTI_THREADED==true

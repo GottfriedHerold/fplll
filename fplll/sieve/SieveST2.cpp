@@ -2,17 +2,144 @@
 */
 
 #include "Typedefs.h"
+#include "MyLatticePointClass.cpp"
 
-template<class ET, int nfixed> void Sieve<ET,false,nfixed>::sieve_2_iteration (GaussSieve::FastAccess_Point<ET, false,nfixed> &p) //note : Queue might output Approx ?
+/*
+ Assume ||p1|| > ||p2||
+ */
+template<class ET,int nfixed>
+bool check2red (GaussSieve::FastAccess_Point<ET,false,nfixed> const &p1, GaussSieve::FastAccess_Point<ET,false,nfixed> const &p2, ET & scalar, Dimension<nfixed> n)
+{
+
+    ET sc_prod, abs_2scprod;
+    sc_prod= compute_sc_product(p1, p2, n);
+    abs_2scprod.mul_ui(sc_prod,2);
+    abs_2scprod.abs(abs_2scprod);
+    
+    // check if |2 * <p1, p2>| <= |p2|^2. If yes, no reduction
+    if (abs_2scprod <= p2.norm2)
+        return false;
+    
+    //compute the multiple mult s.t. res = p1 \pm mult* p2;
+    //mult = round ( <p1, p2> / ||p2||^2 )
+    FP_NR<double> mult, tmp;
+    mult.set_z(sc_prod); //conversions
+    tmp.set_z(p2.norm2);
+    
+    mult.div(mult, tmp);
+    mult.rnd(mult);
+    
+    scalar.set_f(mult); //convert back
+    
+    return true;
+    
+}
+
+template<class ET,int nfixed>
+GaussSieve::FastAccess_Point<ET,false,nfixed> perform2red (GaussSieve::FastAccess_Point<ET,false,nfixed> const &p1, GaussSieve::FastAccess_Point<ET,false,nfixed> const &p2, ET const scalar, Dimension<nfixed> n)
+{
+    GaussSieve::FastAccess_Point<ET,false,nfixed> res (n);
+    res = scalar_mult<ET,nfixed>(p2, scalar, n);
+    res = sub(p1, p2, n);
+    return res;
+}
+                                                    
+
+template<class ET, int nfixed> void Sieve<ET,false,nfixed>::sieve_2_iteration (GaussSieve::FastAccess_Point<ET,false,nfixed> &p) //note : Queue might output Approx ?
 {
     int const n = get_ambient_dimension();
     
-    /*
+    
     if (p.get_norm2() == 0) return;
     bool loop = true;
     
-    typename MainListType::Iterator it_comparison_flip=main_list.cend(); 
-    */
+    typename MainListType::Iterator it_comparison_flip=main_list.cend();
+    
+    ET target_scprod; //TODO: should be input to the function
+    target_scprod=0.5;
+    
+    while (loop) {
+        loop = false;
+        
+        typename MainListType::Iterator it =main_list.cbegin();
+        for (it = main_list.cbegin(); it!=main_list.cend(); ++it)
+        {
+            if (p.get_norm2() < (*it).get_norm2())
+            {
+                it_comparison_flip = it;
+                break;
+            }
+            
+            ++number_of_total_scprods_level1;
+            
+            if (compare_abs_sc_product(p, *it, target_scprod, Dimension<nfixed>(n)))
+            {
+                ET scalar;
+                if ( check2red(p, *it, scalar, Dimension<nfixed>(n)) )
+                {
+                         p = perform2red(p, *it, scalar, Dimension<nfixed>(n) );
+                }
+               
+                loop = true;
+                break;
+            }
+            
+        }
+        
+    }
+    
+    if (p.get_norm2() == 0)
+    {
+        number_of_collisions++;
+        return;
+    }
+    
+    
+    //convert to GaussList_StoredPoint first
+    GaussSieve::GaussList_StoredPoint<ET, false, nfixed> p_converted (std::move(p));
+    
+    //insert the converted point into the main_list
+    main_list.insert_before(it_comparison_flip, std::move(p_converted));
+     ++current_list_size;
+    
+    if(update_shortest_vector_found(p))
+    {
+        if(verbosity>=2)
+        {
+            cout << "New shortest vector found. Norm2 = " << get_best_length2() << endl;
+        }
+    }
+
+    for (typename MainListType::Iterator it =it_comparison_flip; it!=main_list.cend(); ++it)
+    {
+        
+        ++number_of_total_scprods_level1;
+        if (compare_abs_sc_product(*it, p, target_scprod, Dimension<nfixed>(n)))
+        {
+            ET scalar;
+            if ( check2red(*it, p, scalar, Dimension<nfixed>(n)) )
+            {
+                GaussSieve::FastAccess_Point<ET,false,nfixed> v_new (n);
+                v_new = perform2red(*it, p, scalar, Dimension<nfixed>(n) );
+                
+                if (v_new.get_norm2() == 0)
+                {
+                    number_of_collisions++;
+                    ++it;
+                    continue;
+                }
+                
+                //TODO: Must convert to GaussQueue_DataType ??
+                main_queue.push(std::move(v_new));
+                it = main_list.erase(it);
+                --current_list_size;
+            }
+
+        }
+    
+    
+    }
+    
     
     
     /*
@@ -117,8 +244,8 @@ template<class ET, int nfixed> void Sieve<ET,false,nfixed>::sieve_2_iteration (G
 			++it;
 		}
     }
-
-    /* print for debugging */
+     */
+    // print for debugging
     //for (it1 = main_list.begin(); it1!=main_list.end(); ++it1) {
     //	(*it1).printLatticePoint();
     //}
