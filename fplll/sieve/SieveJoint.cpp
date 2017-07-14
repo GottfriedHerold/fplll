@@ -213,7 +213,9 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::Sieve(LatticeBasisType B, unsign
     current_list_size+=lattice_rank;
 //    #if GAUSS_SIEVE_IS_MULTI_THREADED == false
     if(verbosity>=2)    {cout << "Sorting ...";}
-        //main_list.sort();
+        main_list.sort();
+    //for (auto it = main_list.cbegin(); it!=main_list.cend(); ++it) {cout << (*it).get_norm2() << endl;}; //check for sort()
+        
     if(verbosity>=2)    {cout << "is finished." << endl;}
 
 

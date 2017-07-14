@@ -103,6 +103,10 @@ public:
             data[i] = zero;
         }
     };
+    
+    bool operator< (MyLatticePoint const & other) const { return this->get_norm2() < other.get_norm2();}
+    bool operator> (MyLatticePoint const & other) const { return this->get_norm2() > other.get_norm2();}
+
 
 
 public:
@@ -122,6 +126,7 @@ template <class ET,int nfixed> bool compare_sc_product (MyLatticePoint<ET, nfixe
 template <class ET,int nfixed> bool compare_abs_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B, ET const & target);
 template <class ET,int nfixed> ET compute_sc_product (MyLatticePoint<ET, nfixed> const &A, MyLatticePoint<ET,nfixed> const &B);
 //template <class ET,int nfixed> MyLatticePoint<ET, nfixed> void print (std::ostream &os = cout, MyLatticePoint<ET,nfixed> const &A, Dimension<nfixed> const & auxdata);
+
 
 
 #endif

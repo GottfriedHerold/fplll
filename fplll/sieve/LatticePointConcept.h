@@ -122,10 +122,13 @@ class GeneralLatticePoint
 //    }
 //}
 
+
+//This code fails
+/*
 template<class Implementation>
 bool GeneralLatticePoint<Implementation>::operator< (Implementation const & other) const
 {
-    return Implementation::get_norm2(*this) < other.get_norm2();
+    return Implementation:: this->get_norm2() < other.get_norm2();
 }
 
 template<class Implementation>
@@ -133,6 +136,7 @@ bool GeneralLatticePoint<Implementation>::operator> (Implementation const & othe
 {
     return Implementation::get_norm2(*this) > other.get_norm2();
 }
+ */
 
 
 
