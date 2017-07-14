@@ -79,7 +79,7 @@ public:
     //void unlink(Iterator pos)=delete;     //MT only                              //{actual_list.erase(pos);};
 
     //TODO: Use aux_data, sort by calling comparison function
-    //void sort()                                                         {actual_list.sort();};  //only for single-threaded (for now). Uses exact length.
+    void sort()                                                         {actual_list.sort();};  //only for single-threaded (for now). Uses exact length.
 
 private:
     UnderlyingContainer actual_list;
