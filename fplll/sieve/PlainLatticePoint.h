@@ -21,10 +21,16 @@ template<class ET, int nfixed> class PlainLatticePoint;
 template<class ET, int nfixed>
 class PlainLatticePoint : public GeneralLatticePoint< PlainLatticePoint<ET,nfixed> >
 {
+
     public:
     using LatticePointTag = std::true_type;
-    //using AuxDataType = typename ImplementationTraits<PlainLatticePoint>::AuxDataType;
-    //using ScalarProductReturnType = typename ImplementationTraits<PlainLatticePoint>::ScalarProductReturnType;
+    using AuxDataType = typename ImplementationTraits<PlainLatticePoint>::AuxDataType;
+    using ScalarProductReturnType = typename ImplementationTraits<PlainLatticePoint>::ScalarProductReturnType;
+    static void class_init(AuxDataType const & aux_data)
+    {
+//        dim = aux_data;
+    };
+
 };
 
 
