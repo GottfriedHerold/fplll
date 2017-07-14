@@ -101,6 +101,8 @@ class GeneralLatticePoint
     static std::string class_name() {return "General Lattice Point";};
     void increment_by(GeneralLatticePoint const &how_much, AuxDataType const &aux_data={})=delete;
     void decrement_by(GeneralLatticePoint const &how_much, AuxDataType const &aux_data={})=delete;
+    bool operator< (Implementation const & other);
+    bool operator> (Implementation const & other);
 };
 
 //template<class Implementation>
@@ -113,6 +115,20 @@ class GeneralLatticePoint
 //
 //    }
 //}
+
+template<class Implementation>
+bool GeneralLatticePoint<Implementation>::operator< (Implementation const & other)
+{
+    return Implementation::get_norm2() < other.get_norm2();
+}
+
+template<class Implementation>
+bool GeneralLatticePoint<Implementation>::operator> (Implementation const & other)
+{
+    return Implementation::get_norm2() > other.get_norm2();
+}
+
+
 
 template<class LP>
 std::istream & operator>> (std::istream & is, typename std::enable_if<IsALatticePoint<LP>::value, LP>::type &lp)
@@ -129,5 +145,6 @@ std::ostream & operator<< (std::ostream & os, typename std::enable_if<IsALattice
     lp.write_to_stream(os,IgnoreAnyArg{});
     return os;
 }
+
 
 #endif
