@@ -214,7 +214,7 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::Sieve(LatticeBasisType B, unsign
 //    #if GAUSS_SIEVE_IS_MULTI_THREADED == false
     if(verbosity>=2)    {cout << "Sorting ...";}
         main_list.sort();
-    //for (auto it = main_list.cbegin(); it!=main_list.cend(); ++it) {cout << (*it).get_norm2() << endl;}; //check for sort()
+    for (auto it = main_list.cbegin(); it!=main_list.cend(); ++it) {cout << (*it).get_norm2() << endl;}; //check for sort()
         
     if(verbosity>=2)    {cout << "is finished." << endl;}
 
@@ -222,12 +222,17 @@ Sieve<ET,GAUSS_SIEVE_IS_MULTI_THREADED,nfixed>::Sieve(LatticeBasisType B, unsign
     //FIXME: Initialize shortest vector
 
     shortest_vector_found = new FastAccess_Point (main_list.cbegin()->make_copy());
+    cout << "shortest_vector_found is initialized " << endl;
+    
 //    #endif // GAUSS_SIEVE_IS_MULTI_THREADED
     //TODO : enable sorting for multithreaded case.
     #if GAUSS_SIEVE_IS_MULTI_THREADED==true
     garbage_bins = new GarbageBin<typename MainListType::DataType>[num_threads_wanted]; //maybe init later.
     #endif
     main_queue.sampler->init(this);
+    
+    cout << "sampler is initialized " << endl;
+
 };
 
 template<class ET,int nfixed>

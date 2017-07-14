@@ -56,7 +56,7 @@ template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run()
 
     switch (sieve_k)
     {
-        case 2: run_2_sieve(); break;
+        //case 2: run_2_sieve(); break;
         //case 3: run_3_sieve(); break;
         //default:run_k_sieve(); break;
     }
@@ -71,11 +71,14 @@ template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run()
     */
 }
 
-
+/*
 template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run_2_sieve()
 {
     GaussSieve::GaussQueue_ReturnType<ET,false,nfixed> p;
     int i=0;
+    
+    cout << "start 2-sieve " << endl;
+    
     while (!check_if_done() )
     {
         p = main_queue.true_pop();
@@ -92,12 +95,7 @@ template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run_2_sieve()
         }
     }
 }
-
-
-/**
-    Helper functions for 2-sieve
 */
-
 
 
 /*

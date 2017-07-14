@@ -47,11 +47,12 @@ GaussSieve::FastAccess_Point<ET,false,nfixed> perform2red (GaussSieve::FastAcces
 
 template<class ET, int nfixed> void Sieve<ET,false,nfixed>::sieve_2_iteration (GaussSieve::FastAccess_Point<ET,false,nfixed> &p) //note : Queue might output Approx ?
 {
-//    int const n = get_ambient_dimension();
-
-
     if (p.get_norm2() == 0) return;
     bool loop = true;
+    
+    cout << " p = ";
+    p.write_to_stream(cout);
+    cout << endl;
 
     typename MainListType::Iterator it_comparison_flip=main_list.cend();
 
