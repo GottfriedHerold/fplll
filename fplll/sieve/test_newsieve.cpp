@@ -122,8 +122,14 @@ void TestMyLatticePointClass()
 //    static_assert(IsALatticePoint< MyLatticePoint< Z_NR<mpz_t> ,-1> >::value," XXX");
 //    cout << test_pointA;
 
+    MyLatticePoint<Z_NR<mpz_t>, -1> test_pointA1;
+    MyLatticePoint<Z_NR<mpz_t>, -1> test_pointA2;
+    
     Z_NR<mpz_t> sc_prod = compute_sc_product(test_pointA, test_pointB);
     cout << sc_prod << endl;
+    
+    Z_NR<mpz_t> sc_prod1 = compute_sc_product(test_pointA1, test_pointA2);
+    cout << "sc_prod1 " << sc_prod1 << endl;
 
 
     Z_NR<mpz_t> sc_prod_target;
@@ -139,6 +145,25 @@ void TestMyLatticePointClass()
 
 }
 
+//template <class ZT>
+void test_2sieve()
+{
+    const int dim = 10;
+    ZZ_mat<mpz_t> BTest;
+    BTest.resize(dim, dim);
+    //BTest.gen_trg(1.1);
+    srand (1);
+    BTest.gen_qary_prime(1, 10*dim);
+    
+    if (dim >= 60)
+        bkz_reduction(BTest, 8, BKZ_DEFAULT, FT_DEFAULT, 0);
+    else
+        lll_reduction(BTest, LLL_DEF_DELTA, LLL_DEF_ETA, LM_WRAPPER);
+    
+    Sieve<Z_NR<mpz_t>, false> Test_2Sieve(BTest);
+    //Test_2Sieve.run();
+}
+
 
 int main(int argc, char **argv)
 {
@@ -148,6 +173,8 @@ int main(int argc, char **argv)
     PlainLatticePoint<Z_NR<mpz_t>,-1> X;
 
     TestMyLatticePointClass<Z_NR<mpz_t>, -1>();
+    
+    test_2sieve();
 
 
 //        //int dim[] = {52, 54, 56, 58, 60, 62, 64};
