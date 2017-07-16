@@ -161,6 +161,10 @@ void test_2sieve()
         lll_reduction(BTest, LLL_DEF_DELTA, LLL_DEF_ETA, LM_WRAPPER);
     
     Sieve<Z_NR<mpz_t>, false> Test_2Sieve(BTest);
+    
+    bool constexpr multithreaded = false;
+    TerminationCondition<Z_NR<mpz_t>,multithreaded> * termcond = new MinkowskiTerminationCondition<Z_NR<mpz_t>, multithreaded>;
+    Test_2Sieve.set_termination_condition(termcond);
     //Test_2Sieve.run();
 }
 

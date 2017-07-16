@@ -36,7 +36,7 @@ template<class ET,int nfixed> ET Sieve<ET,false,nfixed>::get_best_length2()
 
 template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run()
 {
-    if (verbosity >=2) cout << "the shortest vector in the input basis has norm2 = " << original_basis[0] << endl;
+    if (verbosity >=2) cout << "the shortest vector in the input basis has norm2 = " << get_shortest_vector_found().get_norm2() << endl;
     //int MaxIteration = 8000;
     if (term_cond==nullptr)
     {
@@ -56,7 +56,7 @@ template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run()
 
     switch (sieve_k)
     {
-        //case 2: run_2_sieve(); break;
+        case 2: run_2_sieve(); break;
         //case 3: run_3_sieve(); break;
         //default:run_k_sieve(); break;
     }
@@ -71,7 +71,7 @@ template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run()
     */
 }
 
-/*
+
 template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run_2_sieve()
 {
     GaussSieve::GaussQueue_ReturnType<ET,false,nfixed> p;
@@ -95,7 +95,7 @@ template<class ET,int nfixed> void Sieve<ET,false,nfixed>::run_2_sieve()
         }
     }
 }
-*/
+
 
 
 /*
