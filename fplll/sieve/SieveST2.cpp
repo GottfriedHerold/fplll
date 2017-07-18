@@ -30,6 +30,8 @@ bool check2red (GaussSieve::FastAccess_Point<ET,false,nfixed> const &p1, GaussSi
     mult.rnd(mult);
 
     scalar.set_f(mult); //convert back
+    
+    cout <<"check2red: scalar = " << scalar << endl;
 
     return true;
 
@@ -40,7 +42,7 @@ GaussSieve::FastAccess_Point<ET,false,nfixed> perform2red (GaussSieve::FastAcces
 {
     GaussSieve::FastAccess_Point<ET,false,nfixed> res;
     res = scalar_mult<ET,nfixed>(p2, scalar);
-    res = sub(p1, p2);
+    res = sub(p1, res);
     return res;
 }
 
@@ -52,19 +54,27 @@ template<class ET, int nfixed> void Sieve<ET,false,nfixed>::sieve_2_iteration (G
     
     cout << " p = ";
     p.write_to_stream(cout);
+    cout << " of norm " << p.get_norm2();
     cout << endl;
 
+
     typename MainListType::Iterator it_comparison_flip=main_list.cend();
+    
+    cout << "main_list.size(): " << current_list_size << endl;
 
 
     while (loop) {
         loop = false;
 
-        typename MainListType::Iterator it =main_list.cbegin();
+        typename MainListType::Iterator it = main_list.cbegin();
         for (it = main_list.cbegin(); it!=main_list.cend(); ++it)
         {
+            (*it).write_to_stream(cout);
+            cout << endl;
+            
             if (p.get_norm2() < (*it).get_norm2())
             {
+                cout << "if 1 "<< endl;
                 it_comparison_flip = it;
                 break;
             }
@@ -73,15 +83,24 @@ template<class ET, int nfixed> void Sieve<ET,false,nfixed>::sieve_2_iteration (G
             ET scalar;
             if ( check2red(p, *it, scalar) )
             {
+                cout << "check2red " << endl;
+                
                 p = perform2red(p, *it, scalar);
+                
+                cout << "new p of norm = " << p.get_norm2() << endl;
                 loop = true;
+                
+                //assert(false);
                 break;
             }
+            
+           
 
         }
 
     }
 
+    
     if (p.get_norm2() == 0)
     {
         number_of_collisions++;
@@ -93,6 +112,7 @@ template<class ET, int nfixed> void Sieve<ET,false,nfixed>::sieve_2_iteration (G
     GaussSieve::GaussList_StoredPoint<ET, false, nfixed> p_converted (std::move(p));
 
     //insert the converted point into the main_list
+    cout << " insert p of norm = " << p.get_norm2() << endl;
     main_list.insert_before(it_comparison_flip, std::move(p_converted));
      ++current_list_size;
 
@@ -103,17 +123,23 @@ template<class ET, int nfixed> void Sieve<ET,false,nfixed>::sieve_2_iteration (G
             cout << "New shortest vector found. Norm2 = " << get_best_length2() << endl;
         }
     }
-
+    
     for (typename MainListType::Iterator it =it_comparison_flip; it!=main_list.cend(); ++it)
     {
 
+        (*it).write_to_stream(cout);
+        cout << endl;
+        
         ++number_of_total_scprods_level1;
 
         ET scalar;
         if ( check2red(*it, p, scalar) )
         {
+                cout << "check2red 2" << endl;
                 GaussSieve::FastAccess_Point<ET,false,nfixed> v_new;
                 v_new = perform2red(*it, p, scalar );
+            
+                cout << "new v of norm = " << v_new.get_norm2() << endl;
 
                 if (v_new.get_norm2() == 0)
                 {
@@ -127,6 +153,8 @@ template<class ET, int nfixed> void Sieve<ET,false,nfixed>::sieve_2_iteration (G
                 it = main_list.erase(it);
                 --current_list_size;
         }
+        else
+            cout << "check2 red is false" << endl;
         
     }
 }

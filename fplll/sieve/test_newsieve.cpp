@@ -148,7 +148,7 @@ void TestMyLatticePointClass()
 //template <class ZT>
 void test_2sieve()
 {
-    const int dim = 10;
+    const int dim = 20;
     ZZ_mat<mpz_t> BTest;
     BTest.resize(dim, dim);
     //BTest.gen_trg(1.1);
