@@ -121,6 +121,10 @@ class DefaultSieveTraits
   // we reserve filtered_list_size_max inside for its length
 
   constexpr static int filtered_list_size_max = 500;
+  
+  // inside progressive sieving, we increment current_rank 
+  // if |L|>2^{progressive_factor*current_rank*list_size_k}
+  constexpr static double progressive_factor = 1.03;
 
   // for 3-sieve exact check, squared, normalized
   //constexpr static double x1x2_target = .1111;
@@ -130,8 +134,8 @@ class DefaultSieveTraits
 
   /* for printing routines */
   // print after every print_step_*sieve iterations
-  constexpr static int print_step_2sieve  = 2000;
-  constexpr static int print_step_3sieve  = 1000;
+  constexpr static int print_step_2sieve  = 4000;
+  constexpr static int print_step_3sieve  = 3000;
 
 
 

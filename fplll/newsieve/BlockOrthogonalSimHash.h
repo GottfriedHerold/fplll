@@ -134,7 +134,7 @@ class BlockOrthogonalSimHash
 {
 public:
   using IsCooSelection = std::true_type;                // Satisfies the CoordinateSelection concept
-  static unsigned int constexpr num_of_transforms = 2;  // affects the "quality" vs. speed tradeoff
+  static unsigned int constexpr num_of_transforms = 3;  // affects the "quality" vs. speed tradeoff
 
   // technically, this is not mandatory, but one should always set that.
   static_assert(is_a_power_of_two_constexpr(sim_hash_len), "sim_hash_len is not a power of 2");

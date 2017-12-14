@@ -9,6 +9,33 @@
 
 namespace GaussSieve
 {
+  
+template<class SieveTraits>
+void print_initial_data()
+{
+  std::cout << "sim_hash_len " << SieveTraits::sim_hash_len << std::endl;
+  std::cout << "sim_hash_num " << SieveTraits::sim_hash_num << std::endl;
+  std::cout << "Threshold bounds: " << std::endl;
+  std::cout << "  threshold_lvls_2sieve_lb: {";
+  for (unsigned int i=0; i<SieveTraits::sim_hash_num; ++i) {std::cout<< SieveTraits::threshold_lvls_2sieve_lb[i] << " ";}
+  std::cout << "}" << std::endl;
+  std::cout << "  threshold_lvls_2sieve_ub: {";
+  for (unsigned int i=0; i<SieveTraits::sim_hash_num; ++i) {std::cout<< SieveTraits::threshold_lvls_2sieve_ub[i] << " ";}
+  std::cout << "}" << std::endl;
+  std::cout << "  threshold_lvls_3sieve_lb_out: {";
+  for (unsigned int i=0; i<SieveTraits::sim_hash_num; ++i) {std::cout<< SieveTraits::threshold_lvls_3sieve_lb_out[i] << " ";}
+  std::cout << "}" << std::endl;
+  std::cout << "  threshold_lvls_3sieve_ub_out: {";
+  for (unsigned int i=0; i<SieveTraits::sim_hash_num; ++i) {std::cout<< SieveTraits::threshold_lvls_3sieve_ub_out[i] << " ";}
+  std::cout << "}" << std::endl;
+   std::cout << "  threshold_lvls_3sieve_lb_inn: {";
+  for (unsigned int i=0; i<SieveTraits::sim_hash_num; ++i) {std::cout<< SieveTraits::threshold_lvls_3sieve_lb_inn[i] << " ";}
+  std::cout << "}" << std::endl;
+  std::cout << "  threshold_lvls_3sieve_ub_inn: {";
+  for (unsigned int i=0; i<SieveTraits::sim_hash_num; ++i) {std::cout<< SieveTraits::threshold_lvls_3sieve_ub_inn[i] << " ";}
+  std::cout << "}" << std::endl;
+  
+}
 
 // We may always assumed that SieveJoint.cpp is prepended before this file
 // This file collects utility functions that are called from sieving routines
@@ -72,8 +99,10 @@ template <class SieveTraits> void Sieve<SieveTraits, false>::run()
   sieve_status = SieveStatus::sieve_status_running;
   term_cond->init(this);  // initialisation of termination conditions.
   if (verbosity >= 2)
-    std::cout << "start " << sieve_k << "-Sieve" << std::endl;
-
+  {
+    std::cout << "start " << sieve_k << "-Sieve with parameters:" << std::endl;
+    print_initial_data<SieveTraits>();
+  }
   // dispatch
   switch (sieve_k)
   {
