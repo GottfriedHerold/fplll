@@ -4,11 +4,13 @@ SIM_HASH_NUM=2
 export SIM_HASH_LEN
 export SIM_HASH_NUM
 touch newsieve/Typedefs.h
-make
+
 
 k=3
-d=60
+d=64
 b=30
 
 filename_out=sieve_k${k}_d${d}_b${b}
-time nohup ./newlatsieve -k${k} -d${d} -b${b} >$filename_out 2>&1 &
+make >$filename_out
+time ./newlatsieve -k${k} -d${d} -b${b} >$filename_out 2>&1
+
