@@ -105,18 +105,40 @@ class DefaultSieveTraits
 //  static constexpr int number_of_hash_functions = 11;
 //#endif
 
-
+#if defined(OVERRIDE_THRESHOLD_LVLS_2SIEVE_LB)
+  constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_2sieve_lb = OVERRIDE_THRESHOLD_LVLS_2SIEVE_LB;
+#else
   constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_2sieve_lb = {{32-7, 64-12}};
+#endif
+
+#if defined(OVERRIDE_THRESHOLD_LVLS_2SIEVE_UB)
+  constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_2sieve_lb = OVERRIDE_THRESHOLD_LVLS_2SIEVE_UB;
+#else
   constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_2sieve_ub = {{32+7, 64+12}};
+#endif
 
   // for 3-sieve: outer loop
+#if defined(OVERRIDE_THRESHOLD_LVLS_3SIEVE_LB_OUT)
+  constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_3sieve_lb_out = OVERRIDE_THRESHOLD_LVLS_3SIEVE_LB_OUT;
+#else
   constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_3sieve_lb_out = {{32-5, 64-11}};
+#endif
+#if defined(OVERRIDE_THRESHOLD_LVLS_3SIEVE_UB_OUT)
+  constexpr static std::array<unsigned int, sim_hash_num> OVERRIDE_THRESHOLD_LVLS_3SIEVE_UB_OUT;
+#else
   constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_3sieve_ub_out = {{32+5, 64+11}};
-
-  // for 3-sieve: outer loop
+#endif
+  // for 3-sieve: inner loop
+#if defined(OVERRIDE_THRESHOLD_LVLS_3SIEVE_LB_INN)
+  constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_3sieve_lb_inn = OVERRIDE_THRESHOLD_LVLS_3SIEVE_LB_INN;
+#else
   constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_3sieve_lb_inn = {{32-3, 64-6}};
+#endif
+#if defined(OVERRIDE_THRESHOLD_LVLS_3SIEVE_UB_INN)
+  constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_3sieve_ub_inn = OVERRIDE_THRESHOLD_LVLS_3SIEVE_UB_INN;
+#else
   constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_3sieve_ub_inn = {{32+3, 64+6}};
-
+#endif
   // for 3-sieve: FilteredList is implemented as vector
   // we reserve filtered_list_size_max inside for its length
 
