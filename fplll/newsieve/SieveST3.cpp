@@ -87,7 +87,8 @@ start_over:
         (convert_to_double(p.get_norm2()) * convert_to_double(it_x1->get_norm2()));
 
     // If the scalar product is too small, we cannot perform 3-reduction, so we take the next x1
-    if (sc_prod_px1_normalized < SieveTraits::x1x2_target)
+    //if (sc_prod_px1_normalized < SieveTraits::x1x2_target)
+    if (sc_prod_px1_normalized < x1x2_target)
     {
       continue;  // for loop over it_x1;
     }
@@ -209,7 +210,8 @@ start_over:
         (convert_to_double(p.get_norm2()) * convert_to_double(it_x1->get_norm2()));
 
     // If the scalar product is too small, 3-reduction is unlikely to happen, so we take the next x1
-    if (sc_prod_px1_normalized < SieveTraits::x1x2_target)
+    // if (sc_prod_px1_normalized < SieveTraits::x1x2_target)
+    if (sc_prod_px1_normalized < x1x2_target)
     {
       ++it_x1;
       continue;  // for loop over it_x1;

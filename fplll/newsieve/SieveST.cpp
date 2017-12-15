@@ -102,6 +102,7 @@ template <class SieveTraits> void Sieve<SieveTraits, false>::run()
   if (verbosity >= 2)
   {
     std::cout << "start " << sieve_k << "-Sieve with parameters:" << std::endl;
+    std::cout << "x1x2_target " << x1x2_target << std::endl;
     print_initial_data<SieveTraits>();
   }
   // dispatch

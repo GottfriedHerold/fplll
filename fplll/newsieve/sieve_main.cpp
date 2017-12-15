@@ -58,6 +58,9 @@ int main(int argc, char **argv)
   int opt;
   int dim  = 0;
   int verb = 2;
+  
+  double x1x2_inp = 0.111;
+  //double x2x3_inp = 0.111;
 
   mpz_class target_norm_conv = 0;
   int k                      = 2;
@@ -69,7 +72,7 @@ int main(int argc, char **argv)
     return -1;
   }
 
-  while ((opt = getopt(argc, argv, "d:t:k:f:b:v:")) != -1)
+  while ((opt = getopt(argc, argv, "d:t:k:f:b:v:x::")) != -1)
   {
     switch (opt)
     {
@@ -91,6 +94,9 @@ int main(int argc, char **argv)
       break;
     case 'v':
       verb = atoi(optarg);
+      break;
+    case 'x':
+      x1x2_inp = atoi(optarg);
       break;
     case 'h':
       main_usage(argv[0]);
@@ -172,6 +178,7 @@ int main(int argc, char **argv)
   // instantiate Sieve class with
   // a basis B, k-number of tuples, termination conditions(0), and verbosity
   Sieve<Traits, multithreaded> test_sieve(B, k, 0, verb);
+  test_sieve.x1x2_target = x1x2_inp;
 
   TerminationCondition<Traits, multithreaded> *termcond;
 

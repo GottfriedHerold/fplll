@@ -224,6 +224,8 @@ public:
     term_cond_owned = false;
     term_cond = termcond;
   }
+  
+  
 private:
 
 //Use termination Condition to check whether we are done, based on statistics so far.
@@ -285,6 +287,9 @@ private:
   FastAccess_Point *shortest_vector_found; // including its length //TODO: Thread-safety
 public:  // switched to public to get list-sizes
   SieveStatistics statistics;
+  
+  double x1x2_target;
+  double x2x3_target;
 
 #if GAUSS_SIEVE_IS_MULTI_THREADED==true
   GarbageBin<typename MainListType::DataType> * garbage_bins; //dynamically allocated array of garbage bins.
