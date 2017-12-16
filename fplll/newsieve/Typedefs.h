@@ -23,14 +23,12 @@
 // #include "HashedLatticePoint.h"
 // #include "ApproximatedPoint.h"
 // #include "EMVApproximation.h"  // currently unused
-<<<<<<< HEAD
+
 #include "BlockOrthogonalSimHash.h"
 #include "SimHash.h"
 #include "PointWithBitapprox.h"
 #include <iostream>
 
-=======
->>>>>>> ktuplenew
 
 namespace GaussSieve
 {
@@ -97,7 +95,7 @@ public:
   using GaussQueue_DataType     = GaussQueue_ReturnType;
 
   using TermCond_QueryType      = ExactLatticePoint<ET,nfixed>;
-<<<<<<< HEAD
+
 
 //#ifdef USE_LSH
 //  using GaussSampler_ReturnType = HashedLatticePoint<ET,nfixed>;
@@ -176,14 +174,14 @@ public:
   // may be unused.
 
   constexpr static int filtered_list_size_max = 500;
-<<<<<<< HEAD
+
   
   // inside progressive sieving, we increment current_rank 
   // if |L|>2^{progressive_factor*current_rank*list_size_k}
   constexpr static double progressive_factor = 1.03;
-=======
+
   // clang-format on
->>>>>>> ktuplenew
+
 
   // for 3-sieve exact check, squared, normalized
   // constexpr static double x1x2_target = .1111;
@@ -193,7 +191,7 @@ public:
 
   /* for printing routines */
   // print after every print_step_*sieve iterations
-<<<<<<< HEAD
+
   constexpr static int print_step_2sieve  = 4000;
   constexpr static int print_step_3sieve  = 3000;
 
@@ -207,10 +205,9 @@ public:
   using PlainPoint              = PlainLatticePoint<ET,nfixed>;
   static int constexpr get_nfixed = nfixed; // TODO: Remove and forward DimensionType throughout...
 
-=======
   constexpr static int print_step_2sieve = 2000;
   constexpr static int print_step_3sieve = 1000;
->>>>>>> ktuplenew
+
 };
 
 // clang-format off
