@@ -220,13 +220,12 @@ public:
   // DUE TO [KL79], the best know const (for the squared norm) is 1/(pi* exp(1)*2^{2*0.099} ~ 0.102)
   // Blichfeldt's bound: 1 / (pi*exp(1))=0.117.
   // Darmstadt's challenge suggests: 1.10 / (2*pi*exp(1)) = 0.0644;
-  // Here we set 0.07
   void compute_minkowski_bound(GSOType &GSO)
   {
     // returns det(B)^{2/dim}
     // fplll::FP_NR<double> root_det2 =  GSO.get_root_det(1, lattice_rank);
     double root_det     = GSO.get_root_det(1, lattice_rank).get_d();
-    double mink_bound_d = 0.0666 * root_det * static_cast<double>(lattice_rank);
+    double mink_bound_d = 0.067 * root_det * static_cast<double>(lattice_rank);
     mink_bound          = static_cast<InputET_NOZNRFixed>(mink_bound_d);
     std::cout << "mink_bound is set to: " << mink_bound << std::endl;
   }
