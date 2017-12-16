@@ -23,6 +23,7 @@
 #include "BlockOrthogonalSimHash.h"
 #include "SimHash.h"
 #include "PointWithBitapprox.h"
+#include <iostream>
 
 
 namespace GaussSieve
@@ -108,10 +109,14 @@ class DefaultSieveTraits
 //#endif
 
 #if defined(OVERRIDE_THRESHOLD_LVLS_2SIEVE_LB)
-  constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_2sieve_lb = OVERRIDE_THRESHOLD_LVLS_2SIEVE_LB;
-#else
-  constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_2sieve_lb = {{32-7, 64-12}};
+  #define XSTR(x) STR(x)
+  #define STR(x) #x
+  #pragma message ( "The value of ABC: " XSTR(OVERRIDE_THRESHOLD_LVLS_2SIEVE_LB) )
+  //#define PRINT(x) std::cout << #x << std::endl;
+  //constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_2sieve_lb = OVERRIDE_THRESHOLD_LVLS_2SIEVE_LB;
 #endif
+  constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_2sieve_lb = {{32-7, 64-12}};
+  //PRINT(#OVERRIDE_THRESHOLD_LVLS_2SIEVE_LB);
 
 #if defined(OVERRIDE_THRESHOLD_LVLS_2SIEVE_UB)
   constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_2sieve_lb = OVERRIDE_THRESHOLD_LVLS_2SIEVE_UB;

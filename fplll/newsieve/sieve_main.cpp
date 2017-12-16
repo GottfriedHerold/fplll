@@ -52,6 +52,7 @@ static void main_usage(char *myself)
 
 int main(int argc, char **argv)
 {
+  
   char *target_norm_string = NULL;
   char *input_file_name    = NULL;
   bool flag_file           = false;
