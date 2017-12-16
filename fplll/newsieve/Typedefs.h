@@ -115,11 +115,11 @@ public:
   //#define PRINT(x) std::cout << #x << std::endl;
   //constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_2sieve_lb = OVERRIDE_THRESHOLD_LVLS_2SIEVE_LB;
 #endif
-  using InputBasisType          = InputBT;
-  using PlainPoint              = PlainLatticePoint<ET,nfixed>;
+  //using InputBasisType          = InputBT;
+  //using PlainPoint              = PlainLatticePoint<ET,nfixed>;
   
   // TODO: Remove and forward DimensionType throughout...
-  static int constexpr get_nfixed = nfixed;
+  //static int constexpr get_nfixed = nfixed;
 
   // clang-format on
 
@@ -204,10 +204,6 @@ public:
   using InputBasisType          = InputBT;
   using PlainPoint              = PlainLatticePoint<ET,nfixed>;
   static int constexpr get_nfixed = nfixed; // TODO: Remove and forward DimensionType throughout...
-
-  constexpr static int print_step_2sieve = 2000;
-  constexpr static int print_step_3sieve = 1000;
-
 };
 
 // clang-format off

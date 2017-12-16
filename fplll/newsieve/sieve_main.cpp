@@ -97,7 +97,9 @@ int main(int argc, char **argv)
       verb = atoi(optarg);
       break;
     case 'x':
-      x1x2_inp = atoi(optarg);
+      x1x2_inp = atof(optarg);
+      std::cout << "optarg " << optarg << std::endl;
+      std::cout << "x1x2_inp " << x1x2_inp << std::endl;
       break;
     case 'h':
       main_usage(argv[0]);
@@ -179,6 +181,7 @@ int main(int argc, char **argv)
   // instantiate Sieve class with
   // a basis B, k-number of tuples, termination conditions(0), and verbosity
   Sieve<Traits, multithreaded> test_sieve(B, k, 0, verb);
+  std::cout << "x1x2_inp" << x1x2_inp << std::endl;
   test_sieve.x1x2_target = x1x2_inp;
 
   TerminationCondition<Traits, multithreaded> *termcond;
