@@ -1,3 +1,5 @@
+#error unused
+
 #ifndef POINT_LIST_WITH_BITAPPROX_H
 #define POINT_LIST_WITH_BITAPPROX_H
 
@@ -37,7 +39,7 @@ namespace GaussSieve
 template <class SieveTraits, bool MT> class GaussListWithBitApprox;
 template <class SieveTraits, bool MT> class GaussIteratorBitApprox;
 template <class SieveTraits, bool MT> class GaussVectorWithBitApprox;
-template <class SieveTraits, bool MT> class GaussIteratorBitApproxForVector;
+template <class SieveTraits, bool MT> class GaussVectorIterator;
 
 // we directly store an approximation (which is actually exact in most cases) to norm2 in the list
 // nodes. The class storing this should have a fixed size in memory (no dynamic allocation!)
@@ -70,7 +72,7 @@ class STNode
   friend GaussListWithBitApprox<SieveTraits, false>;
   friend GaussIteratorBitApprox<SieveTraits, false>;
   friend GaussVectorWithBitApprox<SieveTraits, false>;
-  friend GaussIteratorBitApproxForVector<SieveTraits, false>;
+  friend GaussVectorIterator<SieveTraits, false>;
   // retrieve typedefs to avoid having to write long names.
 
 private:  // shorthands
@@ -153,7 +155,7 @@ public:
 */
 
 template<class SieveTraits, bool MT> class GaussVectorWithBitApprox;
-template<class SieveTraits, bool MT> class GaussIteratorBitApproxForVector;
+template<class SieveTraits, bool MT> class GaussVectorIterator;
 
 // clang-format off
 template<class SieveTraits>

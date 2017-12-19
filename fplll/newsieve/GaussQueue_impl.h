@@ -18,8 +18,8 @@ GaussQueue<SieveTraits, false>::GaussQueue(Sieve<SieveTraits, false> *const call
                                           GlobalStaticDataInitializer const &static_data,
                                           int seed_sampler,
                                           Sampler<SieveTraits, false, std::mt19937_64, std::seed_seq> *user_sampler)
-    : init_data_type(static_data),
-      init_ret_type(static_data),
+    : // init_data_type(static_data),
+      // init_ret_type(static_data),
       main_queue(),
       gauss_sieve(caller_sieve),
       sampler(user_sampler),
@@ -42,11 +42,12 @@ GaussQueue<SieveTraits, false>::GaussQueue(Sieve<SieveTraits, false> *const call
   assert(sampler != nullptr);
 }
 
-template <class SieveTraits> auto GaussQueue<SieveTraits, false>::true_pop() -> RetType
+template <class SieveTraits> auto GaussQueue<SieveTraits, false>::true_pop() -> StoredIterator
 {
   if (main_queue.empty())  // Queue is empty, sample a new element.
   {
 #ifdef DEBUG_SIEVE_STANDALONE_QUEUE
+  #error DOES NOT WORK WITH VECTOR
     assert(gauss_sieve == nullptr);
 #else
     assert(gauss_sieve != nullptr);
@@ -54,8 +55,13 @@ template <class SieveTraits> auto GaussQueue<SieveTraits, false>::true_pop() -> 
     gauss_sieve->statistics.increment_number_of_points_constructed();
 #endif
     assert(sampler != nullptr);
-    RetType ret{sampler->sample()};
-    return ret;
+
+    auto new_point = sampler->sample();
+    gauss_sieve -> main_vector.emplace_back(std::move(new_point));
+
+
+//    RetType ret{sampler->sample()};
+//    return ret;
     // return static_cast<typename SieveTraits::GaussList_StoredPoint>(sampler->sample());
   }
   else  // Queue is not empty, just return "next" stored element.

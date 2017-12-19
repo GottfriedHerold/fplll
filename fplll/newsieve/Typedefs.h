@@ -20,7 +20,6 @@
 #include "fplll/nr/matrix.h"
 #include "fplll/nr/nr.h"
 #include "gmpxx.h"
-// #include "HashedLatticePoint.h"
 // #include "ApproximatedPoint.h"
 // #include "EMVApproximation.h"  // currently unused
 
@@ -82,12 +81,13 @@ public:
   using FastAccess_Point        = AddBitApproximationToLP< ExactLatticePoint<ET,nfixed>, CoordinateSelectionUsed >;
 
   using GaussSampler_ReturnType = ExactLatticePoint<ET,nfixed>;
-  using GaussList_StoredPoint   = ExactLatticePoint<ET,nfixed>;
+//  using GaussList_StoredPoint   = ExactLatticePoint<ET,nfixed>;
 //  using GaussList_ReturnType    = ExactLatticePoint<ET,nfixed>;
-  using GaussList_ReturnType    = FastAccess_Point;
+//  using GaussList_ReturnType    = FastAccess_Point;
 
-  using MainStoragePointer      = ExactLatticePoint<ET, fixed> *;
-  using MainListPointer         = GaussIteratorBitApproxForVector<
+  using MainStorageType         = ExactLatticePoint<ET, nfixed>;
+  using MainStoragePointer      = MainStorageType *;
+
 
 // Remove for transition to vector
 //  using GaussQueue_ReturnType   = GaussSampler_ReturnType;

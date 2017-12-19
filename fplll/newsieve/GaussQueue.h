@@ -9,6 +9,7 @@
 #include "Sampler.h"
 #include "SieveUtility.h"
 #include "Typedefs.h"
+#include "GaussVectorBitApprox.h"
 
 /**
   This file defines a class for the queue that stores the yet-unprocessed points of the Sieve.
@@ -56,10 +57,12 @@ template <class SieveTraits>  // single-threaded version:
 class GaussQueue<SieveTraits, false>
 {
 private:  // aliases to avoid typing long names
-  using DataType                    = typename SieveTraits::GaussQueue_DataType;
-  using RetType                     = typename SieveTraits::GaussQueue_ReturnType;
+//  using DataType                    = typename SieveTraits::GaussQueue_DataType;
+//  using RetType                     = typename SieveTraits::GaussQueue_ReturnType;
   using GlobalStaticDataInitializer = typename SieveTraits::GlobalStaticDataInitializer;
+  using StoredIterator              = typename GaussVectorIterator<SieveTraits, false>;
 #ifndef USE_REGULAR_QUEUE
+  #error use regular queue for now
   // If this symbol is not set, we use a priority queue to always process the smallest element from
   // the queue.
   // However, there is the issue that std::priortiy_queue does not allow non-const access to its
@@ -84,7 +87,7 @@ private:  // aliases to avoid typing long names
   };
   using QueueType = std::priority_queue<DataType *, std::vector<DataType *>, Comparator>;
 #else
-  using QueueType = std::queue<DataType>;
+  using QueueType = std::queue<StoredIterator>;
 #endif
 
 public:
@@ -131,17 +134,19 @@ public:
   // TODO: Allow to push other lattice point types and explicitly convert.
   // (this one only sees implicit conversions)
   // clang-format off
-  inline void push(DataType const &val) = delete;  // puts a copy of val in the queue : deleted
-  inline void push(DataType      &&val);           // uses move semantics for that.
+  // CHANGE_TO_VEC
+//  inline void push(DataType const &val) = delete;  // puts a copy of val in the queue : deleted
+//  inline void push(DataType      &&val);           // uses move semantics for that.
+  inline void push(StoredIterator const &val);
   // clang-format on
 
   // removes front element from queue *and returns it*.
-  inline auto true_pop() -> RetType;
+  inline auto true_pop() -> StoredIterator;
 
 private:
   // clang-format off
-  StaticInitializer<DataType> const init_data_type;
-  StaticInitializer<RetType>  const init_ret_type;
+//  StaticInitializer<DataType> const init_data_type;
+//  StaticInitializer<RetType>  const init_ret_type;
   QueueType main_queue;                          // actual queue of lattice points to be processed.
   Sieve<SieveTraits, false> *const gauss_sieve;  // pointer to caller object.
   // clang-format on
