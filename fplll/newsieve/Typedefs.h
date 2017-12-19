@@ -85,8 +85,13 @@ public:
   using GaussList_StoredPoint   = ExactLatticePoint<ET,nfixed>;
 //  using GaussList_ReturnType    = ExactLatticePoint<ET,nfixed>;
   using GaussList_ReturnType    = FastAccess_Point;
-  using GaussQueue_ReturnType   = GaussSampler_ReturnType;
-  using GaussQueue_DataType     = GaussQueue_ReturnType;
+
+  using MainStoragePointer      = ExactLatticePoint<ET, fixed> *;
+  using MainListPointer         = GaussIteratorBitApproxForVector<
+
+// Remove for transition to vector
+//  using GaussQueue_ReturnType   = GaussSampler_ReturnType;
+//  using GaussQueue_DataType     = GaussQueue_ReturnType;
 
   using TermCond_QueryType      = ExactLatticePoint<ET,nfixed>;
   using InputBasisType          = InputBT;

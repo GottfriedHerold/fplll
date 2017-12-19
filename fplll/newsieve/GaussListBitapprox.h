@@ -155,9 +155,6 @@ public:
 template<class SieveTraits, bool MT> class GaussVectorWithBitApprox;
 template<class SieveTraits, bool MT> class GaussIteratorBitApproxForVector;
 
-
-
-
 // clang-format off
 template<class SieveTraits>
 class GaussListWithBitApprox<SieveTraits, false>

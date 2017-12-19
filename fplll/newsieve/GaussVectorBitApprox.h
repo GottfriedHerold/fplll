@@ -28,7 +28,7 @@ private:
 
 public:
   // clang-format off
-  GaussVectorWithBitApprox()                                          = delete;
+  GaussVectorWithBitApprox()                                            = delete;
   GaussVectorWithBitApprox(GaussVectorWithBitApprox const &)            = delete;
   GaussVectorWithBitApprox(GaussVectorWithBitApprox &&)                 = delete;
   GaussVectorWithBitApprox &operator=(GaussVectorWithBitApprox const &) = delete;
