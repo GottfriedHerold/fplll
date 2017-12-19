@@ -1,3 +1,6 @@
+// SWITCH_TO_VEC
+#if 0
+
 /*
  MAIN ROUTINES FOR 3-GAUSS SIEVE
  */
@@ -297,3 +300,5 @@ start_over:
 }
 
 }  // namespace GaussSieve
+
+#endif

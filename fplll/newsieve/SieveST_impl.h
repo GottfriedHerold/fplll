@@ -80,9 +80,10 @@ template <class SieveTraits> void Sieve<SieveTraits, false>::run()
   {
   case 2:
     run_2_sieve();
-    break;
   case 3:
-    run_3_sieve();
+    break;
+  // SWITCH_TO_VEC
+//    run_3_sieve();
     break;
   // default:run_k_sieve(); break;
   default:
@@ -132,6 +133,9 @@ template <class SieveTraits> void Sieve<SieveTraits, false>::run_2_sieve()
 /*
  runs 3-Sieve; after every print_step_2sieve sieve iterations, prints statistics
  */
+
+ // SWITCH_TO_VEC
+ /*
 template <class SieveTraits> void Sieve<SieveTraits, false>::run_3_sieve()
 {
   int i = 0;
@@ -165,6 +169,7 @@ template <class SieveTraits> void Sieve<SieveTraits, false>::run_3_sieve()
     }
   }
 }
+*/
 
 }  // end namespace
 
