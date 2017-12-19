@@ -1,5 +1,6 @@
 // SWITCH_TO_VEC
-#if 0
+#ifndef SIEVE_ST_2_IMPL_H
+#define SIEVE_ST_2_IMPL_H
 
 /*
   MAIN ROUTINES FOR 2-GAUSS SIEVE
@@ -19,6 +20,7 @@ namespace GaussSieve
 
 template <class SieveTraits>
 template <class LHS, class RHS>
+[[deprecated("assumes sorting")]]
 bool Sieve<SieveTraits, false>::check2red(LHS &&p1, RHS &&p2, int &scalar)
 {
   statistics.increment_number_of_approx_scprods_level1();
@@ -66,7 +68,46 @@ bool Sieve<SieveTraits, false>::check2red(LHS &&p1, RHS &&p2, int &scalar)
 */
 
 template <class SieveTraits>
-void Sieve<SieveTraits, false>::sieve_2_iteration(typename SieveTraits::FastAccess_Point &p)
+void Sieve<SieveTraits, false>::sieve_2_iteration()
+{
+  using std::abs;
+  using std::round;
+  using std::swap;
+  auto p_it = main_queue.true_pop();
+#if 0
+start_over:
+  typename SieveTraits::FastAccess_Point p = p_it->make_copy();
+  for(auto it = main_vector.begin(); it != main_vector.end(); ++it)
+  {
+    if (!check_simhash_scalar_product<typename SieveTraits::CoordinateSelectionUsed>(
+          p_it, it, SieveTraits::threshold_lvls_2sieve_lb, SieveTraits::threshold_lvls_2sieve_ub))
+    {
+      continue;
+    }
+    if(p_it == it) { continue; }
+    LengthType sc_prod =
+      compute_sc_product(turn_maybe_iterator_to_point(p), turn_maybe_iterator_to_point(it));
+    LengthType abs_2scprod = abs(sc_prod * 2);
+    if(p.get_norm2() > it->get_norm2()) // p is max
+    {
+      if (abs_2scprod > p.get_norm2()) // can reduce p:
+      {
+        int const scalar =
+          round(convert_to_double(sc_prod) / convert_to_double(p.get_norm2()));
+        assert(scalar != 0);
+        p_it->sub_multiply(*it, scalar);
+        p_it->update_approximations();
+      }
+    }
+  }
+#endif
+}
+
+// Old implementation for list:
+#if 0
+
+template <class SieveTraits>
+void Sieve<SieveTraits, false>::sieve_2_iteration()
 {
   using std::abs;
   assert(!p.is_zero());
@@ -164,7 +205,9 @@ start_over:
   // could be done between the two for-loops, but it would require making a copy of p
   main_list.insert_before(it_comparison_flip, std::move(p));
 }
+#endif
+
 
 }  // End namespace
 
-#endif
+#endif  // include guards

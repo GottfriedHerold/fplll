@@ -149,7 +149,7 @@ public:
   void run();         //runs the sieve specified by the parameters. Dispatches to the corresponding k-sieve
 
 // SWITCH_TO_VEC
-//  void run_2_sieve(); //calls sieve_2_iteration for 2-reduction until the termination conditions are satisfied
+  void run_2_sieve(); //calls sieve_2_iteration for 2-reduction until the termination conditions are satisfied
 // SWITCH_TO_VEC
 //  void run_3_sieve(); //calls sieve_3_iteration for 3-reduction until the termination conditions are satisfied
   //void run_k_sieve(); //runs Gauss Sieve with arbitrary k
@@ -162,9 +162,9 @@ public:
 
 // SWITCH_TO_VEC
 
-//  void sieve_2_iteration (FastAccess_Point &p); //one run through the main_list (of 2-sieve)
-//  template<class LHS, class RHS>
-//  bool check2red(LHS &&p1, RHS &&p2, int &scalar);
+  void sieve_2_iteration (); //one run through the main_list (of 2-sieve)
+  template<class LHS, class RHS>
+  bool check2red(LHS &&p1, RHS &&p2, int &scalar);
 
 //  void sieve_3_iteration (FastAccess_Point &p); //one run through the main_list (of 3-sieve)
   //void sieve_k_iteration (LatticePoint<ET> &p);
@@ -193,24 +193,24 @@ public:
   bool check_if_enough_short_vectors();
 #endif
 
-  unsigned int get_k() const                                  {return sieve_k;};                  //non-thread-safe
-  void set_k(unsigned int const new_k)                        {sieve_k=new_k;return;};            //non-thread-safe
-  bool is_multithreaded_wanted() const                        {return multi_threaded_wanted;};    //Note: No setter
+  unsigned int get_k() const                                  {return sieve_k;}                  //non-thread-safe
+  void set_k(unsigned int const new_k)                        {sieve_k=new_k;return;}            //non-thread-safe
+  bool is_multithreaded_wanted() const                        {return multi_threaded_wanted;}    //Note: No setter
 
 #if GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED == true
   void set_num_threads(unsigned int t);                                                            //non-thread safe, only call while suspended. In SieveMT.cpp
-  unsigned int get_num_threads() const                        {return num_threads_wanted;};
+  unsigned int get_num_threads() const                        {return num_threads_wanted;}
 #else
-  static unsigned int constexpr get_num_threads()             {return 1;};
+  static unsigned int constexpr get_num_threads()             {return 1;}
 #endif // GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED
 
   bool update_shortest_vector_found(FastAccess_Point const & newvector);
-  LatticeBasisType const & get_basis()                        {return lattice_basis;};
-  InputBasisType const & get_input_basis()                    {return original_basis;};
+  LatticeBasisType const & get_basis()                        {return lattice_basis;}
+  InputBasisType const & get_input_basis()                    {return original_basis;}
   FastAccess_Point const & get_shortest_vector_found();
-  LengthType get_best_length2()                               {return shortest_vector_found->get_norm2();};
-  bool check_whether_sieve_is_running() const                 {return (sieve_status==SieveStatus::sieve_status_running);};
-  unsigned long get_final_list_size()                         {return main_vector.size();};
+  LengthType get_best_length2()                               {return shortest_vector_found->get_norm2();}
+  bool check_whether_sieve_is_running() const                 {return (sieve_status==SieveStatus::sieve_status_running);}
+  unsigned long get_final_list_size()                         {return main_vector.size();}
 
   // STAT_MARK
 

@@ -79,7 +79,7 @@ template <class SieveTraits> void Sieve<SieveTraits, false>::run()
   switch (sieve_k)
   {
   case 2:
-//    run_2_sieve();
+    run_2_sieve();
   case 3:
     break;
   // SWITCH_TO_VEC
@@ -97,7 +97,7 @@ template <class SieveTraits> void Sieve<SieveTraits, false>::run()
  */
 
 // SWITCH_TO_VEC
- /*
+
 template <class SieveTraits> void Sieve<SieveTraits, false>::run_2_sieve()
 {
   int i = 0;
@@ -117,10 +117,10 @@ template <class SieveTraits> void Sieve<SieveTraits, false>::run_2_sieve()
 #endif
 
     // pop p from  main_queue
-    typename SieveTraits::FastAccess_Point p = main_queue.true_pop();
+//    typename SieveTraits::FastAccess_Point p = main_queue.true_pop();
 
     // checks if p participates in 2-reduction, inserts p into main_list
-    sieve_2_iteration(p);
+//    sieve_2_iteration(p);
     ++i;
     if ((i % SieveTraits::print_step_2sieve == 0) && (verbosity >= 2))
     {
@@ -132,7 +132,7 @@ template <class SieveTraits> void Sieve<SieveTraits, false>::run_2_sieve()
     }
   }
 }
-*/
+
 
 /*
  runs 3-Sieve; after every print_step_2sieve sieve iterations, prints statistics

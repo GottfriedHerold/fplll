@@ -157,6 +157,7 @@ public:
   // clang-format off
   CPP14CONSTEXPR Iterator begin() noexcept { return actual_vector.begin(); }
   CPP14CONSTEXPR Iterator end()   noexcept { return Iterator{actual_vector.end()};   }
+  CPP14CONSTEXPR Iterator last_element() noexcept { Iterator ret = actual_vector.end(); ret--; return ret; }
   // clang-format on
 
   // insert_before(pos, point) inserts the point just before pos.
