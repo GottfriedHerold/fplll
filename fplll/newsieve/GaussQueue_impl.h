@@ -7,6 +7,7 @@
 #include "GaussQueue.h"
 #include "Sampler.h"
 #include "UniformSampler.h"
+#include "GaussVectorBitApprox.h"
 
 namespace GaussSieve
 {
@@ -15,6 +16,7 @@ namespace GaussSieve
 // clang-format off
 template <class SieveTraits>
 GaussQueue<SieveTraits, false>::GaussQueue(Sieve<SieveTraits, false> *const caller_sieve,
+                                          GaussVectorWithBitApprox<SieveTraits, false> * const caller_list,
                                           GlobalStaticDataInitializer const &static_data,
                                           int seed_sampler,
                                           Sampler<SieveTraits, false, std::mt19937_64, std::seed_seq> *user_sampler)
@@ -22,14 +24,17 @@ GaussQueue<SieveTraits, false>::GaussQueue(Sieve<SieveTraits, false> *const call
       // init_ret_type(static_data),
       main_queue(),
       gauss_sieve(caller_sieve),
+      main_list(caller_list),
       sampler(user_sampler),
       sampler_owned(user_sampler == nullptr)
 // clang-format on
 {
+  assert(caller_list != nullptr);
 #ifdef DEBUG_SIEVE_STANDALONE_QUEUE
   assert(caller_sieve == nullptr);
 #else
-  assert(caller_sieve != nullptr);
+  assert(gauss_sieve != nullptr);
+  assert(& (gauss_sieve->main_vector) == main_list );
 #endif
   if (sampler == nullptr)
   {
@@ -47,7 +52,6 @@ template <class SieveTraits> auto GaussQueue<SieveTraits, false>::true_pop() -> 
   if (main_queue.empty())  // Queue is empty, sample a new element.
   {
 #ifdef DEBUG_SIEVE_STANDALONE_QUEUE
-  #error DOES NOT WORK WITH VECTOR
     assert(gauss_sieve == nullptr);
 #else
     assert(gauss_sieve != nullptr);
@@ -57,7 +61,7 @@ template <class SieveTraits> auto GaussQueue<SieveTraits, false>::true_pop() -> 
     assert(sampler != nullptr);
 
     auto new_point = sampler->sample();
-    gauss_sieve -> main_vector.emplace_back(std::move(new_point));
+    return main_list.emplace_back(std::move(new_point));
 
 
 //    RetType ret{sampler->sample()};
@@ -69,13 +73,14 @@ template <class SieveTraits> auto GaussQueue<SieveTraits, false>::true_pop() -> 
   {
 // clang-format off
 #ifndef USE_REGULAR_QUEUE
+#error update
     RetType ret{std::move(*(main_queue.top()))};  // move from the queue.
     // Note: The top of the queue still holds a valid pointer to a lattice point
     // the std::move above just put that lattice point into an unspecified and unusable state.
     // we still need to free its memory.
     delete main_queue.top();
 #else
-    RetType ret{std::move(main_queue.front())};
+    StoredIterator ret{std::move(main_queue.front())};
 #endif  // USE_REGULAR_QUEUE
 // clang-format off
     main_queue.pop();  // This just removes the pointer.
@@ -83,6 +88,7 @@ template <class SieveTraits> auto GaussQueue<SieveTraits, false>::true_pop() -> 
   }
 }
 
+/*
 // clang-format off
 template<class SieveTraits>
 void GaussQueue<SieveTraits, false>::push(DataType &&val)
@@ -94,12 +100,20 @@ void GaussQueue<SieveTraits, false>::push(DataType &&val)
   main_queue.push(std::move(val));
 #endif
 }
+*/
+
+template<class SieveTraits>
+inline void GaussQueue<SieveTraits, false>::push(StoredIterator const &val)
+{
+  main_queue.push(val);
+}
 
 template <class SieveTraits>
 GaussQueue<SieveTraits, false>::~GaussQueue()
 {
 // free memory if the queue stores pointers
 #ifndef USE_REGULAR_QUEUE
+#error Update that to vector as main storage
   while (!main_queue.empty())
   {
     delete main_queue.top();

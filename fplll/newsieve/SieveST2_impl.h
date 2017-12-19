@@ -1,3 +1,6 @@
+// SWITCH_TO_VEC
+#if 0
+
 /*
   MAIN ROUTINES FOR 2-GAUSS SIEVE
 */
@@ -163,3 +166,5 @@ start_over:
 }
 
 }  // End namespace
+
+#endif

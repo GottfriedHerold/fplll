@@ -27,8 +27,8 @@ namespace GaussListDetails
 template <class SieveTraits>
 class STVecNode
 {
-//  friend GaussVectorWithBitApprox<SieveTraits, false>;
-//  friend GaussVectorIterator<SieveTraits, false>;
+  friend GaussVectorWithBitApprox<SieveTraits, false>;
+  friend GaussVectorIterator<SieveTraits, false>;
 
   // retrieve typedefs to avoid having to write long names.
 private:  // shorthands
@@ -58,7 +58,7 @@ public:
                                             mystd::negation<Has_BitApprox<mystd::decay_t<Arg>>>)>
   explicit STVecNode(Arg &&arg) noexcept  // Note: new might actually throw.
       : bit_approximations(GlobalSimHashClass::coo_selection.compute_all_bitapproximations(arg)),
-        approx_norm2(convert_to_double(arg.get_norm2())),
+        approx_norm2(convert_to_double(arg.get_norm2())), //ptr_to_exact(nullptr)
         ptr_to_exact(new typename SieveTraits::MainStorageType(std::move(arg)))
   {
     static_assert(std::is_reference<Arg>::value == false, "Use move semantics");
@@ -82,7 +82,7 @@ public:
       : bit_approximations(
             GlobalSimHashClass::coo_selection.compute_all_bitapproximations(*point_ptr)),
         approx_norm2(convert_to_double(point_ptr->get_norm2())),
-        ptr_to_exact(std::move(point_ptr))
+        ptr_to_exact(point_ptr)
   {
   }
 
@@ -155,8 +155,8 @@ public:
 
   // behaves like cbegin, cend from STL containers, i.e. gives const-iterator to begin/end.
   // clang-format off
-  CPP14CONSTEXPR Iterator begin() const noexcept { return actual_vector.begin(); }
-  CPP14CONSTEXPR Iterator end()   const noexcept { return actual_vector.end();   }
+  CPP14CONSTEXPR Iterator begin() noexcept { return actual_vector.begin(); }
+  CPP14CONSTEXPR Iterator end()   noexcept { return Iterator{actual_vector.end()};   }
   // clang-format on
 
   // insert_before(pos, point) inserts the point just before pos.
@@ -179,7 +179,10 @@ public:
   {
     static_assert(std::is_reference<LatticePoint>::value == false, "Must call on rvalues");
     actual_vector.emplace_back(std::move(new_point));
-    return Iterator{&(actual_vector[actual_vector.size()])};
+    auto it = actual_vector.end();
+    --it;
+//    return Iterator{ actual_vector.end()-- };  // this line feels soooo wrong.
+    return Iterator{it};
   }
 
   // Inserts the lattice point pointed to by a pointer. The list takes ownership of the pointee.
@@ -209,7 +212,11 @@ public:
 
 //  Iterator erase(Iterator pos) { return actual_list.erase(pos.it); }
 
-  void sort() { actual_vector.sort(); }
+  void sort()
+  {
+    using std::sort;
+//   sort(actual_vector.begin(), actual_vector.end());
+  }
   typename UnderlyingContainer::size_type size() const noexcept { return actual_vector.size(); }
   NODISCARD bool empty() const noexcept { return actual_vector.empty(); }
 
@@ -249,7 +256,7 @@ private:
 
 public:
   // clang-format off
-  GaussVectorIterator()                                          = delete;
+  GaussVectorIterator()                                       = delete;
   GaussVectorIterator(GaussVectorIterator const &)            = default;
   GaussVectorIterator(GaussVectorIterator &&)                 = default;
   GaussVectorIterator &operator=(GaussVectorIterator const &) = default;

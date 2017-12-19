@@ -57,7 +57,8 @@ NEED TO GO HERE OR TO SieveGauss.h:
 #include "GlobalStaticData.h"
 #include "GaussQueue.h"
 #include "DefaultTermConds_impl.h"  // TODO: Change
-#include "GaussListBitapprox.h"
+//#include "GaussListBitapprox.h"
+#include "GaussVectorBitApprox.h"
 #include "SieveUtility.h"
 #include "Typedefs.h"
 #include "LatticeBases.h"
@@ -96,7 +97,7 @@ public:
 
   using FastAccess_Point = typename SieveTraits::FastAccess_Point;
   using MainQueueType    = GaussQueue<SieveTraits, GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED>;
-  using MainListType     = GaussListWithBitApprox<SieveTraits, GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED>;
+  using MainVectorType     = GaussVectorWithBitApprox<SieveTraits, GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED>;
   using LatticeBasisType = SieveLatticeBasis<SieveTraits, GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED>;
   using InputBasisType   = typename SieveTraits::InputBasisType;
   using DimensionType    = typename SieveTraits::DimensionType;
@@ -147,7 +148,8 @@ public:
 
   void run();         //runs the sieve specified by the parameters. Dispatches to the corresponding k-sieve
 
-  void run_2_sieve(); //calls sieve_2_iteration for 2-reduction until the termination conditions are satisfied
+// SWITCH_TO_VEC
+//  void run_2_sieve(); //calls sieve_2_iteration for 2-reduction until the termination conditions are satisfied
 // SWITCH_TO_VEC
 //  void run_3_sieve(); //calls sieve_3_iteration for 3-reduction until the termination conditions are satisfied
   //void run_k_sieve(); //runs Gauss Sieve with arbitrary k
@@ -157,9 +159,12 @@ public:
 //  void sieve_3_thread(int const thread_id);
 //  void sieve_k_thread(int const thread_id);
 #else
-  void sieve_2_iteration (FastAccess_Point &p); //one run through the main_list (of 2-sieve)
-  template<class LHS, class RHS>
-  bool check2red(LHS &&p1, RHS &&p2, int &scalar);
+
+// SWITCH_TO_VEC
+
+//  void sieve_2_iteration (FastAccess_Point &p); //one run through the main_list (of 2-sieve)
+//  template<class LHS, class RHS>
+//  bool check2red(LHS &&p1, RHS &&p2, int &scalar);
 
 //  void sieve_3_iteration (FastAccess_Point &p); //one run through the main_list (of 3-sieve)
   //void sieve_k_iteration (LatticePoint<ET> &p);
@@ -205,7 +210,7 @@ public:
   FastAccess_Point const & get_shortest_vector_found();
   LengthType get_best_length2()                               {return shortest_vector_found->get_norm2();};
   bool check_whether_sieve_is_running() const                 {return (sieve_status==SieveStatus::sieve_status_running);};
-  unsigned long get_final_list_size()                         {return main_list.size();};
+  unsigned long get_final_list_size()                         {return main_vector.size();};
 
   // STAT_MARK
 
@@ -235,7 +240,7 @@ private:
   LatticeBasisType lattice_basis; //coverted variant of original_basis
 
   //main data that is changing.
-  MainListType main_list;
+  MainVectorType main_vector;
   MainQueueType main_queue;
 
   unsigned int lattice_rank;

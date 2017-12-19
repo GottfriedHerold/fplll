@@ -79,7 +79,7 @@ template <class SieveTraits> void Sieve<SieveTraits, false>::run()
   switch (sieve_k)
   {
   case 2:
-    run_2_sieve();
+//    run_2_sieve();
   case 3:
     break;
   // SWITCH_TO_VEC
@@ -95,6 +95,9 @@ template <class SieveTraits> void Sieve<SieveTraits, false>::run()
 /*
     runs 2-Sieve; after every print_step_2sieve sieve iterations, prints statistics
  */
+
+// SWITCH_TO_VEC
+ /*
 template <class SieveTraits> void Sieve<SieveTraits, false>::run_2_sieve()
 {
   int i = 0;
@@ -129,6 +132,7 @@ template <class SieveTraits> void Sieve<SieveTraits, false>::run_2_sieve()
     }
   }
 }
+*/
 
 /*
  runs 3-Sieve; after every print_step_2sieve sieve iterations, prints statistics

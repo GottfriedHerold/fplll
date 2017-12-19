@@ -161,8 +161,8 @@ Sieve<SieveTraits,GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED>::Sieve(
     static_init_fast_access_point(global_static_data),
     original_basis(B),
     lattice_basis(B,global_static_data),
-    main_list(global_static_data),
-    main_queue(this,global_static_data, seed_sampler),
+    main_vector(global_static_data),
+    main_queue(this, &main_vector, global_static_data, seed_sampler),
     lattice_rank(B.get_rows()),
     multi_threaded_wanted(GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED),
     #if GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED == true
@@ -199,14 +199,10 @@ Sieve<SieveTraits,GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED>::Sieve(
     //assert(main_list.empty()); We don't have a function to check that yet...
     if (verbosity>=2) {std::cout <<"Initializing list with original basis..." << std::endl;}
 
-
-
-    auto it = main_list.cbegin();
+//    auto it = main_vector.begin();
     for (unsigned int i=0; i<lattice_rank; ++i)
     {
-        it = main_list.insert_before(it, static_cast<typename SieveTraits::GaussList_StoredPoint> (
-                                     lattice_basis.get_basis_vector(i).make_copy() ) );
-        ++it;
+        main_vector.emplace_back( lattice_basis.get_basis_vector(i).make_copy() );
     }
 
 //    statistics.increment_current_list_size_by(lattice_rank); // TODO: Let list manage that itself.
@@ -219,14 +215,14 @@ Sieve<SieveTraits,GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED>::Sieve(
   std::cout << "set progressive_rank to " <<progressive_rank << std::endl;
 #endif
   if(verbosity>=2)    {std::cout << "Sorting ...";}
-  main_list.sort();
+  main_vector.sort();
 
   if(verbosity>=2)    {std::cout << "is finished." << std::endl;}
 
 
     //FIXME: Initialize shortest vector
 
-  shortest_vector_found = new FastAccess_Point (main_list.cbegin()->make_copy());
+  shortest_vector_found = new FastAccess_Point (main_vector.begin()->make_copy());
   std::cout << "shortest_vector_found is initialized " << std::endl << std::flush;
 
   //TODO : enable sorting for multithreaded case.

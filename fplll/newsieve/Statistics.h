@@ -83,7 +83,7 @@ public:
   inline unsigned long long get_number_of_points_constructed() const { return number_of_points_constructed; }
   inline void increment_number_of_points_constructed() { ++number_of_points_constructed; }
 
-  unsigned long int get_current_list_size() const { return sieveptr->main_list.size(); }
+  unsigned long int get_current_list_size() const { return sieveptr->main_vector.size(); }
 
   inline unsigned long int get_filtered_list_size() const    { return filtered_list_size; }
   unsigned long int filtered_list_size;  // size of filtered_list

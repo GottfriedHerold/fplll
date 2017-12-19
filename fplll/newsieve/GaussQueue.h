@@ -60,7 +60,7 @@ private:  // aliases to avoid typing long names
 //  using DataType                    = typename SieveTraits::GaussQueue_DataType;
 //  using RetType                     = typename SieveTraits::GaussQueue_ReturnType;
   using GlobalStaticDataInitializer = typename SieveTraits::GlobalStaticDataInitializer;
-  using StoredIterator              = typename GaussVectorIterator<SieveTraits, false>;
+  using StoredIterator              = GaussVectorIterator<SieveTraits, false>;
 #ifndef USE_REGULAR_QUEUE
   #error use regular queue for now
   // If this symbol is not set, we use a priority queue to always process the smallest element from
@@ -109,6 +109,7 @@ public:
   // TODO: Consider storing a reference to the statistics class instead.
   // clang-format off
   explicit inline GaussQueue(Sieve<SieveTraits, false> *const caller_sieve,
+                             GaussVectorWithBitApprox<SieveTraits, false> * const caller_list,
                              GlobalStaticDataInitializer const &static_data,
                              int seed_sampler,
                              Sampler<SieveTraits, false, std::mt19937_64, std::seed_seq> *user_sampler = nullptr);
@@ -149,6 +150,7 @@ private:
 //  StaticInitializer<RetType>  const init_ret_type;
   QueueType main_queue;                          // actual queue of lattice points to be processed.
   Sieve<SieveTraits, false> *const gauss_sieve;  // pointer to caller object.
+  GaussVectorWithBitApprox<SieveTraits, false> * const main_list;  // pointer to caller list.
   // clang-format on
 
   // NOTE: the sampler is public, because some modules of the sieve need to communicate with the
