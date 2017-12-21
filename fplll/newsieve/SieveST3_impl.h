@@ -13,6 +13,7 @@ void Sieve<SieveTraits, false>::sieve_3_iteration_vec()
 {
   using std::abs;
   using std::round;
+  using std::max;
 
   typename SieveTraits::FastAccess_Point p = main_queue.true_pop();
 
@@ -21,7 +22,7 @@ void Sieve<SieveTraits, false>::sieve_3_iteration_vec()
   int scalar = 0;
 
   static FilteredListType filtered_list;
-  filtered_list.reserve(SieveTraits::filtered_list_size_max);
+  //filtered_list.reserve(SieveTraits::filtered_list_size_max);
 
 start_over:
 
@@ -39,7 +40,8 @@ start_over:
 
     // CHECK FOR 2-REDUCTION
     LengthType sc_prod_px1 = 0; // annoyingly warns otherwise
-    if(check2red_max_for_3red(p, it_x1, scalar, sc_prod_px1, is_p_max))
+    LengthType cond_x1 = 0;
+    if(check2red_max_for_3red(p, it_x1, scalar, sc_prod_px1, cond_x1, is_p_max))
     {
       if (is_p_max)
       {
@@ -66,42 +68,137 @@ start_over:
         }
         continue;  // This increments the iterator in the sense that its point to the next element now
       }
-
-      // could not perform 2-reduction, but possibly 3-reduction
-      // compute scaled inner-product: <p, x1> / ( ||p||^2 * ||x1||^2)
-      // the result should always be positive
-      double const sc_prod_px1_normalized =
-      convert_to_double(sc_prod_px1) * convert_to_double(sc_prod_px1) /
-      (convert_to_double(p.get_norm2()) * convert_to_double(it_x1->get_norm2()));
-
-      // If the scalar product is too small, we cannot perform 3-reduction, so we take the next x1
-      if (sc_prod_px1_normalized < SieveTraits::x1x2_target)
-      {
-        ++it_x1;
-        continue;  // for loop over it_x1;
-      }
-      bool const sign_px1 = (sc_prod_px1 > 0);
-      for (auto &filtp_x2 : filtered_list)
-      {
-        if (!check_simhash_scalar_product<typename SieveTraits::CoordinateSelectionUsed>(
-                                                                                         it_x1, filtp_x2.sim_hashes, SieveTraits::threshold_lvls_3sieve_lb_inn,
-                                                                                         SieveTraits::threshold_lvls_3sieve_ub_inn))
-        {
-          continue;
-        }
-        //TODO: We know max{p, it_x1}
-
-
-
-      }
-
-
-
     }
-
-    // CHECK FOR 3-REDUCTION
-
-  }
+    // could not perform 2-reduction, but possibly 3-reduction
+    // compute scaled inner-product: <p, x1> / ( ||p||^2 * ||x1||^2)
+    // the result should always be positive
+    double const sc_prod_px1_normalized =
+    convert_to_double(sc_prod_px1) * convert_to_double(sc_prod_px1) /
+    (convert_to_double(p.get_norm2()) * convert_to_double(it_x1->get_norm2()));
+    
+    // If the scalar product is too small, we cannot perform 3-reduction, so we take the next x1
+    if (sc_prod_px1_normalized < SieveTraits::x1x2_target)
+    {
+      ++it_x1;
+      continue;  // for loop over it_x1;
+    }
+    bool const sign_px1 = (sc_prod_px1 > 0);
+    
+    
+    //for (auto &filtp_x2 : filtered_list)
+    //typename std::list<Filtered_Point>::iterator filtp_x2 = filtered_list.begin();
+    auto filtp_x2 = filtered_list.cbegin();
+    while (filtp_x2!=filtered_list.cend())
+    {
+      if (!check_simhash_scalar_product<typename SieveTraits::CoordinateSelectionUsed>(
+                                                                                       it_x1, (*filtp_x2).sim_hashes, SieveTraits::threshold_lvls_3sieve_lb_inn,
+                                                                                       SieveTraits::threshold_lvls_3sieve_ub_inn))
+      {
+        ++filtp_x2;
+        continue; // next filtp_x2
+      }
+      LengthType sc_prod_x1x2 = ( (*filtp_x2).sign_flip == sign_px1) ?
+                                compute_sc_product(*it_x1, *((*filtp_x2).ptr_to_exact))
+                                : -compute_sc_product(*it_x1, *((*filtp_x2).ptr_to_exact));
+      statistics.increment_number_of_scprods_level2();
+      
+      //case 1: p is max and can reduce
+      
+      // actually, cond_x1 = 2*abs(sc_prod_px1) - it_x1->get_norm2(). TODO: check is works
+      if (is_p_max && (*filtp_x2).is_p_max &&
+          2 * sc_prod_x1x2 < 2*abs(sc_prod_px1) - it_x1->get_norm2() + (*filtp_x2).twice_abs_sc_prod - (*filtp_x2).ptr_to_exact->get_norm2() )
+      {
+        statistics.increment_number_of_3reds();
+        if (sign_px1)
+        {
+          p -= *it_x1;
+        }
+        else
+        {
+          p += *it_x1;
+        }
+        if ((*filtp_x2).sign_flip)
+        {
+          p -= *((*filtp_x2).ptr_to_exact);
+        }
+        else
+        {
+          p += *((*filtp_x2).ptr_to_exact);
+        }
+        // assert(p.get_norm2() <= debug_test);  // make sure we are making progress.
+        if (p.is_zero())
+        {
+          statistics.increment_number_of_collisions();
+          return;
+        }
+        p.update_bitapprox();
+        statistics.increment_number_of_3reds();
+        goto start_over;
+      }
+      
+      // case 2: x1 is max
+      
+      // actually, cond_x1 = 2*abs(sc_prod_px1) - p->get_norm2() (Now p<it_x1). TODO: check is works
+      if (!is_p_max && it_x1->get_norm2() > (*filtp_x2).ptr_to_exact->get_norm2() &&
+          2 * sc_prod_x1x2 < ( 2*abs(sc_prod_px1) - p.get_norm2() ) + ((*filtp_x2).twice_abs_sc_prod - (*filtp_x2).ptr_to_exact->get_norm2() ))
+      {
+        statistics.increment_number_of_3reds();
+        
+        auto v_new = main_list.true_pop_point(it_x1);  // also performs ++it_x1 !
+        // Note: sign_px1 says whether we need to change x1 (i.e.
+        //       we need to consider p+/- v_new. We instead flip the global sign
+        //       and look at v_new +/- p
+        if (sign_px1)
+        {
+          v_new -= p;
+        }
+        else
+        {
+          v_new += p;
+        }
+        // If sign_px1 == true, we need to invert the sign of x2 because of the global sign flip.
+        if ((*filtp_x2).sign_flip != sign_px1)
+        {
+          v_new -= *((*filtp_x2).ptr_to_exact);
+        }
+        else
+        {
+          v_new += *((*filtp_x2).ptr_to_exact);
+        }
+        // assert(v_new.get_norm2() < debug_test);  // make sure we are making progress.
+        if (v_new.is_zero())
+        {
+          statistics.increment_number_of_collisions();
+        }
+        else
+        {
+          main_queue.push(std::move(v_new));
+        }
+        // GOTO NEXT X2, do not put x1 into filtered_list
+        ++filtp_x2;
+        continue;
+      }
+      
+      // case 3: x2 from filtered_list is max
+      // want to compare 2*<x1,x2> + 2|<x1, p>| - p.norm2 + 2|<x2, p>| - x1.norm2 < 0
+      // cond_x1 = 2|<x1, p>| - min{p.norm2, x1.norm2}
+      
+      
+      if (it_x1->get_norm2() < (*filtp_x2).ptr_to_exact->get_norm2() &&
+          2 * sc_prod_x1x2 < 2*abs(sc_prod_px1) - p.get_norm2() + (*filtp_x2).twice_abs_sc_prod - it_x1->get_norm2() )
+      {
+        // true pop from main_list and erase from filtered_list (filtered_list is now std::list)
+        
+        
+      }
+       
+      
+    } // while-loop over filtered_list
+  
+    // add x1 into filtered_list in case it was not reduced
+    filtered_list.emplace_back(it_x1, sign_px1, is_p_max, cond_x1, 2*abs(sc_prod_px1) );
+  } // loop over main_list
+  
 
   if (update_shortest_vector_found(p))
   {

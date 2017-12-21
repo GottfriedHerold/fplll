@@ -95,7 +95,10 @@ struct FilteredPoint2<SieveTraits,false>
   SimHashes sim_hashes;  // stores sim_hashes to *ptr_to_exact if sign_flip == false
                          // otherwise, stores bit-negated sim_hashes to *ptr_to_exact
   bool sign_flip;
+  bool is_p_max;  // true if the *current* p is larger than ptr_to_exact
+  
   GaussList_StoredPoint const *ptr_to_exact;  // non-owning pointer
+  
 
   /*
     cond stores -||x||^2 - 2 * <p, +/-x>, where  x==*ptr_to_exact and p is the point with respect to
@@ -106,6 +109,8 @@ struct FilteredPoint2<SieveTraits,false>
     need to use FilteredPoint)
   */
   LengthType cond;
+  LengthType twice_abs_sc_prod;
+  
   FilteredPoint2()                       = delete;
   FilteredPoint2(FilteredPoint2 const &) = delete;
   FilteredPoint2(FilteredPoint2 &&)      = default;
@@ -117,14 +122,16 @@ struct FilteredPoint2<SieveTraits,false>
   // by flipping the sign inside the list of filtered points, we do not need to perform a case
   // distinction when iterating over pairs from the filtered list.
   // precompute equals -||x||^2 -/+ 2<p,x>, which we record for later use.
-  explicit constexpr FilteredPoint2(GaussIteratorBitApprox<SieveTraits, false> const &list_iterator,
-                                    bool const flip,
-                                    LengthType const &precompute) noexcept
+  explicit constexpr FilteredPoint2(GaussVectorIteratorBitApprox<SieveTraits, false> const &list_iterator,
+                                    bool const flip, bool is_p_max_,
+                                    LengthType const &precompute, LengthType const & precompute_twice_abs_sc_prod) noexcept
       : sim_hashes(flip ? flip_all_bits(list_iterator.get_all_bitapproximations())
                         :               list_iterator.get_all_bitapproximations() ),
         sign_flip(flip),
+        is_p_max(is_p_max_),
         ptr_to_exact(static_cast<GaussList_StoredPoint const *>(list_iterator)),
-        cond(precompute)
+        cond(precompute),
+        twice_abs_sc_prod(precompute_twice_abs_sc_prod)
   {
   }
   // clang-format on
