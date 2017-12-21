@@ -117,7 +117,7 @@ public:
   // TODO: Remove this typedef
   using Filtered_Point = FilteredPoint2<SieveTraits, GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED>;
 
-  using FilteredListType            = std::list<Filtered_Point>;
+  using FilteredListType            = std::vector<Filtered_Point>;
   using GlobalStaticDataInitializer = typename SieveTraits::GlobalStaticDataInitializer;
   using SieveStatistics = GaussSieveStatistics<SieveTraits, GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED>;
 

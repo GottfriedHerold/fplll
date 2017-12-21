@@ -95,8 +95,9 @@ struct FilteredPoint2<SieveTraits,false>
   SimHashes sim_hashes;  // stores sim_hashes to *ptr_to_exact if sign_flip == false
                          // otherwise, stores bit-negated sim_hashes to *ptr_to_exact
   bool sign_flip;
+#ifndef USE_ORDERED_LIST
   bool is_p_max;  // true if the *current* p is larger than ptr_to_exact
-  
+#endif
   GaussList_StoredPoint const *ptr_to_exact;  // non-owning pointer
   
 
@@ -109,7 +110,9 @@ struct FilteredPoint2<SieveTraits,false>
     need to use FilteredPoint)
   */
   LengthType cond;
+#ifndef USE_ORDERED_LIST
   LengthType twice_abs_sc_prod;
+#endif
   
   FilteredPoint2()                       = delete;
   FilteredPoint2(FilteredPoint2 const &) = delete;
@@ -122,6 +125,7 @@ struct FilteredPoint2<SieveTraits,false>
   // by flipping the sign inside the list of filtered points, we do not need to perform a case
   // distinction when iterating over pairs from the filtered list.
   // precompute equals -||x||^2 -/+ 2<p,x>, which we record for later use.
+#ifndef USE_ORDERED_LIST
   explicit constexpr FilteredPoint2(GaussVectorIteratorBitApprox<SieveTraits, false> const &list_iterator,
                                     bool const flip, bool is_p_max_,
                                     LengthType const &precompute, LengthType const & precompute_twice_abs_sc_prod) noexcept
@@ -134,6 +138,18 @@ struct FilteredPoint2<SieveTraits,false>
         twice_abs_sc_prod(precompute_twice_abs_sc_prod)
   {
   }
+#else
+  explicit constexpr FilteredPoint2(GaussIteratorBitApprox<SieveTraits, false> const &list_iterator,
+                                    bool const flip,
+                                    LengthType const &precompute) noexcept
+  : sim_hashes(flip ? flip_all_bits(list_iterator.get_all_bitapproximations())
+               :               list_iterator.get_all_bitapproximations() ),
+  sign_flip(flip),
+  ptr_to_exact(static_cast<GaussList_StoredPoint const *>(list_iterator)),
+  cond(precompute)
+  {
+  }
+#endif
   // clang-format on
 };
 
