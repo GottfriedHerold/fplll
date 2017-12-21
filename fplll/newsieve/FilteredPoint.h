@@ -109,11 +109,11 @@ struct FilteredPoint2<SieveTraits,false>
     particular, cond will always be <= 0. (Otherwise, we perform a 2-reduction directly and do not
     need to use FilteredPoint)
   */
-  LengthType cond;
 #ifndef USE_ORDERED_LIST
   LengthType twice_abs_sc_prod;
+  GaussVectorIteratorBitApprox<SieveTraits, false> it_to_main_list;
 #endif
-  
+  LengthType cond;
   FilteredPoint2()                       = delete;
   FilteredPoint2(FilteredPoint2 const &) = delete;
   FilteredPoint2(FilteredPoint2 &&)      = default;
@@ -134,8 +134,9 @@ struct FilteredPoint2<SieveTraits,false>
         sign_flip(flip),
         is_p_max(is_p_max_),
         ptr_to_exact(static_cast<GaussList_StoredPoint const *>(list_iterator)),
-        cond(precompute),
-        twice_abs_sc_prod(precompute_twice_abs_sc_prod)
+        twice_abs_sc_prod(precompute_twice_abs_sc_prod),
+        it_to_main_list(list_iterator),
+        cond(precompute)
   {
   }
 #else
