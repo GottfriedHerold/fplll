@@ -24,6 +24,17 @@ bool Sieve<SieveTraits, false>::check2red(LHS &&p1, RHS &&p2, int &scalar)
 {
   statistics.increment_number_of_approx_scprods_level1();
 
+//  assert(turn_maybe_iterator_to_point(p1) >= turn_maybe_iterator_to_point(p2));
+//
+//  typename SieveTraits::FastAccess_Point lhscopy  = turn_maybe_iterator_to_point(p1).make_copy();
+//  typename SieveTraits::FastAccess_Point lhscopy2 = lhscopy.make_copy();
+//  typename SieveTraits::LengthType max_norm2  = lhscopy.get_norm2();
+//  lhscopy  += turn_maybe_iterator_to_point(p2);
+//  lhscopy2 -= turn_maybe_iterator_to_point(p2);
+
+//  bool CanReduce =  ((lhscopy.get_norm2() <=  max_norm2 ) || (lhscopy2.get_norm2() <= max_norm2));
+//  bool CanReallyReduce = ((lhscopy.get_norm2() <  max_norm2 ) || (lhscopy2.get_norm2() < max_norm2));
+
   // check if SimHash xor of p1 and p2 is promissing
   // do not perform exact check is the SimHash check returns false
   if (!check_simhash_scalar_product<typename SieveTraits::CoordinateSelectionUsed>(
@@ -48,6 +59,7 @@ bool Sieve<SieveTraits, false>::check2red(LHS &&p1, RHS &&p2, int &scalar)
 
   if (abs_2scprod <= turn_maybe_iterator_to_point(p2).get_norm2())
   {
+//    assert(!CanReduce);
     return false;
   }
 
@@ -56,6 +68,7 @@ bool Sieve<SieveTraits, false>::check2red(LHS &&p1, RHS &&p2, int &scalar)
   // TODO: Check over- / underflows.
   scalar = round(mult);
   assert(scalar!=0);
+//  assert(CanReallyReduce);
   return true;
 }
 #endif
@@ -264,7 +277,9 @@ start_over:
     {
       assert(scalar != 0);
       // p -= (*it) * scalar;
+      typename SieveTraits::LengthType OldNorm2 = p.get_norm2();
       p.sub_multiply(*it, scalar);
+      assert(p.get_norm2() < OldNorm2);
       if (p.is_zero())
       {
         statistics.increment_number_of_collisions();
@@ -296,8 +311,10 @@ start_over:
       }
 
       auto v_new = main_list.true_pop_point(it);  // implicitly performs ++it.
+      typename SieveTraits::LengthType OldNorm2 = v_new.get_norm2();
       // v_new = (*it) - (p * scalar);
       v_new.sub_multiply(p, scalar);
+      assert(v_new.get_norm2() < OldNorm2);
 
       if (v_new.is_zero())  // this only happens if the list contains a non-trivial multiple of p.
       {
