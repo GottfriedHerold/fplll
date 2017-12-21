@@ -344,7 +344,7 @@ public:
 
   // we can convert from a "plain" iterator to the underlying list. Only used internally or by
   // the list class.
-private:
+public:
   // clang-format off
   constexpr GaussVectorIteratorBitApprox( UnderlyingIterator const &new_it) noexcept : it(new_it) {}
   // constexpr GaussVectorIteratorBitApprox(CUnderlyingIterator const &new_it) noexcept : it(new_it) {}

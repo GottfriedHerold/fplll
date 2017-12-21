@@ -180,7 +180,7 @@ public:
   void sieve_2_iteration_vec();
 
   template <class Iterator>
-  bool check2red_max_for_3red(FastAccess_Point const &p, Iterator it, int &scalar, typename SieveTraits::LengthType &sc_prod, bool &is_p_max);
+  bool check2red_max_for_3red(FastAccess_Point const &p, Iterator it, int &scalar, typename SieveTraits::LengthType &sc_prod, typename SieveTraits::LengthType &cond_x1, bool &is_p_max);
 
   void sieve_3_iteration_vec();
 #endif

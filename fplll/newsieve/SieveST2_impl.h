@@ -113,7 +113,7 @@ bool Sieve<SieveTraits, false>::check2red_max(typename SieveTraits::FastAccess_P
 template <class SieveTraits>
 template <class Iterator>
 bool Sieve<SieveTraits, false>::check2red_max_for_3red(typename SieveTraits::FastAccess_Point const &p,
-                                              Iterator it, int &scalar, typename SieveTraits::LengthType & sc_prod, bool &is_p_max)
+                                                       Iterator it, int &scalar, typename SieveTraits::LengthType & sc_prod, typename SieveTraits::LengthType &cond_x1, bool &is_p_max)
 {
   statistics.increment_number_of_approx_scprods_level1();
 
@@ -143,8 +143,9 @@ bool Sieve<SieveTraits, false>::check2red_max_for_3red(typename SieveTraits::Fas
   //  LengthType const &norm2_max = is_p_max ? p.get_norm2() : it->get_norm2();
   LengthType const &norm2_min = is_p_max ? it->get_norm2() : p.get_norm2();
 
-  if (abs_2scprod <= norm2_min) { return false; }
-
+  cond_x1 = abs_2scprod - norm2_min;
+  if (cond_x1 <= 0) { return false; }
+  
   //  double const mult =
   //      convert_to_double(sc_prod) / convert_to_double(norm_needed);
   // TODO: Check over- / underflows.
