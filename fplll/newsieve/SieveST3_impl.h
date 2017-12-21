@@ -84,15 +84,15 @@ start_over:
     }
     bool const sign_px1 = (sc_prod_px1 > 0);
     
-    
     //for (auto &filtp_x2 : filtered_list)
-    //typename std::list<Filtered_Point>::iterator filtp_x2 = filtered_list.begin();
-    auto filtp_x2 = filtered_list.cbegin();
-    while (filtp_x2!=filtered_list.cend())
+    typename std::vector<Filtered_Point>::iterator filtp_x2 = filtered_list.begin();
+    //auto filtp_x2 = filtered_list.cbegin();
+    while (filtp_x2!=filtered_list.end())
     {
       if (!check_simhash_scalar_product<typename SieveTraits::CoordinateSelectionUsed>(
                                                                                        it_x1, (*filtp_x2).sim_hashes, SieveTraits::threshold_lvls_3sieve_lb_inn,
-                                                                                       SieveTraits::threshold_lvls_3sieve_ub_inn))
+                                                                                       SieveTraits::threshold_lvls_3sieve_ub_inn)
+          || (*filtp_x2).delete_flag)
       {
         ++filtp_x2;
         continue; // next filtp_x2
@@ -175,20 +175,58 @@ start_over:
           main_queue.push(std::move(v_new));
         }
         // GOTO NEXT X2, do not put x1 into filtered_list
-        ++filtp_x2;
-        continue;
+        goto end_of_x1_loop;
       }
       
       // case 3: x2 from filtered_list is max
-      // want to compare 2*<x1,x2> + 2|<x1, p>| - p.norm2 + 2|<x2, p>| - x1.norm2 < 0
+      // want to compare 2<x1,x2> + 2|<x1, p>| - p.norm2 + 2|<x2, p>| - x1.norm2 < 0
       // cond_x1 = 2|<x1, p>| - min{p.norm2, x1.norm2}
-      
       
       if (it_x1->get_norm2() < (*filtp_x2).ptr_to_exact->get_norm2() &&
           2 * sc_prod_x1x2 < 2*abs(sc_prod_px1) - p.get_norm2() + (*filtp_x2).twice_abs_sc_prod - it_x1->get_norm2() )
       {
-        // true pop from main_list and erase from filtered_list (filtered_list is now std::list)
+        // TODO: CHECK IF IT_X1 is end();
+        auto to_make_it_x1_plus = it_x1;
+        if (++to_make_it_x1_plus == main_list.cend())
+        {
+          //SWAP WILL NOT WORK, IGNORE THIS REDUCTION
+          // goto loop_finished;
+          ++it_x1;
+          continue;
+        }
         
+        filtp_x2->delete_flag = true;
+        
+        auto v_new = main_list.true_pop_point((*filtp_x2).it_to_main_list);
+        if (sign_px1)
+        {
+          v_new -= p;
+        }
+        else
+        {
+          v_new += p;
+        }
+        // If sign_px1 == true, we need to invert the sign of x2 because of the global sign flip.
+        if ((*filtp_x2).sign_flip != sign_px1)
+        {
+          v_new -= *((*filtp_x2).ptr_to_exact);
+        }
+        else
+        {
+          v_new += *((*filtp_x2).ptr_to_exact);
+        }
+        // assert(v_new.get_norm2() < debug_test);  // make sure we are making progress.
+        if (v_new.is_zero())
+        {
+          statistics.increment_number_of_collisions();
+        }
+        else
+        {
+          main_queue.push(std::move(v_new));
+        }
+        // GOTO NEXT X2, do not put x1 into filtered_list
+        ++filtp_x2;
+        continue;
         
       }
        
@@ -197,8 +235,8 @@ start_over:
   
     // add x1 into filtered_list in case it was not reduced
     filtered_list.emplace_back(it_x1, sign_px1, is_p_max, cond_x1, 2*abs(sc_prod_px1) );
+    end_of_x1_loop:;
   } // loop over main_list
-  
 
   if (update_shortest_vector_found(p))
   {

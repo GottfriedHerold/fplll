@@ -110,8 +110,9 @@ struct FilteredPoint2<SieveTraits,false>
     need to use FilteredPoint)
   */
 #ifndef USE_ORDERED_LIST
-  LengthType twice_abs_sc_prod;
   GaussVectorIteratorBitApprox<SieveTraits, false> it_to_main_list;
+  LengthType twice_abs_sc_prod;
+  bool delete_flag;
 #endif
   LengthType cond;
   FilteredPoint2()                       = delete;
@@ -134,8 +135,9 @@ struct FilteredPoint2<SieveTraits,false>
         sign_flip(flip),
         is_p_max(is_p_max_),
         ptr_to_exact(static_cast<GaussList_StoredPoint const *>(list_iterator)),
-        twice_abs_sc_prod(precompute_twice_abs_sc_prod),
         it_to_main_list(list_iterator),
+        twice_abs_sc_prod(precompute_twice_abs_sc_prod),
+        delete_flag(false),
         cond(precompute)
   {
   }
