@@ -268,7 +268,7 @@ bool Sieve<SieveTraits,GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED>::check_if_enough_
 
 
   // for k=2 we expect saturation at (4/3)^{progressive_rank / 2}
-  unsigned long int expected_list_size = std::pow(this->get_target_list_size(), static_cast<double>( this->get_progressive_rank() / 2 ) );
+  unsigned long int const expected_list_size = std::pow(this->get_target_list_size(), static_cast<double>( this->get_progressive_rank() / 2 ) );
 
   // we want to have at least expected_list_size-many vectors of norm (squared) 4/3 * expected_list_size[i]
   double norm_bound = 1.3333 * lattice_basis.progressive_bounds[this->get_progressive_rank()]; //TODO: adjust to 3-sieve
@@ -277,7 +277,8 @@ bool Sieve<SieveTraits,GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED>::check_if_enough_
   unsigned long int N = 0;
   for (auto it = main_list.cbegin(); it != main_list.cend(); ++it)
   {
-    if (it.get_approx_norm2() < norm_bound)
+    assert(it->get_norm2()!=0);
+    if (it->get_norm2() < norm_bound)
     {
         ++N;
     }
@@ -286,10 +287,13 @@ bool Sieve<SieveTraits,GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED>::check_if_enough_
 //      break;
 //    }
   }
+//  std::cout << "short vectors : " << N << std::endl;
+//  std::cout << "next progressive rank at :" << expected_list_size / 2 << std::endl;
+//  std::cout << "norm2 - bound" << norm_bound << std::endl;
   //std::cout << "N = " << N << std:: endl;
 
   // factor of 2 due to implicit (+/-)v
-  return (2 * N > expected_list_size);
+  return (4 * N > expected_list_size);
 }
 #endif // PROGRESSIVE
 
@@ -299,7 +303,9 @@ void Sieve<SieveTraits,GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED>::increase_progres
 {
   assert(this->progressive_rank < this->get_lattice_rank());
   ++(this->progressive_rank);
-  std::cout << "Prgoressive rank = " << this->progressive_rank << std::endl;
+  std::cout << "Progressive rank = " << this->progressive_rank << std::endl;
+  std::cout << "#collisions: " << statistics.number_of_collisions << std::endl;
+
   if (this->get_progressive_rank() == this->get_lattice_rank())
   {
     std::cout << "From now on we are full-rank" << std::endl;

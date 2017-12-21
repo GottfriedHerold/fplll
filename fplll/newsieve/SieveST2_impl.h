@@ -55,6 +55,7 @@ bool Sieve<SieveTraits, false>::check2red(LHS &&p1, RHS &&p2, int &scalar)
       convert_to_double(sc_prod) / convert_to_double(turn_maybe_iterator_to_point(p2).get_norm2());
   // TODO: Check over- / underflows.
   scalar = round(mult);
+  assert(scalar!=0);
   return true;
 }
 #endif
@@ -145,7 +146,7 @@ bool Sieve<SieveTraits, false>::check2red_max_for_3red(typename SieveTraits::Fas
 
   cond_x1 = abs_2scprod - norm2_min;
   if (cond_x1 <= 0) { return false; }
-  
+
   //  double const mult =
   //      convert_to_double(sc_prod) / convert_to_double(norm_needed);
   // TODO: Check over- / underflows.
@@ -248,8 +249,8 @@ start_over:
   for (auto it = main_list.cbegin(); it != main_list.cend(); ++it)  // while p keeps changing
   {
 
-    // if (p < *it)
-    if (approx_norm2 < it.get_approx_norm2())
+     if (p < *it)
+//    if (approx_norm2 < it.get_approx_norm2())
     {
       it_comparison_flip = it;
       break;

@@ -116,8 +116,8 @@ public:
   //constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_2sieve_lb = {{64-17}}; //, 64-18}};
   //constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_2sieve_ub = {{64+17}}; //+9, 64+18}};
 
-  constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_2sieve_lb = {{47}}; //, 64-18}};
-  constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_2sieve_ub = {{128 - 47}}; //+9, 64+18}};
+  constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_2sieve_lb = {{64}}; //, 64-18}};
+  constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_2sieve_ub = {{128 - 64}}; //+9, 64+18}};
 
   // for 3-sieve: outer loop
   constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_3sieve_lb_out = {{64-14}}; //, 64-11}};
