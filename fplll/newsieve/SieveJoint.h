@@ -108,7 +108,7 @@ public:
   // TODO: Remove this typedef
   using Filtered_Point = FilteredPoint2<SieveTraits, GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED>;
 
-  using FilteredListType            = std::vector<Filtered_Point>;
+  using FilteredListType            = std::list<Filtered_Point>;
   using GlobalStaticDataInitializer = typename SieveTraits::GlobalStaticDataInitializer;
   using SieveStatistics = GaussSieveStatistics<SieveTraits, GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED>;
 
@@ -169,7 +169,7 @@ public:
   void sieve_2_iteration_vec();
   
   template <class Iterator>
-  bool check2red_max_for_3red(FastAccess_Point const &p, Iterator it, int &scalar, typename SieveTraits::LengthType &sc_prod, bool &is_p_max);
+  bool check2red_max_for_3red(FastAccess_Point const &p, Iterator it, int &scalar, typename SieveTraits::LengthType &sc_prod, typename SieveTraits::LengthType &cond_x1, bool &is_p_max);
 
   void sieve_3_iteration (FastAccess_Point &p); //one run through the main_list (of 3-sieve)
   void sieve_3_iteration_vec();

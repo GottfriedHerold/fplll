@@ -93,6 +93,7 @@ struct FilteredPoint2<SieveTraits,false>
                          // otherwise, stores bit-negated sim_hashes to *ptr_to_exact
   bool sign_flip;
   GaussList_StoredPoint const *ptr_to_exact;  // non-owning pointer
+  bool is_p_max;  // true if the *current* p is larger than ptr_to_exact
 
   /*
     cond stores -||x||^2 - 2 * <p, +/-x>, where  x==*ptr_to_exact and p is the point with respect to
@@ -115,11 +116,12 @@ struct FilteredPoint2<SieveTraits,false>
   // distinction when iterating over pairs from the filtered list.
   // precompute equals -||x||^2 -/+ 2<p,x>, which we record for later use.
   explicit constexpr FilteredPoint2(GaussIteratorBitApprox<SieveTraits, false> const &list_iterator,
-                                    bool const flip,
+                                    bool const flip, bool is_p_max_,
                                     LengthType const &precompute) noexcept
       : sim_hashes(flip ? flip_all_bits(list_iterator.get_all_bitapproximations())
                         :               list_iterator.get_all_bitapproximations() ),
         sign_flip(flip),
+        is_p_max(is_p_max_),
         ptr_to_exact(static_cast<GaussList_StoredPoint const *>(list_iterator)),
         cond(precompute)
   {
