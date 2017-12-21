@@ -24,7 +24,7 @@ void Sieve<SieveTraits, false>::sieve_3_iteration_vec()
   static FilteredListType filtered_list;
   filtered_list.reserve(SieveTraits::filtered_list_size_max);
   
-  std::cout << "p: " << p.get_norm2() << std::endl;
+  //std::cout << "p: " << p.get_norm2() << std::endl;
 
 start_over:
 
@@ -39,7 +39,7 @@ start_over:
       ++it_x1;
       continue;
     }
-    std::cout << "it_x1: " << (*it_x1).get_norm2() <<std::endl;
+    //std::cout << "it_x1: " << (*it_x1).get_norm2() <<std::endl;
     // CHECK FOR 2-REDUCTION
     LengthType sc_prod_px1 = 0; // annoyingly warns otherwise
     LengthType cond_x1 = 0;
@@ -99,7 +99,7 @@ start_over:
         ++filtp_x2;
         continue; // next filtp_x2
       }
-      std::cout << "filtp_x2: " << (*filtp_x2).ptr_to_exact->get_norm2() <<std::endl;
+      //std::cout << "filtp_x2: " << (*filtp_x2).ptr_to_exact->get_norm2() <<std::endl;
       LengthType sc_prod_x1x2 = ( (*filtp_x2).sign_flip == sign_px1) ?
                                 compute_sc_product(*it_x1, *((*filtp_x2).ptr_to_exact))
                                 : -compute_sc_product(*it_x1, *((*filtp_x2).ptr_to_exact));
@@ -112,7 +112,7 @@ start_over:
           2 * sc_prod_x1x2 < 2*abs(sc_prod_px1) - it_x1->get_norm2() + (*filtp_x2).twice_abs_sc_prod - (*filtp_x2).ptr_to_exact->get_norm2() )
       {
         statistics.increment_number_of_3reds();
-        std::cout << "p is max " << std::endl;
+        //std::cout << "p is max " << std::endl;
         LengthType const debug_test = p.get_norm2();
         if (sign_px1)
         {
@@ -143,13 +143,14 @@ start_over:
       
       // case 2: x1 is max
       
-      // actually, cond_x1 = 2*abs(sc_prod_px1) - p->get_norm2() (Now p<it_x1). TODO: check is works
+      // actually, cond_x1 = 2*abs(sc_prod_px1) - p->get_norm2() (Now p<it_x1). TODO: check if works
       if (!is_p_max && it_x1->get_norm2() > (*filtp_x2).ptr_to_exact->get_norm2() &&
           2 * sc_prod_x1x2 < ( 2*abs(sc_prod_px1) - p.get_norm2() ) + ((*filtp_x2).twice_abs_sc_prod - (*filtp_x2).ptr_to_exact->get_norm2() ))
       {
         statistics.increment_number_of_3reds();
-        std::cout << "x1 is max " << std::endl;
+        //std::cout << "x1 is max " << std::endl;
         LengthType const debug_test = (*it_x1).get_norm2();
+        //std::cout << "filtp_x2->delete_flag = " << filtp_x2->delete_flag << std::endl;
         auto v_new = main_list.true_pop_point(it_x1);  // also performs ++it_x1 !
         // Note: sign_px1 says whether we need to change x1 (i.e.
         //       we need to consider p+/- v_new. We instead flip the global sign
@@ -180,14 +181,14 @@ start_over:
         {
           main_queue.push(std::move(v_new));
         }
-        // GOTO NEXT X2, do not put x1 into filtered_list
+        // GOTO NEXT X1, do not put x1 into filtered_list
+        // ++it_x1;
         goto end_of_x1_loop;
       }
       
       // case 3: x2 from filtered_list is max
       // want to compare 2<x1,x2> + 2|<x1, p>| - p.norm2 + 2|<x2, p>| - x1.norm2 < 0
       // cond_x1 = 2|<x1, p>| - min{p.norm2, x1.norm2}
-      
       if (it_x1->get_norm2() < (*filtp_x2).ptr_to_exact->get_norm2() &&
           2 * sc_prod_x1x2 < 2*abs(sc_prod_px1) - p.get_norm2() + (*filtp_x2).twice_abs_sc_prod - it_x1->get_norm2() )
       {
@@ -196,21 +197,22 @@ start_over:
         if (++to_make_it_x1_plus == main_list.cend())
         {
           //SWAP WILL NOT WORK, IGNORE THIS REDUCTION
-           goto end_of_x1_loop;
-          // ++it_x1;
+          ++it_x1;
+          goto end_of_x1_loop;
+          
           // continue;
         }
         
-        std::cout << "filtp_x2->delete_flag = " << filtp_x2->delete_flag << std::endl;
+        //std::cout << "filtp_x2->delete_flag = " << filtp_x2->delete_flag << std::endl;
         
         filtp_x2->delete_flag = true;
         
-        std::cout << "x2 is max " << std::endl;
+        //std::cout << "x2 is max " << std::endl;
         LengthType const debug_test = (*filtp_x2).ptr_to_exact->get_norm2();
-        std::cout << "debug_test = " << debug_test << std::endl;
+        //std::cout << "debug_test = " << debug_test << std::endl;
         auto v_new = main_list.true_pop_point((*filtp_x2).it_to_main_list);
-        std::cout << "v_new :" << v_new.get_norm2() << std::endl << std::flush;
-        if (sign_px1)
+        //std::cout << "v_new :" << v_new.get_norm2() << std::endl << std::flush;
+        if ((*filtp_x2).sign_flip)
         {
           v_new -= p;
         }
@@ -218,15 +220,15 @@ start_over:
         {
           v_new += p;
         }
-        std::cout << "if test" << std::endl;
+        //std::cout << "if test" << std::endl;
         // If sign_px1 == true, we need to invert the sign of x2 because of the global sign flip.
         if ((*filtp_x2).sign_flip != sign_px1)
         {
-          v_new -= *((*filtp_x2).ptr_to_exact);
+          v_new -= *it_x1;
         }
         else
         {
-          v_new += *((*filtp_x2).ptr_to_exact);
+          v_new += *it_x1;
         }
         assert(v_new.get_norm2() < debug_test);  // make sure we are making progress.
         if (v_new.is_zero())
@@ -237,9 +239,7 @@ start_over:
         {
           main_queue.push(std::move(v_new));
         }
-        std::cout << "x2 is max finished " << std::endl;
       }
-      std::cout << "increasing filtp " << std::endl;
       ++filtp_x2;
       //continue;
       
