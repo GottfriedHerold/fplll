@@ -27,7 +27,7 @@ class UniformSampler final : public Sampler<SieveTraits, MT, Engine, Sseq>
 {
 public:
   using DimensionType = typename SieveTraits::DimensionType;
-  using EntryType     = typename SieveTraits::EntryType;
+  using LengthType     = typename SieveTraits::LengthType;
   using RetType       = typename SieveTraits::GaussSampler_ReturnType;
   // clang-format off
   explicit UniformSampler(Sseq &seq, unsigned int inp_sparcity)

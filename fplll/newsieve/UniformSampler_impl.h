@@ -62,11 +62,16 @@ UniformSampler<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
 
   typename SieveTraits::PlainPoint vec;
   vec.fill_with_zero();
+#ifdef PROGRESSIVE
+  uint_fast16_t current_rank = this->get_progressive_rank();
+#else
+  uint_fast16_t current_rank = lattice_rank;
+#endif
 
   for (unsigned int i = 0; i < sparcity; ++i)
   {
-    vec += basis[sample_uniform<Engine>(dim - 1, engine.rnd(thread))];
-    vec -= basis[sample_uniform<Engine>(dim - 1, engine.rnd(thread))];
+    vec += basis[sample_uniform<Engine>(current_rank - 1, engine.rnd(thread))];
+    vec -= basis[sample_uniform<Engine>(current_rank - 1, engine.rnd(thread))];
   }
 
   typename SieveTraits::GaussSampler_ReturnType ret;
