@@ -208,6 +208,7 @@ Sieve<SieveTraits,GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED>::Sieve(
     ++it;
   }
 #else
+  //main_list.reserve(100000);
   for (unsigned int i=0; i<lattice_rank; ++i)
     {
         main_list.emplace_back( lattice_basis.get_basis_vector(i).make_copy() );

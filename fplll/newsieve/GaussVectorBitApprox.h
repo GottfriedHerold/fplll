@@ -275,6 +275,11 @@ public:
     actual_vector.pop_back();
     return pos;
   }
+  
+  void reserve(unsigned int size)
+  {
+    actual_vector.reserve(size);
+  }
 
   [[deprecated("No sorting for vector")]]void sort() { }
   //void sort() { std::sort(actual_vector.begin(), actual_vector.end(), norm_compare<SieveTraits>); } //TODO: FAILS
