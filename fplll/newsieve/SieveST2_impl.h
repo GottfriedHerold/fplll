@@ -165,10 +165,8 @@ bool Sieve<SieveTraits, false>::check2red_max_for_3red(typename SieveTraits::Fas
   // TODO: Check over- / underflows.
   scalar = round(convert_to_double(sc_prod) / convert_to_double(norm2_min));
   return true;
-
 }
 #endif
-
 
 #ifndef USE_ORDERED_LIST
 template <class SieveTraits>
@@ -179,7 +177,8 @@ void Sieve<SieveTraits, false>::sieve_2_iteration_vec()
   bool is_p_max;
 
 start_over:
-  for (auto it = main_list.cbegin(); it != main_list.cend();)  // while p keeps changing
+  // while p keeps changing:
+  for (auto it = main_list.cbegin(); it != main_list.cend(); ) // ++it inside loop
   {
     int scalar;
     if(check2red_max(p, it, scalar, is_p_max))

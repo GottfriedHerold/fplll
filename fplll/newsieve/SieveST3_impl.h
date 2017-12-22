@@ -23,14 +23,14 @@ void Sieve<SieveTraits, false>::sieve_3_iteration_vec()
 
   static FilteredListType filtered_list;
   filtered_list.reserve(SieveTraits::filtered_list_size_max);
-  
+
   //std::cout << "p: " << p.get_norm2() << std::endl;
 
 start_over:
 
   filtered_list.clear();
 
-  for (auto it_x1 = main_list.cbegin(); it_x1 != main_list.cend();)
+  for (auto it_x1 = main_list.cbegin(); it_x1 != main_list.cend();) // ++it_x1 inside loop
   {
     if (!check_simhash_scalar_product<typename SieveTraits::CoordinateSelectionUsed>(
                                                                                    p, it_x1, SieveTraits::threshold_lvls_3sieve_lb_out,
@@ -77,7 +77,7 @@ start_over:
     double const sc_prod_px1_normalized =
     convert_to_double(sc_prod_px1) * convert_to_double(sc_prod_px1) /
     (convert_to_double(p.get_norm2()) * convert_to_double(it_x1->get_norm2()));
-    
+
     // If the scalar product is too small, we cannot perform 3-reduction, so we take the next x1
     if (sc_prod_px1_normalized < SieveTraits::x1x2_target)
     {
@@ -85,7 +85,7 @@ start_over:
       continue;  // for loop over it_x1;
     }
     bool const sign_px1 = (sc_prod_px1 > 0);
-    
+
     //for (auto &filtp_x2 : filtered_list)
     typename std::vector<Filtered_Point>::iterator filtp_x2 = filtered_list.begin();
     //auto filtp_x2 = filtered_list.cbegin();
@@ -104,16 +104,16 @@ start_over:
                                 compute_sc_product(*it_x1, *((*filtp_x2).ptr_to_exact))
                                 : -compute_sc_product(*it_x1, *((*filtp_x2).ptr_to_exact));
       statistics.increment_number_of_scprods_level2();
-      
+
       //case 1: p is max and can reduce
-      
+
       // actually, cond_x1 = 2*abs(sc_prod_px1) - it_x1->get_norm2(). TODO: check is works
       if (is_p_max && (*filtp_x2).is_p_max &&
           2 * sc_prod_x1x2 < 2*abs(sc_prod_px1) - it_x1->get_norm2() + (*filtp_x2).twice_abs_sc_prod - (*filtp_x2).ptr_to_exact->get_norm2() )
       {
         statistics.increment_number_of_3reds();
         //std::cout << "p is max " << std::endl;
-        LengthType const debug_test = p.get_norm2();
+//        LengthType const debug_test = p.get_norm2();
         if (sign_px1)
         {
           p -= *it_x1;
@@ -130,7 +130,7 @@ start_over:
         {
           p += *((*filtp_x2).ptr_to_exact);
         }
-        assert(p.get_norm2() <= debug_test);  // make sure we are making progress.
+//        assert(p.get_norm2() <= debug_test);  // make sure we are making progress.
         if (p.is_zero())
         {
           statistics.increment_number_of_collisions();
@@ -140,16 +140,16 @@ start_over:
         statistics.increment_number_of_3reds();
         goto start_over;
       }
-      
+
       // case 2: x1 is max
-      
+
       // actually, cond_x1 = 2*abs(sc_prod_px1) - p->get_norm2() (Now p<it_x1). TODO: check if works
       if (!is_p_max && it_x1->get_norm2() > (*filtp_x2).ptr_to_exact->get_norm2() &&
           2 * sc_prod_x1x2 < ( 2*abs(sc_prod_px1) - p.get_norm2() ) + ((*filtp_x2).twice_abs_sc_prod - (*filtp_x2).ptr_to_exact->get_norm2() ))
       {
         statistics.increment_number_of_3reds();
         //std::cout << "x1 is max " << std::endl;
-        LengthType const debug_test = (*it_x1).get_norm2();
+//        LengthType const debug_test = (*it_x1).get_norm2();
         //std::cout << "filtp_x2->delete_flag = " << filtp_x2->delete_flag << std::endl;
         auto v_new = main_list.true_pop_point(it_x1);  // also performs ++it_x1 !
         // Note: sign_px1 says whether we need to change x1 (i.e.
@@ -172,7 +172,7 @@ start_over:
         {
           v_new += *((*filtp_x2).ptr_to_exact);
         }
-         assert(v_new.get_norm2() < debug_test);  // make sure we are making progress.
+//         assert(v_new.get_norm2() < debug_test);  // make sure we are making progress.
         if (v_new.is_zero())
         {
           statistics.increment_number_of_collisions();
@@ -185,7 +185,7 @@ start_over:
         // ++it_x1;
         goto end_of_x1_loop;
       }
-      
+
       // case 3: x2 from filtered_list is max
       // want to compare 2<x1,x2> + 2|<x1, p>| - p.norm2 + 2|<x2, p>| - x1.norm2 < 0
       // cond_x1 = 2|<x1, p>| - min{p.norm2, x1.norm2}
@@ -199,14 +199,14 @@ start_over:
           //SWAP WILL NOT WORK, IGNORE THIS REDUCTION
           ++it_x1;
           goto end_of_x1_loop;
-          
+
           // continue;
         }
-        
+
         //std::cout << "filtp_x2->delete_flag = " << filtp_x2->delete_flag << std::endl;
-        
+
         filtp_x2->delete_flag = true;
-        
+
         //std::cout << "x2 is max " << std::endl;
         LengthType const debug_test = (*filtp_x2).ptr_to_exact->get_norm2();
         //std::cout << "debug_test = " << debug_test << std::endl;
@@ -242,9 +242,9 @@ start_over:
       }
       ++filtp_x2;
       //continue;
-      
+
     } // while-loop over filtered_list
-  
+
     // add x1 into filtered_list in case it was not reduced
     filtered_list.emplace_back(it_x1, sign_px1, is_p_max, cond_x1, 2*abs(sc_prod_px1) );
     ++it_x1;
