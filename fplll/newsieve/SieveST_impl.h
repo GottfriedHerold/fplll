@@ -98,6 +98,8 @@ template <class SieveTraits> void Sieve<SieveTraits, false>::run()
     assert(false);
   }
   sieve_status = SieveStatus::sieve_status_finished;
+
+
 }
 
 /*

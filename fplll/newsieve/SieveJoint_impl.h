@@ -306,6 +306,49 @@ void Sieve<SieveTraits,GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED>::increase_progres
   ++(this->progressive_rank);
   std::cout << "Progressive rank = " << this->progressive_rank << std::endl;
   std::cout << "#collisions: " << statistics.number_of_collisions << std::endl;
+  std::cout << "Current list size:" << statistics.get_current_list_size() << std::endl;
+  /*
+  #ifdef DEBUG_STRANGE_BEHAVIOUR
+  if(this->progressive_rank == 37)
+  {
+//    for (auto it = main_list.cbegin(); it!=main_list.cend();++it)
+//    {
+//      std::cout << *it << std::endl;
+//    }
+
+    for(auto i = 0; i < 5; ++i) std::cout << std::endl;
+    std::cout << "Current list size:" << statistics.get_current_list_size() << std::endl;
+    std::cout << "TESTING ALL PAIRS" << std::endl;
+
+    long int N1 = 0;
+    long int N2 = 0;
+
+    for(auto it1 = main_list.cbegin(); it1!=main_list.cend();++it1)
+    {
+      for(auto it2 = main_list.cbegin(); it2!=main_list.cend();++it2)
+      {
+        if (it1 == it2) continue;
+        if ( ((*it1) + (*it2)) < (*it1) )
+        {
+//          std::cout << "Unused + reduction detected!" << std::endl;
+          ++N1;
+        }
+        if ( ((*it1) - (*it2)) < (*it1) )
+        {
+//          std::cout << "Unused - reduction detected!" << std::endl;
+//          std::cout << *it1 << "-" << std::endl;
+//          std::cout << *it2 << "=" << std::endl;
+//          std::cout << (*it1 - *it2) << std::endl << std::endl;
+          ++N2;
+        }
+      }
+
+    }
+    std::cout << "Missed + reds:" << N1 << std::endl;
+    std::cout << "Missed - reds:" << N2 << std::endl;
+  }
+  #endif
+*/
 
   if (this->get_progressive_rank() == this->get_lattice_rank())
   {
