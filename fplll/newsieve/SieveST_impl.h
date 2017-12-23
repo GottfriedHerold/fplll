@@ -234,7 +234,7 @@ template <class SieveTraits> void Sieve<SieveTraits, false>::run_3_sieve_vec()
 #endif
 
 /*
- runs 3-Sieve; after every print_step_2sieve sieve iterations, prints statistics
+ runs 3-Sieve; after every print_step_3sieve sieve iterations, prints statistics
  */
 
 

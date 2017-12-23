@@ -37,9 +37,9 @@ GaussQueue<SieveTraits, false>::GaussQueue(Sieve<SieveTraits, false> *const call
     //  because we use the very same seed elsewhere as well (Think of sees_seq as a Hash)
     std::seed_seq seed{83, 65, 77, 80, 76, 69, 82, seed_sampler};
     DEBUG_SIEVE_TRACEINITIATLIZATIONS("Initializing our own sampler. Using GPVSamplerExtended")
-//    sampler = new GPVSamplerExtended<SieveTraits, false, std::mt19937_64, std::seed_seq>(seed, caller_sieve->get_ambient_dimension() / 3 );
+    sampler = new GPVSamplerExtended<SieveTraits, false, std::mt19937_64, std::seed_seq>(seed, caller_sieve->get_ambient_dimension() / 3 );
 //    sampler = new GPVSampler<SieveTraits, false, std::mt19937_64, std::seed_seq>(seed );
-    sampler = new UniformSampler<SieveTraits, false, std::mt19937_64, std::seed_seq>(seed,2);
+//     sampler = new UniformSampler<SieveTraits, false, std::mt19937_64, std::seed_seq>(seed,2);
   }
   assert(sampler != nullptr);
 }

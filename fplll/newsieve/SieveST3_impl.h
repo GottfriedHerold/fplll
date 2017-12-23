@@ -45,6 +45,7 @@ start_over:
     LengthType cond_x1 = 0;
     if(check2red_max_for_3red(p, it_x1, scalar, sc_prod_px1, cond_x1, is_p_max))
     {
+      statistics.increment_number_of_2reds();
       if (is_p_max)
       {
         p.sub_multiply(*it_x1, scalar);

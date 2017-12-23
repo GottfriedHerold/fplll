@@ -247,7 +247,7 @@ public:
     {
       // when progressive_rank == i+1;
       // GSO.ger_root_det (supposedly) returns the determinant of (i+1)-dim. sublattice
-      progressive_bounds[i] =0.0644 * (i+1) * convert_to_double(  GSO.get_root_det(0, i+1).get_d() );
+      progressive_bounds[i] =0.0664 * (i+1) * convert_to_double(  GSO.get_root_det(0, i+1).get_d() );
       //std::cout << "progressive_bounds[i] = " << progressive_bounds[i] << std::endl;
     }
   }

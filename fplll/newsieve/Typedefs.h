@@ -36,7 +36,8 @@ long double constexpr pi      = 3.1415926535897932384626433832795028841971693993
 //double constexpr list_size_k3 = 0.1887218757;
 //double constexpr list_size_k4 = 0.1723692862;
 double constexpr list_size_k2 = 1.3;
-double constexpr list_size_k3 = 1.299038106;
+//double constexpr list_size_k3 = 1.299038106;
+double constexpr list_size_k3 = 1.25;
 
 // forward-declarations:
 template <class ET, int nfixed> class MyLatticePoint;
@@ -120,8 +121,8 @@ public:
   constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_2sieve_ub = {{64+12}}; //+9, 64+18}};
 
   // for 3-sieve: outer loop
-  constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_3sieve_lb_out = {{64-14}}; //, 64-11}};
-  constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_3sieve_ub_out = {{64+14}}; //, 64+11}};
+  constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_3sieve_lb_out = {{64-10}}; //, 64-11}};
+  constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_3sieve_ub_out = {{64+10}}; //, 64+11}};
 
   // for 3-sieve: outer loop
   constexpr static std::array<unsigned int, sim_hash_num> threshold_lvls_3sieve_lb_inn = {{64-10}}; //, 64-6}};
@@ -135,10 +136,10 @@ public:
   // clang-format on
 
   // for 3-sieve exact check, squared, normalized
-  // constexpr static double x1x2_target = .1111;
-  // constexpr static double x2x3_target = .1111;
-  constexpr static double x1x2_target = .0911;
-  constexpr static double x2x3_target = .0911;
+   constexpr static double x1x2_target = .1111;
+   constexpr static double x2x3_target = .1111;
+  // constexpr static double x1x2_target = .0911;
+  // constexpr static double x2x3_target = .0911;
 
   /* for printing routines */
   // print after every print_step_*sieve iterations

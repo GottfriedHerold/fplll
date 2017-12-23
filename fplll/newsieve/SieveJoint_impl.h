@@ -272,13 +272,13 @@ bool Sieve<SieveTraits,GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED>::check_if_enough_
   unsigned long int const expected_list_size = std::pow(this->get_target_list_size(), static_cast<double>( this->get_progressive_rank() / 2 ) );
 
   // we want to have at least expected_list_size-many vectors of norm (squared) 4/3 * expected_list_size[i]
-  double norm_bound = 1.3333 * lattice_basis.progressive_bounds[this->get_progressive_rank()]; //TODO: adjust to 3-sieve
+  double norm_bound = 1.333 * lattice_basis.progressive_bounds[this->get_progressive_rank()]; //TODO: adjust to 3-sieve
 
   //std::cout << "norm_bound " << norm_bound << std::endl;
   unsigned long int N = 0;
   for (auto it = main_list.cbegin(); it != main_list.cend(); ++it)
   {
-    assert(it->get_norm2()!=0);
+    //assert(it->get_norm2()!=0);
     if (it->get_norm2() < norm_bound)
     {
         ++N;
@@ -305,8 +305,8 @@ void Sieve<SieveTraits,GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED>::increase_progres
   assert(this->progressive_rank < this->get_lattice_rank());
   ++(this->progressive_rank);
   std::cout << "Progressive rank = " << this->progressive_rank << std::endl;
-  std::cout << "#collisions: " << statistics.number_of_collisions << std::endl;
-  std::cout << "Current list size:" << statistics.get_current_list_size() << std::endl;
+  //std::cout << "#collisions: " << statistics.number_of_collisions << std::endl;
+  //std::cout << "Current list size:" << statistics.get_current_list_size() << std::endl;
   /*
   #ifdef DEBUG_STRANGE_BEHAVIOUR
   if(this->progressive_rank == 37)

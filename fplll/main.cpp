@@ -134,13 +134,18 @@ template <> int bkz(Options &o, ZZ_mat<mpz_t> &b)
     param.flags |= BKZ_NO_LLL;
 
   status = bkz_reduction(&b, strchr(format, 'u') ? &u : NULL, param, o.float_type, o.precision);
+  std::cout << b[0] << std::endl;
+  Z_NR<mpz_t> norm2;
+  //dot_product(norm2, b[0], b[0]);
+  b[0].dot_product(norm2, b[0]);
+  std::cout << "b[0].norm2() = " << norm2 << std::endl;
 
   for (int i = 0; format[i]; i++)
   {
     switch (format[i])
     {
     case 'b':
-      cout << b << endl;
+      //cout << b << endl;
       break;
     case 'u':
       cout << u << endl;
@@ -304,6 +309,7 @@ template <class ZT> int run_action(Options &o)
     result = hkz(o, m);
     break;
   case ACTION_BKZ:
+    std::cout<<"ACTION_BKZ." <<  std::endl;
     result = bkz(o, m);
     break;
   default:
