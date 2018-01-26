@@ -186,22 +186,25 @@
 
 /**
   Replacements for C++14 (and beyond) standard library features that are missing in C++11.
-  See the C++ - documentation for their meaning.
+  Since these are all documented in the C++ standard, we do give much explanation and refer to the
+  C++ - documentation (which is much better, anyway).
+  In general, mystd::foo mimicks std::foo.
 */
 
 namespace GaussSieve
 {
 namespace mystd
 {
-// some often-used shorthands to avoid having to use typename ...
-// completely identical to the corresponding std::conditonal_t etc.
+// some often-used shorthands to avoid having to use typename (my)std::foo<Bar>::type
+// we use (my)std::foo_t<Bar> instead
+// completely identical to the corresponding std:: definitions.
 // clang-format off
 template<bool b, class T, class F> using conditional_t   = typename std::conditional<b, T, F>::type;
 template<class T>                  using decay_t         = typename std::decay<T>::type;
 template<bool b>                   using bool_constant   = std::integral_constant<bool,b>;
 template<bool b, class T = void>   using enable_if_t     = typename std::enable_if<b, T>::type;
 template<class T>                  using make_unsigend_t = typename std::make_unsigned<T>::type;
-// clang-format o
+// clang-format on
 
 // std::max is not (and can't be) constexpr until C++14 (where the def. of constexpr was relaxed).
 // This version is always constexpr, but does not support custom comparators or initializer lists.
