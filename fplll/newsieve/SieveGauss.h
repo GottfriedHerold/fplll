@@ -1,6 +1,7 @@
 // clang-format off
 // turned off for this file, which is only preprocessor stuff
-// because we want to have proper indentation for this file.
+// because we want to have proper indentation for preprocessor #if's in this file.
+// (ideally, we would want to use different clang-settings for this file)
 
 /**
   Include this file to use the k-tuple GaussSieve for arbitrary template parameters.
@@ -26,7 +27,7 @@ If neither is set, we fall back to a default (which is "both")
 // temporary, for as long as we do not support multithreaded variant.
 #define SIEVE_GAUSS_SINGLE_THREADED
 #ifdef SIEVE_GAUSS_MULTI_THREADED
-#error not supported yet
+  #error not supported yet
 #endif
 
 
@@ -56,10 +57,9 @@ If neither is set, we fall back to a default (which is "both")
 // SieveJoint.h and SieveJoint_impl.h are designed in a way that allows them to be included twice
 // with a different value of this macro.
 
-#ifdef  GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED
-  #error Must never happen
+#ifdef GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED
+  #error Macro already defined. This must never happen.
 #endif
-
 
 #ifdef SIEVE_GAUSS_SINGLE_THREADED
   #define GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED false
@@ -96,12 +96,11 @@ using SieveMT = Sieve<DefaultSieveTraits,CoefficientType, true, -1>, true>;
 }  // end namespace GaussSieve
 
 
-// #if 0 decativated in Sieve.h, activated in the others
-// (We still indent)
+#if 1 // decativated in Sieve.h, activated in the others
 
- /**
+  /**
     Single-threaded-only implementation files
- */
+  */
   #ifdef SIEVE_GAUSS_SINGLE_THREADED
     #define GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED false
     #include "SieveJoint_impl.h"
@@ -133,7 +132,7 @@ using SieveMT = Sieve<DefaultSieveTraits,CoefficientType, true, -1>, true>;
   #include "UniformSampler_impl.h"
   #include "GPVSamplerExtended_impl.h"
 
-// #endif // of if 0 block for the Sieve.h file
+#endif // of if 0/1 block.
 
 // Sieve.cpp has explicit instantiation, Sieve.h has extern template.
 // We have nothing: We implicitly instatiatiate exactly what we need.
