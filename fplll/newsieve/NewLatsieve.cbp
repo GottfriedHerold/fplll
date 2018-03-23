@@ -42,6 +42,8 @@
 		<Unit filename="PointWithBitapprox.h" />
 		<Unit filename="Sampler.h" />
 		<Unit filename="Sampler_impl.h" />
+		<Unit filename="Sieve.cpp" />
+		<Unit filename="Sieve.h" />
 		<Unit filename="SieveGauss.h" />
 		<Unit filename="SieveJoint.h" />
 		<Unit filename="SieveJoint_impl.h" />
@@ -49,6 +51,7 @@
 		<Unit filename="SieveST3_impl.h" />
 		<Unit filename="SieveST_impl.h" />
 		<Unit filename="SieveUtility.h" />
+		<Unit filename="Sieve_templ.h" />
 		<Unit filename="SimHash.h" />
 		<Unit filename="Statistics.h" />
 		<Unit filename="TerminationConditions.h" />
