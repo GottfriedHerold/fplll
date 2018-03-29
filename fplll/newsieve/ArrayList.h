@@ -2,6 +2,7 @@
 #define ARRAY_LIST_H
 
 #include "DefaultIncludes.h"
+#include <new>
 
 namespace GaussSieve
 {
@@ -27,7 +28,7 @@ namespace ArrayListDetails
 // Our doubly-linked list nodes (i.e. blocks of the array list) consist of 2 parts:
 // The linked-list (meta)data structure and the payload data (a cstyle-array/pointer in our case)
 // We use a generic head class for the meta-data; to create the node class, we inherit from it.
-// The advantage is that this setup is that the meta-data does not depend on template paramters.
+// The advantage of this setup is that the meta-data does not depend on template paramters.
 // The next / prev pointer only point to the base class.
 // As a consequence, we can in principle have linked lists whose payload data type differs among
 // nodes; in particular, we may use a different payload for the sentinel nodes.
@@ -45,9 +46,9 @@ class LinkedListNodeMeta
   LinkedListNodeMeta* prev;  // pointer to previous block.
   unsigned int used_size;     // number of actual data used in the block. 0 for the sentinel.
                              // (so also act as an indicator whether this is the sentinel block.)
-  explicit LinkedListNodeMeta(LinkedListNodeMeta * const new_next = nullptr,
-                              LinkedListNodeMeta * const new_prev = nullptr,
-                              unsigned int const new_used_size = 0)
+  explicit constexpr LinkedListNodeMeta(LinkedListNodeMeta * const new_next = nullptr,
+                                        LinkedListNodeMeta * const new_prev = nullptr,
+                                        unsigned int const new_used_size = 0) noexcept
   : next(new_next), prev(new_prev), used_size(new_used_size)
   {
   }
@@ -85,7 +86,7 @@ public:
   using reference = T&;
   using const_reference = T const &;
 
-  explicit ArrayList() noexcept : LinkedListNodeMeta(this, this, 0), total_size(0) {}
+  explicit constexpr ArrayList() noexcept : LinkedListNodeMeta(this, this, 0), total_size(0) {}
   ArrayList(ArrayList const &) = delete;
   ArrayList(ArrayList &&) = default;
 
@@ -111,6 +112,10 @@ private:
   size_type total_size;
   using Base = ArrayListDetails::LinkedListNodeMeta;
 
+  // inserts a new block between the given nodes.
+  // We assert that before and after are adjacent nodes
+  // Node: The newly created block is empty. Hence, the data structure is in an invalid state
+  // after calling this function!
   Base* insert_block_between(Base &before, Base &after)
   {
 #ifdef DEBUG_SIEVE_ARRAYLIST
