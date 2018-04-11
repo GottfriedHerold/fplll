@@ -156,7 +156,54 @@ public:
   {
   }
 
-};
+  // test whether the iterator is an end-iterator.
+  constexpr bool is_end() const noexcept
+  {
+    return dataptr == nullptr;
+  }
+
+  bool operator==(ArrayListConstIterator const &) = delete;
+  bool operator!=(ArrayListConstIterator const &) = delete;
+
+  // prefix version:
+  ArrayListConstIterator &operator++()
+  {
+    if(index > 0) // not at end of block.
+    {
+      --index; // recall that index counts downwards
+      return *this;
+    }
+    else // jump to next block
+    {
+      *this = ArrayListConstIterator{nodeptr->next};
+      return *this;
+    }
+  }
+  ArrayListConstIterator operator++(int)
+  {
+    ArrayListConstIterator ret(*this);
+    ++ (*this);
+    return ret;
+  }
+
+  T const &operator*() const
+  {
+#ifdef DEBUG_SIEVE_ARRAYLIST
+    assert(!is_end());
+    assert(index < nodeptr->used_size);
+#endif
+    return *(dataptr + index);
+  }
+
+  T const *operator->() const
+  {
+#ifdef DEBUG_SIEVE_ARRAYLIST
+    assert(!is_end());
+    assert(index < nodeptr->used_size);
+#endif
+    return (dataptr + index);
+  }
+};  // end of ArrayListConstIterator
 
 template<class T, unsigned int blocksize>
 class ArrayList: ArrayListDetails::LinkedListNodeMeta
@@ -258,15 +305,15 @@ private:
   // We assert that before and after are adjacent nodes
   // Note: The newly created block is empty. Hence, the data structure is in an invalid state
   // after calling this function!
-  Base* insert_block_between(Base &before, Base &after)
+  Base* insert_block_between(Base *before, Base *after)
   {
 #ifdef DEBUG_SIEVE_ARRAYLIST
-    assert(before.next == after);
-    assert(after.prev  == before);
+    assert(before->next == after);
+    assert(after->prev  == before);
 #endif
-    ArrayListDetails::ArrayListBlock<T,blocksize> * new_block = new ArrayListDetails::ArrayListBlock<T,blocksize> {&after, &before, 0};
-    before.next = new_block;
-    after.prev  = new_block;
+    Block * new_block = new Block {after, before, 0};
+    before->next = new_block;
+    after ->prev = new_block;
     return new_block;
   }
 };
