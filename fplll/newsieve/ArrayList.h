@@ -3,6 +3,7 @@
 
 #include "DefaultIncludes.h"
 #include <new>
+#include <cstdlib>
 
 namespace GaussSieve
 {
@@ -38,9 +39,9 @@ namespace ArrayListDetails
 // with keeping the data directly inside the nodes, in which case it makes a difference if
 // totalsize/blocksize is small. In particular, the efficiency should actually match that of a
 // plain c-style array in the limiting case.)
-class LinkedListNodeMeta;
+struct LinkedListNodeMeta;
 
-class LinkedListNodeMeta
+struct LinkedListNodeMeta
 {
   LinkedListNodeMeta* next;  // pointer to next block.
   LinkedListNodeMeta* prev;  // pointer to previous block.
@@ -55,10 +56,34 @@ class LinkedListNodeMeta
 };
 
 template<class T, unsigned int blocksize>
-class ArrayListBlock : LinkedListNodeMeta
+class ArrayListBlock : public LinkedListNodeMeta
 {
   static_assert(blocksize > 0, "");
-  T *data;  // C-array
+  // C-array or raw memory block.
+  // At any rate, allocation / deallocation is part of the constructor
+public:
+  void *memory_buf;
+  template<class... Args>
+  explicit constexpr ArrayListBlock(Args&&... args)
+    : LinkedListNodeMeta(std::forward<Args>(args)...)
+  {
+    // Note: C++11 does not have aligned versions.
+    memory_buf = std::malloc(sizeof(T)*blocksize);
+  }
+
+  ~ArrayListBlock()
+  {
+#ifdef DEBUG_SIEVE_ARRAYLIST
+    assert(LinkedListNodeMeta::used_size > 0);
+#endif
+    // Note: This will destruct objects constructed in-place, but NOT in the order of construction
+    // (which we do not know about, anyway)
+    for(unsigned int i = 0; i < LinkedListNodeMeta::used_size; ++i)
+    {
+      reinterpret_cast<T*>(memory_buf)[LinkedListNodeMeta::used_size - i].~T();
+    }
+    std::free(memory_buf);
+  }
 };
 
 }  // end namespace ArrayListDetails
@@ -70,12 +95,79 @@ class ArrayListConstIterator
   T *dataptr;  // dataptr (nullptr for end-iterator)
   ArrayListDetails::LinkedListNodeMeta* nodeptr; // pointer to relevant node
   static_assert(blocksize > 0, "");
+
+  ArrayListConstIterator() = delete;  // no default constructor. Iterator always has to point somewhere
+
+  /**
+    NOTE: the assignment to dataptr probably needs a std::launder.
+    Even with it, it may well be UB.
+    ( The problem is a mismatch of C++'s abstract object model and naive memory manipulation.
+      The issue is that the objects of type T that are dereferenced are not dereferenced via the
+      same pointer that is used to construct them. The usual ways to solve involve
+      - using the returned pointer from placement-new.
+      - std::launder.
+    Unfortunately, std::launder is a c++17 extension (and I have no idea whether it even CAN be
+    implemented without a builtin) and placement-new for ARRAYS is essentially useless
+    ( A known problem with the C++ language, see CWG issue #476 ).
+    The latter issue means that we have to placement-new construct each *individual* array element
+    at a position that is computed from the begin of the memory-buf.
+    i.e. construct the i'th element as (essentially)
+    ptr_to_ith_element = new(memory_buf + (i-1)*sizeof(T) ) T;
+    While we are guaranteed that ptr_to_ith_element and memory_buf+(i-1)*sizeof(T) are essentially
+    the same (in the sense that they can be adequately cast'ed), in the C++ - object model, the only
+    standard-conforming way to access the newly constructed element is via ptr_to_ith_element.
+    ( at least according to my (Gottfried's) understanding; note that such problems actually exist
+    INSIDE STL ).
+    But of course we do not store these, as they can be computed from memory_buf.
+    A better way would be to use the std::uninitialized_foo routines from STL <memory>, but these
+    lack some features pre-C++ 17
+  */
+
+public:
+
+  //  constructs an iterator to the first element in the block pointer to by new_nodeptr
+  explicit ArrayListConstIterator(ArrayListDetails::LinkedListNodeMeta* const new_nodeptr) noexcept
+  : nodeptr(new_nodeptr)
+  {
+    if (nodeptr->used_size > 0)
+    {
+      dataptr = reinterpret_cast<T*> (static_cast< ArrayListDetails::ArrayListBlock<T, blocksize>* >(nodeptr)->memory_buf);
+      index   = nodeptr->used_size - 1;
+    }
+    else // past-the end or before-begin iterator
+    {
+      dataptr = nullptr;
+      index   = 0;
+    }
+  }
+
+  // constructs an iterator to the new_index'th element in the block pointed to by new_nodeptr
+  // This constructor asserts that the block is NOT the sentinel block.
+  // Remember that index counts backwards (so new_index == 0 corresponds to the LAST element)
+  explicit ArrayListConstIterator(ArrayListDetails::LinkedListNodeMeta* const new_nodeptr, unsigned int const new_index) noexcept
+  : index(new_index),
+    dataptr(reinterpret_cast<T*>(static_cast< ArrayListDetails::ArrayListBlock<T, blocksize>* >(new_nodeptr)->memory_buf)),
+    nodeptr(new_nodeptr)
+  {
+  }
+
+  explicit ArrayListConstIterator(ArrayListDetails::LinkedListNodeMeta* const new_nodeptr, unsigned int const new_index, T * const new_dataptr)
+  : index(new_index), dataptr(new_dataptr), nodeptr(new_nodeptr)
+  {
+  }
+
 };
 
 template<class T, unsigned int blocksize>
 class ArrayList: ArrayListDetails::LinkedListNodeMeta
 {
   static_assert(blocksize > 0, "");
+  using ArrayListDetails::LinkedListNodeMeta::next;
+  using ArrayListDetails::LinkedListNodeMeta::prev;
+  using ArrayListDetails::LinkedListNodeMeta::used_size;
+  using Base = ArrayListDetails::LinkedListNodeMeta;
+  using Block = ArrayListDetails::ArrayListBlock<T, blocksize>;
+
   // creates an empty array list
 
 public:
@@ -90,15 +182,62 @@ public:
   ArrayList(ArrayList const &) = delete;
   ArrayList(ArrayList &&) = default;
 
-  reference front() = delete;
-  const_reference front() const = delete;
-  reference back()  = delete;
-  const_reference back() const = delete;
-  const_iterator cbegin() const noexcept = delete;
-  const_iterator cend()   const noexcept = delete;
-  NODISCARD bool empty() const noexcept = delete;
+  reference front()
+  {
+#ifdef DEBUG_SIEVE_ARRAYLIST
+    assert(next != nullptr);
+    assert(static_cast<Block*>(next)->used_size > 0);
+    assert(static_cast<Block*>(next)->mem_buf != nullptr);
+#endif
+    return *(reinterpret_cast<T*>( (static_cast<Block*>(next)->memory_buf)) + static_cast<Block*>(next)->used_size - 1);
+  }
+
+  const_reference front() const
+  {
+#ifdef DEBUG_SIEVE_ARRAYLIST
+    assert(next != nullptr);
+    assert(static_cast<Block*>(next)->used_size > 0);
+    assert(static_cast<Block*>(next)->mem_buf != nullptr);
+#endif
+    return *(reinterpret_cast<T const*>( (static_cast<Block*>(next)->memory_buf)) + static_cast<Block*>(next)->used_size - 1);
+  }
+
+  reference back()
+  {
+#ifdef DEBUG_SIEVE_ARRAYLIST
+    assert(prev != nullptr);
+    assert(static_cast<Block*>(prev)->used_size > 0);
+    assert(static_cast<Block*>(prev)->memory_buf != nullptr);
+#endif
+    return *reinterpret_cast<T*>( static_cast<Block*>(prev)->memory_buf);
+  }
+
+  const_reference back() const
+  {
+#ifdef DEBUG_SIEVE_ARRAYLIST
+    assert(prev != nullptr);
+    assert(static_cast<Block*>(prev)->used_size > 0);
+    assert(static_cast<Block*>(prev)->memory_buf != nullptr);
+#endif
+    return *reinterpret_cast<T const*>( static_cast<Block*>(prev)->memory_buf);
+  }
+
+  const_iterator cbegin() noexcept
+  {
+#ifdef DEBUG_SIEVE_ARRAYLIST
+    assert(next != nullptr);
+#endif
+    return ArrayListConstIterator<T, blocksize>{next};
+  }
+
+  const_iterator cend() noexcept
+  {
+    return get_sentinel_iterator_const();
+  }
+
+  NODISCARD bool empty() const noexcept { return total_size == 0; }
   size_type size() const noexcept { return total_size; }
-  void clear() noexcept = delete;
+  void clear() noexcept = delete;  // not implemented yet
   // insert and insert_after
   // emplace ???
   // erase
@@ -107,14 +246,17 @@ public:
   // pop_back : replace by true_pop_back
   // sort
 
-
 private:
   size_type total_size;
-  using Base = ArrayListDetails::LinkedListNodeMeta;
+
+  constexpr const_iterator get_sentinel_iterator_const() noexcept
+  {
+    return ArrayListConstIterator<T, blocksize>{this, 0, nullptr};
+  }
 
   // inserts a new block between the given nodes.
   // We assert that before and after are adjacent nodes
-  // Node: The newly created block is empty. Hence, the data structure is in an invalid state
+  // Note: The newly created block is empty. Hence, the data structure is in an invalid state
   // after calling this function!
   Base* insert_block_between(Base &before, Base &after)
   {
@@ -122,11 +264,12 @@ private:
     assert(before.next == after);
     assert(after.prev  == before);
 #endif
-
+    ArrayListDetails::ArrayListBlock<T,blocksize> * new_block = new ArrayListDetails::ArrayListBlock<T,blocksize> {&after, &before, 0};
+    before.next = new_block;
+    after.prev  = new_block;
+    return new_block;
   }
 };
-
-
 
 //namespace ArrayListDetails
 //{

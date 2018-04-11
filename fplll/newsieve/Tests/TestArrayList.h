@@ -3,6 +3,8 @@
 
 #include "../ArrayList.h"
 
+template class GaussSieve::ArrayList<int, 100>;
+
 bool test_array_list()
 {
   return true;
