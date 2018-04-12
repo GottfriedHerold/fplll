@@ -15,6 +15,7 @@
 		</Build>
 		<Unit filename="../nr/numvect.h" />
 		<Unit filename="ArrayList.h" />
+		<Unit filename="ArrayList_impl.h" />
 		<Unit filename="BlockOrthogonalSimHash.h" />
 		<Unit filename="BlockOrthogonalSimHash_impl.h" />
 		<Unit filename="Compat.h" />
