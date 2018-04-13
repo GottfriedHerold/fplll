@@ -194,6 +194,14 @@ public:
   NODISCARD constexpr unsigned long get_num_blocks() const noexcept { return num_blocks; }
 
   void clear() noexcept = delete;  // not implemented yet
+  // inserts a copy of T before pos. pos is modified to account for memory adjustments.
+  // return value is an iterator to the newly inserted element
+
+//  const_iterator insert(const_iterator &pos, T const &value);
+
+  template<class... Args>
+  const_iterator emplace(const_iterator &pos, Args&&... args);
+
   // insert and insert_after
   // emplace ???
   // erase
@@ -227,6 +235,7 @@ private:
   // Takes an iterator to a NON-FULL non-sentinel block and an index that should become the gap.
   // return value is an "iterator" to the gap
   inline const_iterator create_gap_at(const_iterator &pos, unsigned int gap_index);
+  inline void remove_empty_block(Block* block);
 
 
   // inserts a new block between the given nodes.

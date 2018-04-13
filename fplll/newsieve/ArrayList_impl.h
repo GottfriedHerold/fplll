@@ -385,6 +385,10 @@ inline auto ArrayList<T, blocksize>::split_full_block_for_insert_after(const_ite
   }
 }
 
+/**
+  Shift data around to create a gap in a given block.
+*/
+
 template<class T, unsigned int blocksize>
 inline auto ArrayList<T, blocksize>::create_gap_at(const_iterator &pos, unsigned int gap_index) -> const_iterator
 {
@@ -406,7 +410,65 @@ inline auto ArrayList<T, blocksize>::create_gap_at(const_iterator &pos, unsigned
   {
     ++pos.index;
   }
+  ++total_size;
   return ArrayListConstIterator<T, blocksize>{pos.nodeptr, gap_index, pos.dataptr};
+}
+
+/**
+  Removes an empty block
+*/
+
+template<class T, unsigned int blocksize>
+inline void ArrayList<T,blocksize>::remove_empty_block(Block* block)
+{
+#ifdef DEBUG_SIEVE_ARRAYLIST
+  assert(block->used_size == 0);
+#endif
+  block->prev->next = block->next;
+  block->next->prev = block->prev;
+  delete block;
+  --num_blocks;
+}
+
+template<class T, unsigned int blocksize>
+template<class... Args>
+inline auto ArrayList<T,blocksize>::emplace(const_iterator &pos, Args&& ...args) -> const_iterator
+{
+  // Case 1 : There is still space inside the current node.
+  // Note that this condition implies that we are not at the sentinel nodes, because
+  // these have used_size > blocksize
+  if(pos.nodeptr->used_size < blocksize)
+  {
+#ifdef DEBUG_SIEVE_ARRAYLIST
+    assert(pos.dataptr != nullptr);
+    assert(pos.dataptr == reinterpret_cast<T*>(static_cast<Block*>(pos.nodeptr)->memory_buf) );
+#endif
+    auto retval = create_gap_at(pos, pos.index + 1);
+    ::new(retval.dataptr + retval.index) T (std::forward<Args>(args)...);
+    return retval;
+  }
+  else if(pos.nodeptr->used_size <= blocksize) // full block
+  {
+    auto retval = split_full_block_for_insert_before(pos);
+    ::new(retval.dataptr + retval.index) T (std::forward<Args>(args)...);
+    return retval;
+  }
+  else // sentinel block, i.e. we insert at the END of the list
+  {
+    if(total_size == 0) // yet-empty-list
+    {
+      assert(pos.nodeptr == this);
+      assert(next == this);
+      assert(next == this);
+      assert(num_blocks==0);
+
+      Block * new_block = insert_block_between(this, this);
+      ::new(new_block->memory_buf) T (std::forward<Args>(args)...);
+      new_block->used_size = 1;
+      total_size = 1;
+
+    }
+  }
 }
 
 } // end namespace GaussSieve
