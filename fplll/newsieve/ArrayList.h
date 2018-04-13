@@ -211,15 +211,20 @@ private:
 
   /**
     rebalancing utility operations:
+    These adjust num_blocks, total_size, used_size (i.e. the gap they create counts towards the
+    statistics data).
   */
 
   // Takes an iterator pos to a FULL non-sentinel block as input.
   // This block is split into 2 blocks (of half the input block size).
   // pos is modified to maintain its validity.
   // This function also moves memory around to create a "gap" of initialized memory
-  // before pos, to which an "iterator" (pointing to unitialized memory) is returned.
+  // before/after pos, to which an "iterator" (pointing to unitialized memory) is returned.
   // Note: the position where the split occurs differs from pos.
   inline const_iterator split_full_block_for_insert_before(const_iterator &pos);
+  inline const_iterator split_full_block_for_insert_after (const_iterator &pos);
+
+  // Takes an iterator to a NON-FULL non-sentinel block
 
   // inserts a new block between the given nodes.
   // We assert that before and after are adjacent nodes

@@ -209,35 +209,45 @@ constexpr auto ArrayList<T, blocksize>::get_sentinel_iterator_const() noexcept -
   return ArrayListConstIterator<T, blocksize>{this, 0, nullptr};
 }
 
+/**
+  split full block into two, insert and return gap BEFORE pos.
+  pos is adjusted to account for memory movement.
+*/
+
+
 template<class T, unsigned int blocksize>
 inline auto ArrayList<T, blocksize>::split_full_block_for_insert_before(const_iterator &pos) -> const_iterator
 {
-  Block & old_block = *static_cast<Block*>(pos.nodeptr);
+  Block * const old_block = static_cast<Block*>(pos.nodeptr);
   unsigned int const insertion_index = pos.index;
 #ifdef DEBUG_SIEVE_ARRAYLIST
-  assert(old_block.used_size == blocksize);
+  assert(old_block->used_size == blocksize);
 #endif
   // create new (empty) block preceding the current one.
-  Block * const new_block = insert_block_between(old_block.prev, &old_block);
+  Block * const new_block = insert_block_between(old_block->prev, old_block);
   static constexpr unsigned int new_size1 = (blocksize + 1)/2;  // new size of the old block
   static constexpr unsigned int new_size2 = blocksize + 1 - new_size1; // new size of the new block
   T * const old_mem = pos.dataptr;
   T * const new_mem = reinterpret_cast<T*>(new_block->memory_buf);
-  if(insertion_index >= new_size1-1)
+  old_block -> used_size = new_size1;
+  new_block -> used_size = new_size2;
+  ++total_size;
+  if(insertion_index >= new_size1-1) // gap will be in the new block
   {
     // old_block[0],...,old_block[new_size1 -1] can remain as they are.
     // old_block[newsize1], ... old_block[insertion_index] need to be moved into
-    //   new_block[0] ,..., new_block[insertion_index - newsize1]
-    // old_block[insertion_index+1],... need to be moved into
-    //   new_block[insertion_index - newsize1 + 2]
+    // ->new_block[0] ,..., new_block[insertion_index - newsize1]
+    // old_block[insertion_index+1],..., old_block[blocksize-1] need to be moved into
+    // ->new_block[insertion_index - newsize1 + 2], ..., new_block[blocksize+1 - newsize1 - 1]
     // Note that in the boundary case insertion_index == new_size1 - 1,
     // the insertion_index is the largest-index element in the old block, but the gap is in the new
     // block.
 #ifdef USE_MEMMOVE
     // UB, but probably works...
     // TODO: At least add some static_asserts
-    std::memcpy(new_mem, old_mem+new_size1, insertion_index-(new_size1-1) );
-    std::memcpy(new_mem+insertion_index + 2 - new_size1, old_mem + insertion_index + 1, blocksize - insertion_index - 1 );
+    std::memcpy(new_mem, old_mem+new_size1, sizeof(T)*(insertion_index-(new_size1-1)) );
+    std::memcpy(new_mem+insertion_index + 2 - new_size1, old_mem + insertion_index + 1,
+                sizeof(T)*(blocksize - insertion_index - 1 ));
 #else // ought to be equivalent
     for(unsigned int i=0; i < insertion_index - (new_size1 - 1); ++i )
     {
@@ -251,16 +261,129 @@ inline auto ArrayList<T, blocksize>::split_full_block_for_insert_before(const_it
       old_mem[i].~T();
     }
 #endif
+    if(insertion_index > new_size1 -1) // old_block[insertion_index] was moved into new_block
+    {
+      // adjust pos to refer to the same element as before the splitting
+      pos = ArrayListConstIterator<T, blocksize>{new_block,insertion_index-new_size1};
+    }  // else insertion_index == new_size1 - 1 and pos remains unchanged
+    // return position of gap
+    return ArrayListConstIterator<T, blocksize>{new_block,insertion_index - new_size1 + 1, new_mem};
+
   }
   else // i.e insertion_index < new_size1 - 1
   {
-    assert(false);
+    // old_block[0],..., old_block[insertion_index] can stay
+    // old_block[insertion_index+1], ..., old_block[new_size-2] need to be moved to
+    // ->old_block[insertion_index+2],..., old_block[new_size1-1]
+    // old_block[new_size1-1],...,old_block[blocksize-1] moves to
+    // ->new_block[0], ..., new_block[blocksize + 1 - new_size1 - 1] == new_block[new_size2-1]
+#ifdef USE_MEMMOVE
+    std::memcpy (new_mem, old_mem + new_size1 - 1, sizeof(T) * new_size2 );
+    std::memmove(old_mem + insertion_index + 2, old_mem+insertion_index + 1, sizeof(T) * (new_size1 - insertion_index - 2));
+#else
+    for(unsigned int i=0; i < new_size2; ++i)
+    {
+      ::new(new_mem + i) T (std::move(old_mem[new_size1 - 1 + i] ) );
+      old_mem[new_size1 - 1 + i].~T();
+    }
+    for(unsigned int i=new_size1 -1; i > insertion_index + 1; --i) // decreasing order!
+    {
+      ::new(old_mem + i) T (std::move(old_mem [i -1]));
+      old_mem[i-1].~T();
+    }
+#endif
+    // pos remains unchanged.
+    return ArrayListConstIterator<T, blocksize>{old_block, insertion_index + 1, old_mem};
   }
-  assert(false);
-  return pos; // TODO: Change
 }
 
+/**
+  split full block into two, insert and return gap AFTER pos.
+  pos is adjusted to account for memory movement.
+*/
 
+
+template<class T, unsigned int blocksize>
+inline auto ArrayList<T, blocksize>::split_full_block_for_insert_after(const_iterator &pos) -> const_iterator
+{
+  Block * const old_block = static_cast<Block*>(pos.nodeptr);
+  unsigned int const insertion_index = pos.index;
+#ifdef DEBUG_SIEVE_ARRAYLIST
+  assert(old_block->used_size == blocksize);
+#endif
+  // create new (empty) block preceding the current one.
+  Block * const new_block = insert_block_between(old_block->prev, old_block);
+  static constexpr unsigned int new_size1 = (blocksize + 1)/2;  // new size of the old block
+  static constexpr unsigned int new_size2 = blocksize + 1 - new_size1; // new size of the new block
+  T * const old_mem = pos.dataptr;
+  T * const new_mem = reinterpret_cast<T*>(new_block->memory_buf);
+  old_block -> used_size = new_size1;
+  new_block -> used_size = new_size2;
+  ++total_size;
+  if(insertion_index >= new_size1) // position of new gap is in the new block
+  {
+    // old_block[0],...,old_block[new_size1 -1] can remain as they are.
+    // old_block[newsize1], ... old_block[insertion_index-1] need to be moved into
+    // ->new_block[0] ,..., new_block[insertion_index - newsize1 -1]
+    // old_block[insertion_index],..., old_block[blocksize-1] need to be moved into
+    // ->new_block[insertion_index - newsize1 + 1], ..., new_block[blocksize+1 - newsize1 - 1]
+    // Gap is created at new_block[insertion_index - newsize1]
+    // pos needs to be adjusted
+#ifdef USE_MEMMOVE
+    std::memcpy(new_mem, old_mem+new_size1, sizeof(T)*(insertion_index-new_size1));
+    std::memcpy(new_mem+insertion_index + 1 - new_size1, old_mem + insertion_index,
+                sizeof(T)*(blocksize - insertion_index ));
+#else // ought to be equivalent
+    for(unsigned int i=0; i < insertion_index - new_size1; ++i )
+    {
+      ::new(new_mem+i) T (std::move(old_mem[new_size1 + i]));
+      old_mem[new_size1+i].~T();
+    }
+    for(unsigned int i=insertion_index; i < blocksize; ++i)
+    {
+      ::new(new_mem - new_size1 + i + 1) T (std::move(old_mem[i]));
+      old_mem[i].~T();
+    }
+#endif
+    pos = ArrayListConstIterator<T, blocksize>{new_block, insertion_index - new_size1 + 1, new_mem};
+    // return position of gap
+    return ArrayListConstIterator<T, blocksize>{new_block,insertion_index - new_size1, new_mem};
+  }
+  else // i.e insertion_index < new_size1
+  {
+    // old_block[0],..., old_block[insertion_index - 1] can stay
+    // old_block[insertion_index], ..., old_block[new_size -2]  move to
+    // ->old_block[insertion_index+1],..., old_block[new_size1-1]
+    // old_block[new_size1-1],...,old_block[blocksize-1] moves to
+    // ->new_block[0], ..., new_block[blocksize + 1 - new_size1 - 1] == new_block[new_size2-1]
+    // NOTE: In the limiting case insertion_index  = new_size1 - 1, insertion_index is moved into
+    // the new block by the 3rd case above!
+#ifdef USE_MEMMOVE
+    std::memcpy (new_mem, old_mem + new_size1 - 1, sizeof(T) * new_size2 );
+    std::memmove(old_mem + insertion_index + 1, old_mem+insertion_index, sizeof(T) * (new_size1 - insertion_index - 1));
+#else
+    for(unsigned int i = 0; i < new_size2; ++i)
+    {
+      ::new(new_mem + i) T (std::move(old_mem[new_size1 - 1 + i]));
+      old_mem[new_size1 -1 + i].~T();
+    }
+    for(unsigned int i = new_size1 -1; i > insertion_index; --i) // decreasing order!
+    {
+      ::new(old_mem + i) T (std::move(old_mem [i -1]));
+      old_mem[i-1].~T();
+    }
+#endif
+    if(insertion_index == new_size1 - 1)
+    {
+      pos = ArrayListConstIterator<T, blocksize>{new_block, 0, new_mem};
+    }
+    else
+    {
+      pos = ArrayListConstIterator<T, blocksize>{old_block, insertion_index + 1, old_mem};
+    }
+    return ArrayListConstIterator<T, blocksize>{old_block, insertion_index, old_mem};
+  }
+}
 
 } // end namespace GaussSieve
 
