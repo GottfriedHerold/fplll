@@ -224,7 +224,10 @@ private:
   inline const_iterator split_full_block_for_insert_before(const_iterator &pos);
   inline const_iterator split_full_block_for_insert_after (const_iterator &pos);
 
-  // Takes an iterator to a NON-FULL non-sentinel block
+  // Takes an iterator to a NON-FULL non-sentinel block and an index that should become the gap.
+  // return value is an "iterator" to the gap
+  inline const_iterator create_gap_at(const_iterator &pos, unsigned int gap_index);
+
 
   // inserts a new block between the given nodes.
   // We assert that before and after are adjacent nodes

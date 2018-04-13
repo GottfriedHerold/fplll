@@ -385,6 +385,30 @@ inline auto ArrayList<T, blocksize>::split_full_block_for_insert_after(const_ite
   }
 }
 
+template<class T, unsigned int blocksize>
+inline auto ArrayList<T, blocksize>::create_gap_at(const_iterator &pos, unsigned int gap_index) -> const_iterator
+{
+#ifdef DEBUG_SIEVE_ARRAYLIST
+  assert(pos.nodeptr -> used_size < blocksize);
+  assert(gap_index <= pos.nodeptr->used_size);
+  assert(pos.dataptr != nullptr);
+#endif
+#ifdef USE_MEMMOVE
+  std::memmove(pos.dataptr + gap_index + 1, pos.dataptr + gap_index, sizeof(T) * (pos.nodeptr->used_size - gap_index));
+#else
+  for(unsigned int i = pos.nodeptr->used_size; i>=gap_index + 1; --i)
+  {
+    ::new(pos.dataptr + i) T (pos.dataptr[i-1]);
+    pos.dataptr[i-1].~T();
+  }
+#endif
+  if(pos.index >= gap_index)
+  {
+    ++pos.index;
+  }
+  return ArrayListConstIterator<T, blocksize>{pos.nodeptr, gap_index, pos.dataptr};
+}
+
 } // end namespace GaussSieve
 
 
