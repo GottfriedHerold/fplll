@@ -50,9 +50,10 @@ CPP14CONSTEXPR bool is_a_power_of_two(Integer const n)
 template <class Arg1, class...>
 class GetFirstArg
 {
+  public:
   using type = Arg1;
 };
-template <class Arg1, class... Args> using GetFirstArg_t = GetFirstArg<Arg1, Args...>;
+template <class... Args> using GetFirstArg_t = typename GetFirstArg<Args...>::type;
 // clang-format on
 
 // class that ignores its argument. Can be used to optimize away unused parameters in function

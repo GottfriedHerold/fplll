@@ -411,6 +411,7 @@ inline auto ArrayList<T, blocksize>::create_gap_at(const_iterator &pos, unsigned
     ++pos.index;
   }
   ++total_size;
+  ++pos.nodeptr->used_size;
   return ArrayListConstIterator<T, blocksize>{pos.nodeptr, gap_index, pos.dataptr};
 }
 
@@ -432,13 +433,14 @@ inline void ArrayList<T,blocksize>::remove_empty_block(Block* block)
 
 template<class T, unsigned int blocksize>
 template<class... Args>
-inline auto ArrayList<T,blocksize>::emplace(const_iterator &pos, Args&& ...args) -> const_iterator
+inline auto ArrayList<T,blocksize>::emplace_before(const_iterator &pos, Args&& ...args) -> const_iterator
 {
   // Case 1 : There is still space inside the current node.
   // Note that this condition implies that we are not at the sentinel nodes, because
-  // these have used_size > blocksize
+  // then we would have used_size > blocksize
   if(pos.nodeptr->used_size < blocksize)
   {
+//    std::cout << "Normal Insert";
 #ifdef DEBUG_SIEVE_ARRAYLIST
     assert(pos.dataptr != nullptr);
     assert(pos.dataptr == reinterpret_cast<T*>(static_cast<Block*>(pos.nodeptr)->memory_buf) );
@@ -447,16 +449,19 @@ inline auto ArrayList<T,blocksize>::emplace(const_iterator &pos, Args&& ...args)
     ::new(retval.dataptr + retval.index) T (std::forward<Args>(args)...);
     return retval;
   }
-  else if(pos.nodeptr->used_size <= blocksize) // full block
+  else if(pos.nodeptr->used_size == blocksize) // full block
   {
+//    std::cout << "Full block Insert";
     auto retval = split_full_block_for_insert_before(pos);
     ::new(retval.dataptr + retval.index) T (std::forward<Args>(args)...);
     return retval;
   }
   else // sentinel block, i.e. we insert at the END of the list
   {
-    if(total_size == 0) // yet-empty-list
+    if(total_size == 0) // special case: yet-empty-list
     {
+//      std::cout << "Initial Insert";
+      // Checks that we really have an empty list.
       assert(pos.nodeptr == this);
       assert(next == this);
       assert(next == this);
@@ -466,7 +471,71 @@ inline auto ArrayList<T,blocksize>::emplace(const_iterator &pos, Args&& ...args)
       ::new(new_block->memory_buf) T (std::forward<Args>(args)...);
       new_block->used_size = 1;
       total_size = 1;
+      assert(num_blocks == 1); // set by insert_block_between
+      // pos is still valid. We return the nemly inserted element
+      return const_iterator{new_block, 0};
+    }
+    else // we move to the last block and insert there.
+    {
+//      std::cout << "Backed Insert";
+      // const_iterator{pos.nodeptr->prev, 0} is an iterator to the last actual element.
+      // Note that validity transformations to pos are unneeded.
+      auto it = const_iterator{pos.nodeptr -> prev, 0};
+      return emplace_after(it, std::forward<Args>(args)... );
+    }
+  }
+}
 
+template<class T, unsigned int blocksize>
+template<class... Args>
+inline auto ArrayList<T,blocksize>::emplace_after(const_iterator &pos, Args&& ...args) -> const_iterator
+{
+  // Case 1: There is still free space in the current node. Just use that one.
+  // (this implies that pos is no before-begin iterator)
+  if(pos.nodeptr->used_size < blocksize)
+  {
+//    std::cout << "BNormal Insert ";
+#ifdef DEBUG_SIEVE_ARRAYLIST
+    assert(pos.dataptr != nullptr);
+    assert(pos.dataptr == reinterpret_cast<T*>(static_cast<Block*>(pos.nodeptr)->memory_buf) );
+#endif
+    auto retval = create_gap_at(pos, pos.index );
+    ::new(retval.dataptr + retval.index) T (std::forward<Args>(args)...);
+    return retval;
+  }
+  else if(pos.nodeptr->used_size == blocksize) // full block
+  {
+//    std::cout << "BFull Insert";
+    auto retval = split_full_block_for_insert_after(pos);
+    ::new(retval.dataptr + retval.index) T (std::forward<Args>(args)...);
+    return retval;
+  }
+  else // sentinel block, i.e. we insert at the END of the list
+  {
+    if(total_size == 0) // special case: yet-empty-list
+    {
+//      std::cout << "BInitialInsert";
+      // Checks that we really have an empty list.
+      assert(pos.nodeptr == this);
+      assert(next == this);
+      assert(next == this);
+      assert(num_blocks==0);
+
+      Block * new_block = insert_block_between(this, this);
+      ::new(new_block->memory_buf) T (std::forward<Args>(args)...);
+      new_block->used_size = 1;
+      total_size = 1;
+      assert(num_blocks == 1); // set by insert_block_between
+      // pos is still valid. We return the nemly inserted element
+      return const_iterator{new_block, 0};
+    }
+    else // we move to the first block and insert there.
+    {
+//      std::cout << "ToBefore Insert";
+      // const_iterator{pos.nodeptr->prev} is an iterator to the first actual element.
+      // Note that validity transformations to pos are unneeded.
+      auto it = const_iterator{pos.nodeptr -> next};
+      return emplace_before(it, std::forward<Args>(args)... );
     }
   }
 }

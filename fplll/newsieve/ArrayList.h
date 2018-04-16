@@ -4,6 +4,7 @@
 #include "DefaultIncludes.h"
 #include <new>
 #include <cstdlib>
+#include "SieveUtility.h"
 
 #define DEBUG_SIEVE_ARRAYLIST
 
@@ -200,7 +201,18 @@ public:
 //  const_iterator insert(const_iterator &pos, T const &value);
 
   template<class... Args>
-  const_iterator emplace(const_iterator &pos, Args&&... args);
+  const_iterator emplace_before(const_iterator &pos, Args&&... args);
+  template<class... Args>
+  const_iterator emplace_after (const_iterator &pos, Args&&... args);
+
+  // emplace forwards to emplace_before
+  template<class... Args>
+  const_iterator emplace(Args&&... args) // first args is actually pos
+  {
+    static_assert(sizeof...(Args)>= 1,"");
+    static_assert(std::is_same<mystd::decay_t<GetFirstArg_t<Args...>>,mystd::decay_t<const_iterator>>::value == true,"");
+    return emplace_before(std::forward<Args>(args)...);
+  }
 
   // insert and insert_after
   // emplace ???
@@ -210,7 +222,7 @@ public:
   // pop_back : replace by true_pop_back
   // sort
 
-private:
+//private:
   size_type total_size;
   unsigned long num_blocks;
 

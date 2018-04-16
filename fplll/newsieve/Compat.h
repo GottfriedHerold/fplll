@@ -35,7 +35,7 @@
   Unfortunately, to support the fallback to normal if, we cannot use CPP17CONSTEXPRIF that way.
   Instead, CPP17CONSTEXPRIF is supposed to be used for if's that should depend on compile-time
   expressions in order to trigger compiler errors if this is not the case and to document intent.
-  Efficiency-wise, there is no benefit if the compile is able to elimate if(false){ ... } code
+  Efficiency-wise, there is no benefit if the compiler is able to elimate if(false){ ... } code
   (which seems a safe assumption).
 */
 
@@ -127,7 +127,7 @@
         function, provided this is an option. This gives better error messages.
 
         The purpose of these macros is to restrict the viable candidates for overload resolution,
-        not to assert that some condition is satisfied. Use cases are when you have several
+        *NOT* to assert that some condition is satisfied. Use cases are when you have several
         overloads or specializations.
         A typical use case is for templated overloads of operators where you might conflict with
         other pre-existing overloads or overloads that might be added later.
@@ -186,8 +186,8 @@
 
 /**
   Replacements for C++14 (and beyond) standard library features that are missing in C++11.
-  Since these are all documented in the C++ standard, we do give much explanation and refer to the
-  C++ - documentation (which is much better, anyway).
+  Since these are all documented in the C++ standard, we do not give much explanation and refer to
+  the C++ - documentation (which is much better, anyway).
   In general, mystd::foo mimicks std::foo.
 */
 
@@ -283,7 +283,7 @@ template <class T> constexpr const T &constexpr_min(const T &x1, const T &x2)
 #if __cpp_lib_void_t >= 201411
   template <class... Args> using void_t = std::void_t<Args...>;
 #else
-  // proper definition:
+  // proper definition, but does not work in GCC4.9:
   /*
   template <class... Args> using void_t = void;
   */
