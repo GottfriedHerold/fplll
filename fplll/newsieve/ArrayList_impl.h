@@ -60,37 +60,43 @@ inline ArrayListConstIterator<T, blocksize>::ArrayListConstIterator(Meta* const 
 #ifdef DEBUG_SIEVE_ARRAYLIST
     assert(nodeptr->used_size > 0);
 #endif
-    dataptr = reinterpret_cast<T*> (static_cast<Block*>(nodeptr)->memory_buf);
-    index   = nodeptr->used_size - 1;
+    base_dataptr = reinterpret_cast<T*> (static_cast<Block*>(nodeptr)->memory_buf);
+//    index   = nodeptr->used_size - 1;
+    real_dataptr = base_dataptr + nodeptr->used_size - 1;
   }
+
   else // past-the end or before-begin iterator
   {
 #ifdef DEBUG_SIEVE_ARRAYLIST
     assert(nodeptr->used_size == 2*blocksize + 1);
 #endif
-    dataptr = nullptr;
-    index   = 0;
+    base_dataptr = nullptr;
+//    index   = 0;
+    real_dataptr = nullptr;
   }
 }
 
 template<class T, unsigned int blocksize>
 inline ArrayListConstIterator<T, blocksize>::ArrayListConstIterator(Meta* const new_nodeptr, unsigned int const new_index) noexcept
-: index(new_index),
-  dataptr(reinterpret_cast<T*>(static_cast< Block* >(new_nodeptr)->memory_buf)),
+: // index(new_index),
+  // dataptr(reinterpret_cast<T*>(static_cast< Block* >(new_nodeptr)->memory_buf)),
+  // nodeptr(new_nodeptr)
+  real_dataptr(reinterpret_cast<T*>(static_cast<Block*>(new_nodeptr)->memory_buf) + new_index),
+  base_dataptr(reinterpret_cast<T*>(static_cast<Block*>(new_nodeptr)->memory_buf)),
   nodeptr(new_nodeptr)
 { }
 
 template<class T, unsigned int blocksize>
-constexpr inline ArrayListConstIterator<T, blocksize>::ArrayListConstIterator(Meta* const new_nodeptr, unsigned int const new_index, T * const new_dataptr) noexcept
-: index(new_index), dataptr(new_dataptr), nodeptr(new_nodeptr)
+constexpr inline ArrayListConstIterator<T, blocksize>::ArrayListConstIterator(Meta* const new_nodeptr, unsigned int const new_index, T * const new_base_dataptr) noexcept
+: real_dataptr(new_base_dataptr + new_index), base_dataptr(new_base_dataptr), nodeptr(new_nodeptr)
 { }
 
 template<class T, unsigned int blocksize>
 inline ArrayListConstIterator<T,blocksize> &ArrayListConstIterator<T, blocksize>::operator++()
 {
-  if(index > 0) // not at end of block.
+  if(real_dataptr != base_dataptr) // not at end of block.
   {
-    --index; // recall that index counts downwards
+    --real_dataptr; // recall that index counts downwards
     return *this;
   }
   else // jump to next block
@@ -113,9 +119,9 @@ inline T const & ArrayListConstIterator<T, blocksize>::operator*() const  // der
 {
 #ifdef DEBUG_SIEVE_ARRAYLIST
   assert(!is_end());
-  assert(index < nodeptr->used_size);
+  assert(get_index() < nodeptr->used_size);
 #endif
-  return *(dataptr + index);
+  return *get_real_dataptr();
 }
 
 template<class T, unsigned int blocksize>
@@ -123,9 +129,9 @@ inline T const * ArrayListConstIterator<T, blocksize>::operator->() const
 {
 #ifdef DEBUG_SIEVE_ARRAYLIST
   assert(!is_end());
-  assert(index < nodeptr->used_size);
+  assert(get_index() < get_nodeptr()->used_size);
 #endif
-  return (dataptr + index);
+  return get_real_dataptr();
 }
 
 
@@ -219,7 +225,7 @@ template<class T, unsigned int blocksize>
 inline auto ArrayList<T, blocksize>::split_full_block_for_insert_before(const_iterator &pos) -> const_iterator
 {
   Block * const old_block = static_cast<Block*>(pos.nodeptr);
-  unsigned int const insertion_index = pos.index;
+  unsigned int const insertion_index = pos.get_index();
 #ifdef DEBUG_SIEVE_ARRAYLIST
   assert(old_block->used_size == blocksize);
 #endif
@@ -227,7 +233,7 @@ inline auto ArrayList<T, blocksize>::split_full_block_for_insert_before(const_it
   Block * const new_block = insert_block_between(old_block->prev, old_block);
   static constexpr unsigned int new_size1 = (blocksize + 1)/2;  // new size of the old block
   static constexpr unsigned int new_size2 = blocksize + 1 - new_size1; // new size of the new block
-  T * const old_mem = pos.dataptr;
+  T * const old_mem = pos.get_base_dataptr();
   T * const new_mem = reinterpret_cast<T*>(new_block->memory_buf);
   old_block -> used_size = new_size1;
   new_block -> used_size = new_size2;
@@ -307,7 +313,7 @@ template<class T, unsigned int blocksize>
 inline auto ArrayList<T, blocksize>::split_full_block_for_insert_after(const_iterator &pos) -> const_iterator
 {
   Block * const old_block = static_cast<Block*>(pos.nodeptr);
-  unsigned int const insertion_index = pos.index;
+  unsigned int const insertion_index = pos.get_index();
 #ifdef DEBUG_SIEVE_ARRAYLIST
   assert(old_block->used_size == blocksize);
 #endif
@@ -315,7 +321,7 @@ inline auto ArrayList<T, blocksize>::split_full_block_for_insert_after(const_ite
   Block * const new_block = insert_block_between(old_block->prev, old_block);
   static constexpr unsigned int new_size1 = (blocksize + 1)/2;  // new size of the old block
   static constexpr unsigned int new_size2 = blocksize + 1 - new_size1; // new size of the new block
-  T * const old_mem = pos.dataptr;
+  T * const old_mem = pos.get_base_dataptr();
   T * const new_mem = reinterpret_cast<T*>(new_block->memory_buf);
   old_block -> used_size = new_size1;
   new_block -> used_size = new_size2;
@@ -393,26 +399,27 @@ template<class T, unsigned int blocksize>
 inline auto ArrayList<T, blocksize>::create_gap_at(const_iterator &pos, unsigned int gap_index) -> const_iterator
 {
 #ifdef DEBUG_SIEVE_ARRAYLIST
-  assert(pos.nodeptr -> used_size < blocksize);
+  assert(pos.get_nodeptr() -> used_size < blocksize);
   assert(gap_index <= pos.nodeptr->used_size);
-  assert(pos.dataptr != nullptr);
+  assert(pos.get_base_dataptr() != nullptr);
 #endif
 #ifdef USE_MEMMOVE
-  std::memmove(pos.dataptr + gap_index + 1, pos.dataptr + gap_index, sizeof(T) * (pos.nodeptr->used_size - gap_index));
+  std::memmove(pos.get_base_dataptr() + gap_index + 1, pos.get_base_dataptr() + gap_index, sizeof(T) * (pos.get_nodeptr()->used_size - gap_index));
 #else
-  for(unsigned int i = pos.nodeptr->used_size; i>=gap_index + 1; --i)
+  for(unsigned int i = pos.get_nodeptr()->used_size; i>=gap_index + 1; --i)
   {
-    ::new(pos.dataptr + i) T (pos.dataptr[i-1]);
-    pos.dataptr[i-1].~T();
+    ::new(pos.get_base_dataptr() + i) T (pos.get_base_dataptr()[i-1]);
+    pos.get_base_dataptr()[i-1].~T();
   }
 #endif
-  if(pos.index >= gap_index)
+  if(pos.get_index() >= gap_index)
   {
-    ++pos.index;
+    // TODO: Encapsulation!
+    ++pos.real_dataptr;
   }
   ++total_size;
   ++pos.nodeptr->used_size;
-  return ArrayListConstIterator<T, blocksize>{pos.nodeptr, gap_index, pos.dataptr};
+  return ArrayListConstIterator<T, blocksize>{pos.get_nodeptr(), gap_index, pos.get_base_dataptr()};
 }
 
 /**
@@ -438,22 +445,22 @@ inline auto ArrayList<T,blocksize>::emplace_before(const_iterator &pos, Args&& .
   // Case 1 : There is still space inside the current node.
   // Note that this condition implies that we are not at the sentinel nodes, because
   // then we would have used_size > blocksize
-  if(pos.nodeptr->used_size < blocksize)
+  if(pos.get_nodeptr()->used_size < blocksize)
   {
 //    std::cout << "Normal Insert";
 #ifdef DEBUG_SIEVE_ARRAYLIST
-    assert(pos.dataptr != nullptr);
-    assert(pos.dataptr == reinterpret_cast<T*>(static_cast<Block*>(pos.nodeptr)->memory_buf) );
+    assert(pos.get_real_dataptr() != nullptr);
+    assert(pos.get_base_dataptr() == reinterpret_cast<T*>(static_cast<Block*>(pos.get_nodeptr())->memory_buf) );
 #endif
-    auto retval = create_gap_at(pos, pos.index + 1);
-    ::new(retval.dataptr + retval.index) T (std::forward<Args>(args)...);
+    auto retval = create_gap_at(pos, pos.get_index() + 1);
+    ::new(retval.get_real_dataptr()) T (std::forward<Args>(args)...);
     return retval;
   }
-  else if(pos.nodeptr->used_size == blocksize) // full block
+  else if(pos.get_nodeptr()->used_size == blocksize) // full block
   {
 //    std::cout << "Full block Insert";
     auto retval = split_full_block_for_insert_before(pos);
-    ::new(retval.dataptr + retval.index) T (std::forward<Args>(args)...);
+    ::new(retval.get_real_dataptr()) T (std::forward<Args>(args)...);
     return retval;
   }
   else // sentinel block, i.e. we insert at the END of the list
@@ -480,7 +487,7 @@ inline auto ArrayList<T,blocksize>::emplace_before(const_iterator &pos, Args&& .
 //      std::cout << "Backed Insert";
       // const_iterator{pos.nodeptr->prev, 0} is an iterator to the last actual element.
       // Note that validity transformations to pos are unneeded.
-      auto it = const_iterator{pos.nodeptr -> prev, 0};
+      auto it = const_iterator{pos.nodeptr -> prev, 0}; // it may be modified by the call below
       return emplace_after(it, std::forward<Args>(args)... );
     }
   }
@@ -492,22 +499,22 @@ inline auto ArrayList<T,blocksize>::emplace_after(const_iterator &pos, Args&& ..
 {
   // Case 1: There is still free space in the current node. Just use that one.
   // (this implies that pos is no before-begin iterator)
-  if(pos.nodeptr->used_size < blocksize)
+  if(pos.get_nodeptr()->used_size < blocksize)
   {
 //    std::cout << "BNormal Insert ";
 #ifdef DEBUG_SIEVE_ARRAYLIST
-    assert(pos.dataptr != nullptr);
-    assert(pos.dataptr == reinterpret_cast<T*>(static_cast<Block*>(pos.nodeptr)->memory_buf) );
+    assert(pos.get_real_dataptr() != nullptr);
+    assert(pos.get_real_dataptr() == reinterpret_cast<T*>(static_cast<Block*>(pos.nodeptr)->memory_buf) );
 #endif
-    auto retval = create_gap_at(pos, pos.index );
-    ::new(retval.dataptr + retval.index) T (std::forward<Args>(args)...);
+    auto retval = create_gap_at(pos, pos.get_index() );
+    ::new(retval.get_real_dataptr()) T (std::forward<Args>(args)...);
     return retval;
   }
-  else if(pos.nodeptr->used_size == blocksize) // full block
+  else if(pos.get_nodeptr()->used_size == blocksize) // full block
   {
 //    std::cout << "BFull Insert";
     auto retval = split_full_block_for_insert_after(pos);
-    ::new(retval.dataptr + retval.index) T (std::forward<Args>(args)...);
+    ::new(retval.get_real_dataptr() ) T (std::forward<Args>(args)...);
     return retval;
   }
   else // sentinel block, i.e. we insert at the END of the list
@@ -516,7 +523,7 @@ inline auto ArrayList<T,blocksize>::emplace_after(const_iterator &pos, Args&& ..
     {
 //      std::cout << "BInitialInsert";
       // Checks that we really have an empty list.
-      assert(pos.nodeptr == this);
+      assert(pos.get_nodeptr() == this);
       assert(next == this);
       assert(next == this);
       assert(num_blocks==0);
@@ -534,7 +541,7 @@ inline auto ArrayList<T,blocksize>::emplace_after(const_iterator &pos, Args&& ..
 //      std::cout << "ToBefore Insert";
       // const_iterator{pos.nodeptr->prev} is an iterator to the first actual element.
       // Note that validity transformations to pos are unneeded.
-      auto it = const_iterator{pos.nodeptr -> next};
+      auto it = const_iterator{pos.get_nodeptr() -> next};
       return emplace_before(it, std::forward<Args>(args)... );
     }
   }

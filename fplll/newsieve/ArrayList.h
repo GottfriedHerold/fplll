@@ -69,7 +69,13 @@ class ArrayListBlock : public LinkedListNodeMeta
   using LinkedListNodeMeta::used_size;
   using LinkedListNodeMeta::next;
   using LinkedListNodeMeta::prev;
-  void *memory_buf;   // C-array or raw memory block.
+  void *memory_buf;   // C-array or raw memory block. We store it as a void*
+  // We mainly access through iterators, which store a copy of it memory_buf
+  // (but reinterpret_cast-ed to T*).
+  // Caution: pointer arithmetic in C(++) takes the type into account so memory_buf + index
+  // is not the same as reinterpret_cast<T*>(memory_buf) + index.
+  // Note that pointer arithmetic on void* pointers is a compiler extension and error-prone.
+  // (Use -Wpointer-arith to warn about that) Do not use!
   friend class ArrayList<T, blocksize>;
   friend class ArrayListConstIterator<T, blocksize>;
 public:
@@ -86,26 +92,42 @@ public:
 template<class T, unsigned int blocksize>
 class ArrayListConstIterator
 {
-  unsigned int index; // index inside block
-  T *dataptr;  // dataptr (nullptr for end-iterator)
-  ArrayListDetails::LinkedListNodeMeta* nodeptr; // pointer to relevant node
-  static_assert(blocksize > 0, "");
-
-  ArrayListConstIterator() = delete;  // no default constructor. Iterator always has to point somewhere
+public:
   using Block = ArrayListDetails::ArrayListBlock<T, blocksize>;
   using Meta  = ArrayListDetails::LinkedListNodeMeta;
   friend class ArrayList<T, blocksize>;
+
+private:
+ // Note: We have real_dataptr = base_dataptr + index.
+ // Which of these redundant data to store is an optimization problem.
+ // (goal: fast iteration, saving individual CPU cycles matters)
+  T *real_dataptr;  // actual pointer to the data element.
+//  unsigned int backward_index; // index inside block, counts backwards
+  T *base_dataptr;  // holds the begin of the current data block. nullptr for sentinels
+  Meta* nodeptr; // pointer to relevant node
+  static_assert(blocksize > 0, "");
+
+  ArrayListConstIterator() = delete;  // no default constructor. Iterator always has to point somewhere
+
+  // these are intentionally private (accessible to friend classes).
+  // Note that the internal representation is optimized for traversal.
+  constexpr T* get_base_dataptr() const noexcept        { return base_dataptr; }
+  constexpr Meta* get_nodeptr() const noexcept          { return nodeptr; }
+  // return ptrdiff_t ???
+  constexpr unsigned int get_index() const noexcept     { return real_dataptr - base_dataptr; }
+  constexpr T* get_real_dataptr() const noexcept        { return real_dataptr; }
+
 
   /**
     NOTE: the assignment to dataptr probably needs a std::launder.
     Even with it, it may well be UB.
     ( The problem is a mismatch of C++'s abstract object model and naive memory manipulation.
       The issue is that the objects of type T that are dereferenced are not dereferenced via the
-      same pointer that is used to construct them. The usual ways to solve involve
+      same pointer that is used to construct them. The usual ways to solve this involve
       - using the returned pointer from placement-new.
       - std::launder.
     Unfortunately, std::launder is a c++17 extension (and I have no idea whether it even CAN be
-    implemented without a builtin) and placement-new for ARRAYS is essentially useless
+    implemented without a builtin) and placement-new for ARRAYS is essentially useless here
     ( A known problem with the C++ language, see CWG issue #476 ).
     The latter issue means that we have to placement-new construct each *individual* array element
     at a position that is computed from the begin of the memory-buf.
@@ -132,10 +154,12 @@ public:
   explicit inline ArrayListConstIterator(Meta* const new_nodeptr, unsigned int const new_index) noexcept;
 
   // same as above, but with dataptr known
-  constexpr explicit inline ArrayListConstIterator(Meta* const new_nodeptr, unsigned int const new_index, T * const new_dataptr) noexcept;
+  constexpr explicit inline ArrayListConstIterator(Meta* const new_nodeptr, unsigned int const new_index, T * const new_base_dataptr) noexcept;
+
+//  constexpr explicit inline ArrayListConstIterator(Meta* const new_nodeptr, T* const new_real_dataptr, T* const new_base_dataptr) noexcept;
 
   // test whether the iterator is an end-iterator.
-  NODISCARD constexpr bool is_end() const noexcept { return dataptr == nullptr; }
+  NODISCARD constexpr bool is_end() const noexcept { return (base_dataptr == real_dataptr) && (base_dataptr == nullptr); }
 
   bool operator==(ArrayListConstIterator const &) = delete;
   bool operator!=(ArrayListConstIterator const &) = delete;
@@ -248,7 +272,6 @@ public:
   // return value is an "iterator" to the gap
   inline const_iterator create_gap_at(const_iterator &pos, unsigned int gap_index);
   inline void remove_empty_block(Block* block);
-
 
   // inserts a new block between the given nodes.
   // We assert that before and after are adjacent nodes
