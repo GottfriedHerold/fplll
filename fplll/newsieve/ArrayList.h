@@ -222,24 +222,35 @@ public:
   // inserts a copy of T before pos. pos is modified to account for memory adjustments.
   // return value is an iterator to the newly inserted element
 
-//  const_iterator insert(const_iterator &pos, T const &value);
+  const_iterator insert(const_iterator &pos, T const &value)
+  {
+    return emplace(pos, value);
+  }
+
+  const_iterator insert(const_iterator &pos, T &&value)
+  {
+    return emplace(pos, std::move(value));
+  }
 
   template<class... Args>
-  const_iterator emplace_before(const_iterator &pos, Args&&... args);
+  inline const_iterator emplace_before(const_iterator &pos, Args&&... args);
   template<class... Args>
-  const_iterator emplace_after (const_iterator &pos, Args&&... args);
+  inline const_iterator emplace_after (const_iterator &pos, Args&&... args);
 
   // emplace forwards to emplace_before
   template<class... Args>
-  const_iterator emplace(Args&&... args) // first args is actually pos
+  inline const_iterator emplace(Args&&... args) // first args is actually pos
   {
     static_assert(sizeof...(Args)>= 1,"");
     static_assert(std::is_same<mystd::decay_t<GetFirstArg_t<Args...>>,mystd::decay_t<const_iterator>>::value == true,"");
     return emplace_before(std::forward<Args>(args)...);
   }
 
-  // insert and insert_after
-  // emplace ???
+  // erases the object pointed to by pos.
+  // pos is invalidated. The return value is a new iterator refering to the element after *pos.
+  inline const_iterator erase(const_iterator &&pos);
+
+  // insert_after
   // erase
   // push_back
   // emplace_back

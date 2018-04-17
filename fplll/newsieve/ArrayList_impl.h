@@ -102,6 +102,7 @@ inline ArrayListConstIterator<T,blocksize> &ArrayListConstIterator<T, blocksize>
   else // jump to next block
   {
     *this = ArrayListConstIterator{nodeptr->next};
+//    if (nodeptr->next) { __builtin_prefetch(static_cast<Block*>(nodeptr->next)->memory_buf); }
     return *this;
   }
 }
@@ -545,6 +546,46 @@ inline auto ArrayList<T,blocksize>::emplace_after(const_iterator &pos, Args&& ..
       return emplace_before(it, std::forward<Args>(args)... );
     }
   }
+}
+
+template<class T, unsigned int blocksize>
+inline auto ArrayList<T, blocksize>::erase(const_iterator &&pos) -> const_iterator
+{
+  Meta * const current_node = pos.get_nodeptr();
+#ifdef DEBUG_SIEVE_ARRAYLIST
+  assert(!(pos.is_end()));
+  assert(pos.current_node->used_size > 0);
+#endif
+  --current_node->used_size;
+#ifdef USE_MEMMOVE
+  pos->~T();
+  // +1 is performed on T* before converting to void*. Note that used_size was already decreased.
+  std::memmove(pos.get_real_dataptr(),pos.get_real_dataptr() + 1,
+               sizeof(T) * current_node->used_size - pos.get_index() );
+#else
+  // p is the target address for the move, which needs to range from the insertion position to
+  // current_block[used_size - 1] (the new value of used_size)
+  for(T *p = pos.get_real_dataptr(); p < pos.get_base_dataptr() + current_node -> used_size; ++p)
+  {
+    p->~T();
+    ::new(p) T (std::move(*(p+1)));
+  }
+#endif
+  /**
+    WARNING: Fragile code!
+  */
+  // pos now refers to the element pseudo-_preceding_ the erasure position:
+  // "pseudo", because if pos was the first element of the block (i.e. highest index),
+  // pos is now invalid (refering to current_block[new_used_size] rather than the prev. block)
+  // In particular, if the block is now empty, it is refering to current_block[0].
+  // Still, ++pos will do the right thing.
+  ++pos;
+  // Note that current_node still points to the old node, in case ++pos switched block.
+  if(current_node->used_size == 0)
+  {
+    remove_empty_block(static_cast<Block*>(current_node));
+  }
+  return pos;
 }
 
 } // end namespace GaussSieve

@@ -11,7 +11,7 @@
 bool test_array_list()
 {
   static constexpr int LEN = 100000;
-  GaussSieve::ArrayList<int, 200000> test_list1;
+  GaussSieve::ArrayList<int, 4096> test_list1;
   std::list<int> stl_list;
   std::vector<int> V;
   V.resize(LEN, 0);
