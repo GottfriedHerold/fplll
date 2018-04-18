@@ -14,10 +14,11 @@
 //#define TEST_APPROXIMATIONS
 //#define TEST_PLAIN_LATTICE_POINT
 //#define TEST_EXACT_LATTICE_POINT
-//#define TEST_BITAPPROX
+//////#define TEST_BITAPPROX  -- deprecate
+#define TEST_SIMHASHES
 //#define TEST_RELEVANT_COORDS
 //#define TEST_LIST
-#define TEST_ARRAY_LIST
+//#define TEST_ARRAY_LIST
 
 // clang-format off
 #ifdef TEST_ALL
@@ -31,10 +32,12 @@
   #define TEST_QUEUE
   #define TEST_LIST
   #define TEST_EMV
-  #define TEST_BITAPPROX
+//  #define TEST_BITAPPROX
   #define TEST_APPROXIMATIONS
   #define TEST_LAZY
   #define TEST_ARRAY_LIST
+
+  #define TEST_SIMHASHES
 #endif
 
 // very verbose...
@@ -103,6 +106,10 @@
   #include "Tests/TestArrayList.h"
 #endif
 
+#ifdef TEST_SIMHASHES
+  #include "Tests/TestSimHash.h"
+#endif
+
 /**
   Late includes:
 */
@@ -115,9 +122,6 @@
 #ifdef TEST_QUEUE
   #include "GaussQueue_impl.h"
 #endif
-
-
-// clang-format on
 
 // clang-format on
 
@@ -202,8 +206,8 @@ int main(int argc, char **argv)
   }
 #endif
 
-#ifdef TEST_BITAPPROX
-  if (test_bit_approx())
+#ifdef TEST_SIMHASHES
+  if (test_sim_hashes())
   {
     std::cout << "Bit Approximation works as expected" << std::endl;
   }

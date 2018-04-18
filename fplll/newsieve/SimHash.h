@@ -170,7 +170,7 @@ public:
     assert(Parent::user_count > 0);  // Parent::user_count includes this object itself as well.
     if (Parent::user_count > 1)
     {
-      // ensure we not reinitialize as long as there are previous users around.
+      // ensure we do not reinitialize as long as there are previous users around.
       // TODO: Throw exception rather than assert!
       assert(new_dim == GlobalBitApproxData<CooSelection>::dim_used);
       assert(random_seed == GlobalBitApproxData<CooSelection>::random_seed_used);
@@ -192,7 +192,13 @@ public:
 };
 
 // TODO: Currently, we only support std::arrays of std::bitset's, not different containers.
-
+// NOTE: This overload of operator<< is defined in namespace GaussSieve, but its arguments
+// probably are not, so ADL won't work. In particular, as simple os << array_of_bitsets will NOT
+// work outside the GaussSieve namespace.
+// You might need to explicitly bring the function / namespace in.
+// The flip_all_bits function below has the same problem,
+// but at least GaussSieve::flip_all_bits works. (Writing GaussSieve::operator<< works as well, but
+// is completely weird).
 /**
  Outputs a SimHash (i.e. an array of bitsets)
 */
