@@ -305,7 +305,7 @@ FORCE_INLINE static inline bool CPP14CONSTEXPR check_simhash_scalar_product(
   same as above but also returns (in case of true) which of the if-conditions was satisfied
   I.e., tell whether the two points are close or far apart
   If (approx_scprod <= lb[level]), bool is_close is set to true
- */
+*/
 
 // clang-format off
 template <class CoordinateSelection, class LHS, class RHS,

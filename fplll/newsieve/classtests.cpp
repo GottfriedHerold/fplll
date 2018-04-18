@@ -16,6 +16,7 @@
 //#define TEST_EXACT_LATTICE_POINT
 //////#define TEST_BITAPPROX  -- deprecate
 #define TEST_SIMHASHES
+#define TEST_BLOCKORTHOGONAL_SIM_HASH
 //#define TEST_RELEVANT_COORDS
 //#define TEST_LIST
 //#define TEST_ARRAY_LIST
@@ -36,6 +37,7 @@
   #define TEST_APPROXIMATIONS
   #define TEST_LAZY
   #define TEST_ARRAY_LIST
+  #define TEST_BLOCKORTHOGONAL_SIM_HASH
 
   #define TEST_SIMHASHES
 #endif
@@ -108,6 +110,10 @@
 
 #ifdef TEST_SIMHASHES
   #include "Tests/TestSimHash.h"
+#endif
+
+#ifdef TEST_BLOCKORTHOGONAL_SIM_HASH
+  #include "Tests/TestBlockOrthogonalSimHash.h"
 #endif
 
 /**
@@ -213,9 +219,17 @@ int main(int argc, char **argv)
   }
 #endif
 
+#ifdef TEST_BLOCKORTHOGONAL_SIM_HASH
+  if(test_block_orthogonal_sim_hash())
+  {
+    std::cout << "Block orthogonal sim hashes work as expected" << std::endl;
+  }
+#endif
+
 #ifdef TEST_RELEVANT_COORDS
   if (test_relevant_coords())
   {
+#warning unused test for relevant coords requested (no longer meaningful after code restructuring)
   }
 #endif
 
