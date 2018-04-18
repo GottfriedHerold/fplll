@@ -17,7 +17,6 @@
 //////#define TEST_BITAPPROX  -- deprecate
 #define TEST_SIMHASHES
 #define TEST_BLOCKORTHOGONAL_SIM_HASH
-//#define TEST_RELEVANT_COORDS
 //#define TEST_LIST
 //#define TEST_ARRAY_LIST
 
@@ -223,13 +222,6 @@ int main(int argc, char **argv)
   if(test_block_orthogonal_sim_hash())
   {
     std::cout << "Block orthogonal sim hashes work as expected" << std::endl;
-  }
-#endif
-
-#ifdef TEST_RELEVANT_COORDS
-  if (test_relevant_coords())
-  {
-#warning unused test for relevant coords requested (no longer meaningful after code restructuring)
   }
 #endif
 
