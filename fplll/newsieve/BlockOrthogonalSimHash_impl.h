@@ -332,18 +332,41 @@ template <class T> inline void PMatrix::apply(std::vector<T> &vec) const
   return;
 }
 
-/**
-  Print the stored data to stream. Only used for debugging at the moment.
-  TODO: Turn into << operator
-*/
+inline std::ostream &operator<<(std::ostream &os, PMatrix const &pmatrix)
+{
+  os << "[";
+  for (uint_fast16_t k = 0; k + 1 < pmatrix.permutation.size(); ++k)
+  {
+    os << pmatrix.permutation[k] << " ";
+  }
+  if (pmatrix.permutation.size() > 0) // last index without extra " "
+  {
+    os << pmatrix.permutation[pmatrix.permutation.size()-1];
+  }
+  os << "]";
+  return os;
+}
+
+
 inline void PMatrix::print(std::ostream &os) const
 {
-  // os << "P  [" << i <<"] is: " << std::endl;
-  for (uint_fast16_t k = 0; k < permutation.size(); ++k)
+  os << *this << std::endl;
+}
+
+inline std::istream &operator>>(std::istream &is, PMatrix &pmatrix)
+{
+  // TODO: Throw exceptions on failure
+  string_consume(is,"[");
+  pmatrix.permutation.clear();
+  assert(pmatrix.permutation.empty());
+  for (;is.peek() !=']'; )
   {
-    os << permutation[k] << " ";
+    uint_fast16_t next;
+    is >> next;
+    pmatrix.permutation.push_back(next);
   }
-  os << std::endl;
+  pmatrix.permutation.shrink_to_fit();
+  string_consume(is,"]");
 }
 
 /**

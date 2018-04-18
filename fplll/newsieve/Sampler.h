@@ -92,6 +92,7 @@ public:
   using GaussSampler_ReturnType = typename SieveTraits::GaussSampler_ReturnType;
   friend std::ostream &operator<< <SieveTraits, MT, Engine, Sseq>(
       std::ostream &os, Sampler<SieveTraits, MT, Engine, Sseq> *const samplerptr);
+  // unsure about signature
   friend std::istream &operator>> <SieveTraits, MT, Engine, Sseq>(
       std::istream &is, Sampler<SieveTraits, MT, Engine, Sseq> *const samplerptr);
 

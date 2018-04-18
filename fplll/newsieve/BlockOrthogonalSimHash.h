@@ -87,6 +87,8 @@ public:
   template <class T> inline void apply(std::vector<T> &vec) const;
   // prints the permutation (as a sequence of permuation[i], not as a matrix)
   inline void print(std::ostream &os = std::cout) const;
+  friend std::ostream &operator<<(std::ostream &os, PMatrix const &pmatrix);
+  friend std::istream &operator>>(std::istream &is, PMatrix &pmatrix);
 };
 
 /**
