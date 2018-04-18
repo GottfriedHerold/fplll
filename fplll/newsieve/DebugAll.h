@@ -36,6 +36,11 @@
         With it set, we give an error. )
       Used to trace such missing implementations.
 
+  DEBUG_SIEVE_ARRAY_LIST
+      Turns on some internal validity and usage checks for array lists. Note that since such
+      checks appear performance-critical loops where the per-loop processing time is very small,
+      this should have a visible performance impact.
+
   DEBUG_SIEVE_STANDALONE_MODULES_ALL
       Turns on all other DEBUG_SIEVE_STANDALONE_* symbols.
       These enable modules which use a (back-) pointer to Sieve<...> to be used standalone without
@@ -62,7 +67,8 @@
 
   DEBUG_SIEVE_LP_TRACEGENERIC
       Logs usage of generic implementations of lattice points.
-      Extremely verbose output.
+      Extremely verbose output, so only use in testing when tracing through
+      various level of template-overloading-redirection for lattice points.
       -> Determines whether DEBUG_TRACEGENERIC(output string) is a no-op
 
 TODO: Some of these need revision / usage clarification.
@@ -74,7 +80,6 @@ Their use is not very consistent.
 // clang-format kills the indentation for #defines, which does not help here.
 // clang-format off
 
-
 #ifdef DEBUG_SIEVE_SILENT_ALL
   #define DEBUG_SIEVE_LP_INIT
   #define DEBUG_SIEVE_LP_MATCHDIM
@@ -82,6 +87,7 @@ Their use is not very consistent.
   #define DEBUG_SIEVE_LOWERTRIANGULAR_MUG
   #define DEBUG_OTHER_STATIC_INIT
 //  #define DEBUG_SIEVE_ALL_APPROX_AT_SAME_LEVEL
+  #define DEBUG_SIEVE_ARRAYLIST
 #endif  // DEBUG_SIEVE_SILENT_ALL
 
 #ifdef DEBUG_SIEVE_STANDALONE_MODULES_ALL

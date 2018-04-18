@@ -39,7 +39,7 @@
   WH is the Walsh-Hadamard transform. Note that, due to their special shape, applying such a matrix
   on a vector is much faster than a generic matrix-vector multiplication.
   Note: For efficiency reasons, we only perform WH in a subset of the dimensions that is a power of
-        two; the primary purpose of the permuations is to ensure all coos get eventually affected.
+        two; the primary purpose of the permutations is to ensure all coos get eventually affected.
 
   Now, instead of computing <p, v_i> = <p, A(e_i)>, where e_i are the standard basis, we compute the
   equivalent <A^(-1)p, e_i> for each i. This means we do not store the v_i's. Rather, we store the
@@ -124,23 +124,26 @@ public:
   computation of the WH trafo due to better loop unrolling)
 
   Note: The time spent on computing the hashes is visible for the 2-sieve in dims up to at least 60,
-        so we care about efficiency.
+        last time I checked, so we care about efficiency.
 */
 
-// Note args should be size_t, because that is what std::bitset and std::array expect
+// Note integral template args need to be of type size_t, because that is what std::bitset and
+// std::array expect.
 // (Otherwise, certain templates might not work)
-// Note: The _arg suffix is used to be able to mirror the template argument in a local typedef.
+// Note: The _arg suffix is just used to be able to mirror the template argument in a local typedef.
 template <std::size_t sim_hash_len, std::size_t sim_hash_num, bool MT, class DimensionType_arg>
 class BlockOrthogonalSimHash
 {
 public:
   using IsCooSelection = std::true_type;                // Satisfies the CoordinateSelection concept
   static unsigned int constexpr num_of_transforms = 2;  // affects the "quality" vs. speed tradeoff
+                                                        // could be made a template parameter
 
-  // technically, this is not mandatory, but one should always set that.
+  // technically, this is not mandatory, but it helps efficiency because CPUs usually process
+  // bitsets in power-of-two chunks.
   static_assert(is_a_power_of_two_constexpr(sim_hash_len), "sim_hash_len is not a power of 2");
 
-  // required to tell users the type of outputs, required by the interface specified in
+  // Queried by users to determine the type of outputs, required by the interface specified in
   // SimHash.h
   using SimHashBlock  = std::bitset<sim_hash_len>;
   using SimHashes     = std::array<SimHashBlock, sim_hash_num>;

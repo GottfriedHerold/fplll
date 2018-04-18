@@ -28,7 +28,6 @@
         the) sim_hash without looking at other points. This requires more elaborate data structure
         with a larger overhead. By constrast, for SimHashes we store the hashes along the points
         and *test* each candidate.
-
 ******/
 
 // TODO: Unify naming "bit_approximation", "bitapproximation", "bitapprox", "sim_hashes", both in
@@ -54,9 +53,9 @@
   - It has public member typedefs SimHashBlock and SimHashes
     SimHashBlock needs to be a std::bitset<block_len> or compatible,
     SimHashes    needs to be a random access container of SimHashBlocks
-    (Note: "or compatible" means we might support e.g. boost/dynamic_bitset
+    (Note: "or compatible" means we might support e.g. boost/dynamic_bitset.
            random access container means access via sim_hash[index],
-           i.e. a std::array, std::vector or C-style array of SimHashBlocks)
+           e.g. a std::array, std::vector or C-style array of SimHashBlocks.)
 
     Note: We usually process a given SimHash block by block (in particular, when using a SimHash to
           detect whether a lattice vector is promising, we may want to terminate early and not even
@@ -72,7 +71,7 @@
   - It has constructors CoordinateSelection(DimensionType const dim, unsigned int seed)
                     and CoordinateSelection(DimensionType const dim)
     If seed it set, all functions (including those constructors) should be deterministic.
-    (Note: DimensionType typically is either some MaybeFixed<nfixed> or some unsigned int class)
+    (Note: DimensionType typically is either some MaybeFixed<nfixed> or some unsigned integer)
   - it has a public member template function
     SimHashes compute_all_bitapproximations(LatticePoint const &p) const
     After a CoordinateSelection object was created by one of the two mentioned constructors above,
@@ -113,7 +112,7 @@ template <class T> using IsACoordinateSelection   = mystd::is_detected<Predicate
 
 /**
   This is a class that encapsulates (as a static member) a singleton of type CooSelection.
-  Various (otherwise loosely related) have to use the SAME hash function, hence we want a global.
+  Various (loosely related) modules need to use the SAME hash function, hence we want a global.
 */
 template <class CooSelection> class GlobalBitApproxData
 {
