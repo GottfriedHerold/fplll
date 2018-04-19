@@ -8,7 +8,7 @@
 
 /**
   This class deals with static initializations of static members of classes.
-  For reasons of efficiency, keep certain data as *static* members of our classes.
+  For reasons of efficiency, we keep certain data as *static* members of our classes.
   In particular, the dimension of lattice points is kept as static data.
   ( This is to avoid passing the dimension as a parameter in every operation, which would prevent us
     from using operator+, etc. Alternatively, we could store the dimension inside the points, but

@@ -148,7 +148,13 @@ template<class CooSelection> unsigned int                         GlobalBitAppro
   Static Initializer for run-time initialization (RAII-style wrapper).
   An object of this type is created by the GaussSieve very early during its initialization process.
   (cf. GlobalStaticData.h)
+  Tricky Question: How to serialialize this object?
+                    The current solution is that<< deserializes the GlobalData
+                    and construction(!) from stream reads back in. operator>> is disallowed!
  */
+
+template<class CooSelection>
+std::ostream &operator<<(std::ostream &, StaticInitializer<GlobalBitApproxData<CooSelection>> const &);
 
 template <class CooSelection>
 class StaticInitializer<GlobalBitApproxData<CooSelection>> final
@@ -191,6 +197,17 @@ public:
     DEBUG_SIEVE_TRACEINITIATLIZATIONS("Deinitializing Global data for Bitapproximations."
                                       << " Counter is " << Parent::user_count)
   }
+
+  /**
+    operator>> intentionally missing and operator<< has unusual semantics!
+  */
+  inline friend std::ostream &operator<<(std::ostream &os,StaticInitializer<GlobalBitApproxData<CooSelection>> const &data)
+  {
+    os << "dim_used" << GlobalBitApproxData<CooSelection>::dim_used;
+    assert(false);
+    return os;
+  }
+
 };
 
 // TODO: Currently, we only support std::arrays of std::bitset's, not different containers.
