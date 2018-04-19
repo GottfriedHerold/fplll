@@ -295,6 +295,101 @@ inline auto BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType
 }
 
 /**
+  I/O
+*/
+template <std::size_t sim_hash_len, std::size_t sim_hash_num, bool MT, class DimensionType>
+inline std::ostream &operator<<(std::ostream &os, BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType> const &bo_sim_hash)
+{
+  os << "Number of orthogonal blocks:" << bo_sim_hash.number_of_orthogonal_blocks << std::endl;
+  os << "Fast WH len:" << bo_sim_hash.fast_walsh_hadamard_len << std::endl;
+  os << "Log2 thereof:" << bo_sim_hash.fast_walsh_hadamard_loglen << std::endl;
+  assert(bo_sim_hash.pmatrices.size() == bo_sim_hash.number_of_orthogonal_blocks);
+  assert(bo_sim_hash.dmatrices.size() == bo_sim_hash.number_of_orthogonal_blocks);
+  static unsigned int constexpr num_of_transforms = BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType>::num_of_transforms;
+  os << "PMatrices: [";
+  for(std::size_t i=0; i < bo_sim_hash.number_of_orthogonal_blocks; ++i)
+  {
+    os << "[";
+    for (std::size_t j=0; j < num_of_transforms; ++j)
+    {
+      os << bo_sim_hash.pmatrices[i][j] << " ";
+    }
+    os << "]";
+  }
+  os << "]" << std::endl;
+  os << "DMatrices: [";
+  for(std::size_t i=0; i < bo_sim_hash.number_of_orthogonal_blocks; ++i)
+  {
+    os << "[";
+    for (std::size_t j=0; j < num_of_transforms; ++j)
+    {
+      os << bo_sim_hash.dmatrices[i][j] << " ";
+    }
+    os << "]";
+  }
+  os << "]";
+  return os;
+}
+
+template <std::size_t sim_hash_len, std::size_t sim_hash_num, bool MT, class DimensionType>
+inline std::istream &operator>>(std::istream &is, BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType> &bo_sim_hash)
+{
+  // TOOD: throw exceptions on errors.
+  string_consume(is, "Number of orthogonal blocks:");
+  is >> bo_sim_hash.number_of_orthogonal_blocks;
+  string_consume(is, "Fast WH len:");
+  is >> bo_sim_hash.fast_walsh_hadamard_len;
+  string_consume(is, "Log2 thereof:");
+  is >> bo_sim_hash.fast_walsh_hadamard_loglen;
+
+  bo_sim_hash.pmatrices.clear();
+  bo_sim_hash.dmatrices.clear();
+  static unsigned int constexpr num_of_transforms = BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType>::num_of_transforms;
+  using PMatrixBlock = std::array<PMatrix, num_of_transforms>;
+  using DMatrixBlock = std::array<DMatrix, num_of_transforms>;
+  PMatrixBlock pmatrixblock;
+  DMatrixBlock dmatrixblock;
+
+  string_consume(is, "PMatrices: [");
+  for(std::size_t i=0; i < bo_sim_hash.number_of_orthogonal_blocks; ++i)
+  {
+    assert(string_consume(is, "["));
+    for(std::size_t j=0; j < num_of_transforms; ++j)
+    {
+      is >> pmatrixblock[j];
+    }
+    assert(string_consume(is, "]"));
+    bo_sim_hash.pmatrices.push_back(std::move(pmatrixblock));
+  }
+  string_consume(is, "]");
+
+  string_consume(is, "DMatrices: [");
+  for(std::size_t i=0; i < bo_sim_hash.number_of_orthogonal_blocks; ++i)
+  {
+    assert(string_consume(is,"["));
+    for(std::size_t j=0; j < num_of_transforms; ++j)
+    {
+      is >> dmatrixblock[j];
+    }
+    assert(string_consume(is, "]"));
+    bo_sim_hash.dmatrices.push_back(std::move(dmatrixblock));
+  }
+  assert(string_consume(is,"]"));
+  return is;
+}
+
+template <std::size_t sim_hash_len, std::size_t sim_hash_num, bool MT, class DimensionType_arg>
+inline bool BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType_arg>::operator==(BlockOrthogonalSimHash const &other) const
+{
+  // I want C++20 operator<=>(Foo const &) = default.
+  return (number_of_orthogonal_blocks == other.number_of_orthogonal_blocks) &&
+         (fast_walsh_hadamard_len     == other.fast_walsh_hadamard_len) &&
+         (fast_walsh_hadamard_loglen  == other.fast_walsh_hadamard_loglen) &&
+         (pmatrices == other.pmatrices) &&
+         (dmatrices == other.dmatrices);
+}
+
+/**
   construct a random permutation in dim dimension. Just uses std::shuffle for that.
 */
 PMatrix::PMatrix(unsigned int dim, std::mt19937 &rng)
@@ -367,6 +462,7 @@ inline std::istream &operator>>(std::istream &is, PMatrix &pmatrix)
   }
   pmatrix.permutation.shrink_to_fit();
   string_consume(is,"]");
+  return is;
 }
 
 /**
@@ -403,17 +499,53 @@ template <class T> inline void DMatrix::apply(std::vector<T> &vec) const
   }
 }
 
+
+
+
 /**
   Print the stored data to stream. Only used for debugging at the moment.
   TODO: Turn into << operator
 */
+
+inline std::ostream &operator<<(std::ostream &os, DMatrix const &dmatrix)
+{
+  os << "[";
+  for (std::size_t k = 0; k + 1 < dmatrix.diagonal.size(); ++k)
+  {
+    os << ( (dmatrix.diagonal[k] == 0) ? "+ " : "- ");
+  }
+  if (dmatrix.diagonal.size() > 0) // last index without extra " "
+  {
+    os << ( dmatrix.diagonal[dmatrix.diagonal.size()-1] == 0 ? "+" : "-" );
+  }
+  os << "]";
+  return os;
+}
+
+
+inline std::istream &operator>>(std::istream &is, DMatrix &dmatrix)
+{
+  // TODO: Throw exceptions on failure
+  string_consume(is,"[");
+  dmatrix.diagonal.clear();
+  assert(dmatrix.diagonal.empty());
+  for (;is.peek() !=']'; )
+  {
+    char symb;
+    is >> symb;
+//    if(symb == ' ') continue; // not needed!
+    assert(symb == '+' || symb == '-'); // throw exception
+    dmatrix.diagonal.push_back(symb=='+'?0:1);
+  }
+  dmatrix.diagonal.shrink_to_fit();
+  string_consume(is,"]"); // throw exception
+  return is;
+}
+
+
 inline void DMatrix::print(std::ostream &os) const
 {
-  for (uint_fast16_t k = 0; k < diagonal.size(); ++k)
-  {
-    os << static_cast<int>(diagonal[k]) << " ";
-  }
-  os << std::endl;
+  os << *this << std::endl;
 }
 
 }  // end namespace GaussSieve

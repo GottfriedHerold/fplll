@@ -60,6 +60,7 @@
 		<Unit filename="Tests/TestArrayList.h" />
 		<Unit filename="Tests/TestBasisUtils.h" />
 		<Unit filename="Tests/TestBitApprox.h" />
+		<Unit filename="Tests/TestBlockOrthogonalSimHash.h" />
 		<Unit filename="Tests/TestEMV.h" />
 		<Unit filename="Tests/TestExactLatticePoint.h" />
 		<Unit filename="Tests/TestLazy.h" />
@@ -69,6 +70,7 @@
 		<Unit filename="Tests/TestPlainLatticePoint.h" />
 		<Unit filename="Tests/TestQueue.h" />
 		<Unit filename="Tests/TestShiSampler.h" />
+		<Unit filename="Tests/TestSimHash.h" />
 		<Unit filename="Tests/TestTraitClasses.h" />
 		<Unit filename="Typedefs.h" />
 		<Unit filename="UniformSampler.h" />

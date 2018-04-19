@@ -10,6 +10,7 @@
 #include <limits>
 #include "../ExactLatticePoint.h"
 #include "gmpxx.h"
+#include <sstream>
 //#include <math.h>
 
 bool test_sim_hashes()
@@ -100,6 +101,12 @@ bool test_general_coo_selection()
   using LPWithBitApprox = GaussSieve::AddBitApproximationToLP<LP, CoordinateSelection>;
   LPWithBitApprox latp_with_bitapprox2{std::move(latp2)};
   std::cout << "Point2 with Bitapprox " << latp_with_bitapprox2 << std::endl;
+
+  std::stringstream channel;
+  channel << GaussSieve::GlobalBitApproxData<CoordinateSelection>::coo_selection;
+  CoordinateSelection coo_sel2;
+  channel >> coo_sel2;
+  assert(coo_sel2 == GaussSieve::GlobalBitApproxData<CoordinateSelection>::coo_selection);
 
   return true;
 }

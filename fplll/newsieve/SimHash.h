@@ -77,6 +77,8 @@
     After a CoordinateSelection object was created by one of the two mentioned constructors above,
     this deterministically computes all sim_hashes of the point p. LatticePoint may be any lattice
     point class (see LatticePointConcept.h for what is a "LatticePoint" in this context).
+  - It supports ==, != comparisons
+  - It supports stream IO, where writing to stream and reading back in just copies.
 */
 
 /**

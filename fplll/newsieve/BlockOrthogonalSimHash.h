@@ -67,6 +67,14 @@ namespace GaussSieve
 // forward declarations:
 template <std::size_t sim_hash_len, std::size_t sim_hash_num, bool MT, class DimensionType_arg>
 class BlockOrthogonalSimHash;
+
+template <std::size_t sim_hash_len, std::size_t sim_hash_num, bool MT, class DimensionType>
+inline std::ostream &operator<<(std::ostream &, BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType> const &);
+
+template <std::size_t sim_hash_len, std::size_t sim_hash_num, bool MT, class DimensionType>
+inline std::istream &operator>>(std::istream &, BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType> &);
+
+
 template <class CooSelection> class ObtainSimHashBlock;
 
 /**
@@ -80,6 +88,7 @@ private:
   std::vector<uint_fast16_t> permutation;  // result[i] = input[permutation[i]]
 public:
   PMatrix() = default;
+  explicit PMatrix(std::istream &is) { is >> *this; } // construct from stream
   // creates a random dim-dimensional permutation using rng as a source of randomness.
   // Note that the randomness source is changed (because it changes its state)
   inline PMatrix(unsigned int dim, std::mt19937 &rng);
@@ -87,8 +96,13 @@ public:
   template <class T> inline void apply(std::vector<T> &vec) const;
   // prints the permutation (as a sequence of permuation[i], not as a matrix)
   inline void print(std::ostream &os = std::cout) const;
+
+  // read / write to stream (note: print() adds linebreak, stream-ops don't)
   friend std::ostream &operator<<(std::ostream &os, PMatrix const &pmatrix);
   friend std::istream &operator>>(std::istream &is, PMatrix &pmatrix);
+
+  bool operator==(PMatrix const &other) const { return permutation == other.permutation; }
+  bool operator!=(PMatrix const &other) const { return permutation != other.permutation; }
 };
 
 /**
@@ -109,9 +123,19 @@ public:
   // creates a random such DMatrix, using rng as randomness source.
   // Note that the randomness source is changed (because it changes its state)
   inline DMatrix(unsigned int const dim, std::mt19937 &rng);
+
+  // construct from stream input:
+  explicit DMatrix(std::istream &is) { is >> *this; }
+  // applies multiplication with +/-1 to vec
   template <class T> inline void apply(std::vector<T> &vec) const;
   // prints diagonal (as a sequence of 0's and 1's, not as +/-1's)
   inline void print(std::ostream &os = std::cout) const;
+  // stream I/O. Note that print() prints std::endl, stream-op's do not.
+  friend std::ostream &operator<<(std::ostream &os, DMatrix const &dmatrix);
+  friend std::istream &operator>>(std::istream &is, DMatrix &dmatrix);
+
+  bool operator==(DMatrix const &other) const { return diagonal == other.diagonal; }
+  bool operator!=(DMatrix const &other) const { return diagonal != other.diagonal; }
 };
 
 /**
@@ -125,8 +149,8 @@ public:
   Can be nfixed<dim> to hard-wire the dimension (this might give potential improvements for the
   computation of the WH trafo due to better loop unrolling)
 
-  Note: The time spent on computing the hashes is visible for the 2-sieve in dims up to at least 60,
-        last time I checked, so we care about efficiency.
+  Note: With a naive implementation, the time spent on computing the hashes is quite relevant for
+        the 2-sieve in dims up to at least 60, last time I checked, so we care about efficiency.
 */
 
 // Note integral template args need to be of type size_t, because that is what std::bitset and
@@ -162,6 +186,13 @@ public:
       : BlockOrthogonalSimHash(dim, std::random_device{}())
   {
   }
+  explicit BlockOrthogonalSimHash(std::istream &is) { is >> *this; }
+  inline bool operator==(BlockOrthogonalSimHash const &other) const;
+  inline bool operator!=(BlockOrthogonalSimHash const &other) const { return !(*this == other); }
+  friend std::ostream &operator<< <sim_hash_len, sim_hash_num, MT, DimensionType>(
+      std::ostream &os, BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType> const &bo_sim_hash);
+  friend std::istream &operator>> <sim_hash_len, sim_hash_num, MT, DimensionType>(
+      std::istream &is, BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType> &bo_sim_hash);
 
   // computes the SimHashes of a LatticePoint point
   template <class LatP, TEMPL_RESTRICT_DECL2(IsALatticePoint<LatP>)>
