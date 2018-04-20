@@ -14,7 +14,6 @@
 //#define TEST_APPROXIMATIONS
 //#define TEST_PLAIN_LATTICE_POINT
 //#define TEST_EXACT_LATTICE_POINT
-//////#define TEST_BITAPPROX  -- deprecate
 #define TEST_SIMHASHES
 #define TEST_BLOCKORTHOGONAL_SIM_HASH
 //#define TEST_LIST
@@ -32,7 +31,6 @@
   #define TEST_QUEUE
   #define TEST_LIST
   #define TEST_EMV
-//  #define TEST_BITAPPROX
   #define TEST_APPROXIMATIONS
   #define TEST_LAZY
   #define TEST_ARRAY_LIST
@@ -97,10 +95,6 @@
 
 #ifdef TEST_BITAPPROX
   #include "Tests/TestBitApprox.h"
-#endif
-
-#ifdef TEST_RELEVANT_COORDS
-  #include "Tests/TestRelevantCoords.h"
 #endif
 
 #ifdef TEST_ARRAY_LIST
