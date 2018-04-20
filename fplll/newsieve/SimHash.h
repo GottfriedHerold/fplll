@@ -150,11 +150,15 @@ template<class CooSelection> unsigned int                         GlobalBitAppro
   (cf. GlobalStaticData.h)
   Tricky Question: How to serialialize this object?
                     The current solution is that<< deserializes the GlobalData
-                    and construction(!) from stream reads back in. operator>> is disallowed!
+                    and construction(!) from stream reads back in.
+                    operator>> only works if we have exactly one object.
  */
 
 template<class CooSelection>
 std::ostream &operator<<(std::ostream &, StaticInitializer<GlobalBitApproxData<CooSelection>> const &);
+// Note the const-reference: The data set is not part of the object...
+template<class CooSelection>
+std::istream &operator>>(std::istream &, StaticInitializer<GlobalBitApproxData<CooSelection>> const &);
 
 template <class CooSelection>
 class StaticInitializer<GlobalBitApproxData<CooSelection>> final
@@ -198,14 +202,40 @@ public:
                                       << " Counter is " << Parent::user_count)
   }
 
-  /**
-    operator>> intentionally missing and operator<< has unusual semantics!
-  */
   inline friend std::ostream &operator<<(std::ostream &os,StaticInitializer<GlobalBitApproxData<CooSelection>> const &data)
   {
-    os << "dim_used" << GlobalBitApproxData<CooSelection>::dim_used;
-    assert(false);
+    os << "dim used:"  << GlobalBitApproxData<CooSelection>::dim_used << std::endl;
+    os << "seed used:" << GlobalBitApproxData<CooSelection>::random_seed << std::endl;
+    os << "Data of CooSelection:" << GlobalBitApproxData<CooSelection>::coo_selection << std::endl;
     return os;
+  }
+
+  // Note that this this does not actually change data...
+  inline friend std::istream &operator<<(std::istream& is, StaticInitializer<GlobalBitApproxData<CooSelection>> const &data)
+  {
+    decltype(GlobalBitApproxData<CooSelection>::dim_used) new_dim;
+    decltype(GlobalBitApproxData<CooSelection>::random_seed) new_random_seed;
+    string_consume(is, "dim_used:");
+    is >> new_dim;
+    string_consume(is, "seed used:");
+    is >> new_random_seed;
+    string_consume(is, "Data of CooSelection:");
+    // We either already store the exact same data or there is only one object.
+    // TODO: Throw exception instead
+    assert( ((new_dim == GlobalBitApproxData<CooSelection>::dim_used) &&
+                 (new_random_seed == GlobalBitApproxData<CooSelection>::random_seed)
+            ) || (Parent::user_count == 1) );
+    GlobalBitApproxData<CooSelection>::dim_used = new_dim;
+    GlobalBitApproxData<CooSelection>::random_seed = new_random_seed;
+    is >> GlobalBitApproxData<CooSelection>::coo_selection;
+  }
+
+  explicit StaticInitializer(std::istream &is)
+  {
+    // We first default-construct a Static Initializer
+    // (without actually setting GlobalBitApproxData<CooSelection> )
+    // Then we overwrite it, which triggers setting GlobalBitApproxData<CooSelection>.
+    is >> *this;
   }
 
 };
