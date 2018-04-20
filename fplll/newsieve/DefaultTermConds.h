@@ -4,6 +4,9 @@
   This file provides default and example termination conditions.
   These inherit from TerminationCondition, declared in TerminationConditions.h
   See that file for an explanation of the interface.
+
+  Note that this file DOES NOT #include DefaultTermConds_impl.h
+  Rather, DefaultTermConds_impl is included from the main file after all non-impl files.
 */
 
 // clang-format: currently adheres to clang-format
@@ -109,7 +112,7 @@ private:
   MinkowskiTerminationCondition checks by length, as above.
   The length is computed from the basis by a reasonable version of Minkowski's bound.
 
-  Currently only works for certain data types of bases.
+  Currently only works for certain data types of bases (due to the computation of the bound).
   Consider refactoring template dependencies...
 */
 
@@ -140,6 +143,8 @@ public:
     return TermCondDependencyType::new_shortest_vector;
   }
   virtual ~MinkowskiTerminationCondition() {}
+
+  // serialization is no-op: target_norm2() is computed by init and does not have to be serialized.
 
 private:
   LengthType target_norm2;

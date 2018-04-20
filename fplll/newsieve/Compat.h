@@ -1,7 +1,5 @@
 // Definitions for C++ version compatibility
 
-// clang-format adjustments finished -- Gotti
-
 /**
   This file defines some compatibility macros / workaround for C++-14 / C++-17 features.
   Notably, it defines the namespace GaussSieve::mystd::, which contains alternative
@@ -76,7 +74,7 @@
     // Enforces that the function gets inlined.
     // Note that we only use it if any reasonable compiler *ought* to inline anyway
     // (1-line perfect-forward dispatch functions mimicking constexpr if, for example)
-    // The purpose is that we want the compiler to yell at us if it cannot.
+    // The purpose is that we want the compiler to yell at us if it cannot inline.
     // relevant for some expression-template constructions, where failure to inline can become very
     // expensive.
     #define FORCE_INLINE [[gnu::always_inline]]
@@ -132,7 +130,7 @@
         A typical use case is for templated overloads of operators where you might conflict with
         other pre-existing overloads or overloads that might be added later.
 
-  NOTE: The TEMPL_RESTRICT_DECL/IMPL(arg) macros only take one "real" argument. However, since these
+  NOTE: The TEMPL_RESTRICT_DECL/IMPL(arg) macros only take ONE "real" argument. However, since these
         are macros and the C preprocessor does not recognize template angle-brackets < > as
         delimeters, commas inside template parameter lists can (and do!) often get misparsed.
         For this reason, it is declared as a variadic macro with an arbitrary number of arguments.
@@ -208,7 +206,7 @@ template<class T>                  using make_unsigend_t = typename std::make_un
 
 // std::max is not (and can't be) constexpr until C++14 (where the def. of constexpr was relaxed).
 // This version is always constexpr, but does not support custom comparators or initializer lists.
-// Hence, this differs from anything in std::
+// Hence, this differs from the std:: version, which is why we don't call it mystd::max
 template <class T> constexpr const T &constexpr_max(const T &x1, const T &x2)
 {
   return (x1 < x2) ? x2 : x1;

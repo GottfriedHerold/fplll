@@ -154,6 +154,8 @@ public:
 
 private:
   // The stream operators<< and >> forward to these. May be overloaded.
+  // Note that if termination_condition_type returns user_defined, reading back probably won't work.
+  // from inside the sieve for initialization, as the sieve code has no way of knowning the type.
   // The dummy implementation is a no-op.
   // clang-format off
   virtual std::ostream &dump_to_stream(std::ostream &os) const { return os; }
