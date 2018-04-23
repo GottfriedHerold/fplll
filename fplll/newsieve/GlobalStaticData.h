@@ -176,7 +176,7 @@ private:
 
   ~DefaultStaticInitializer() { --user_count; }
 };
-// initialize static data this class:
+// initialize static data for this class:
 template <class T> unsigned int DefaultStaticInitializer<T>::user_count = 0;
 
 /**
@@ -203,6 +203,16 @@ template <class T> unsigned int DefaultStaticInitializer<T>::user_count = 0;
 // StaticInitializer<T> for classes T that have the IsStaticInitializerDefaulted Trait
 // does essentially nothing. Its parent class' constructor increments a counter that is never used.
 // clang-format off
+
+template<class T>
+std::ostream &operator<<(std::ostream &, StaticInitializer<T> const &);
+// yes, the second argument is a const-reference! This is because the static initializers are
+// supposed to be stateless themselves. (stream operations act on the managed global objects rather
+// than on the initializers themselves)
+template<class T>
+std::istream &operator>>(std::istream &, StaticInitializer<T> const &);
+
+
 template <class T>
 class StaticInitializer : public DefaultStaticInitializer<T>
 {
@@ -222,6 +232,21 @@ class StaticInitializer : public DefaultStaticInitializer<T>
   template <int nfixed, class IntType>
   [[deprecated]] explicit StaticInitializer(MaybeFixed<nfixed, IntType> const &)
       : StaticInitializer() {}
+
+  friend std::ostream &operator<<(std::ostream &os, StaticInitializer<T> const &)
+  {
+    os << "Using no-op Default Static Initializer";
+    return os;
+  }
+  friend std::istream &operator>>(std::istream &is, StaticInitializer<T> const &)
+  {
+    if(!string_consume(is, "Using no-op Default Static Initializer")) throw bad_dumpread("Expected to read info about Static Initializer");
+    return is;
+  }
+  explicit StaticInitializer(std::istream &is) // initialize from stream
+  {
+    is >> *this;
+  }
 };
 // clang-format on
 

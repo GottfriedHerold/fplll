@@ -78,10 +78,10 @@ public:
   virtual ~LengthTerminationCondition() {}
 
   // exception indicating that read from dump failed.
-  class bad_dumpread_LengthTermCond : public std::runtime_error
+  class bad_dumpread_LengthTermCond : public bad_dumpread
   {
   public:
-    bad_dumpread_LengthTermCond() : runtime_error("Dump read failed for LengthTerminationCondition")
+    bad_dumpread_LengthTermCond() : bad_dumpread("Dump read failed for LengthTerminationCondition")
     {
     }
   };

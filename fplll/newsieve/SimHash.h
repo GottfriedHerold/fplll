@@ -232,7 +232,7 @@ public:
 
   explicit StaticInitializer(std::istream &is)
   {
-    // We first default-construct a Static Initializer
+    // We first default-construct Static Initializer's members (only used_size from Parent!)
     // (without actually setting GlobalBitApproxData<CooSelection> )
     // Then we overwrite it, which triggers setting GlobalBitApproxData<CooSelection>.
     is >> *this;

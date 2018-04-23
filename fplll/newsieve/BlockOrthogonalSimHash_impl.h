@@ -512,7 +512,6 @@ template <class T> inline void DMatrix::apply(std::vector<T> &vec) const
 
 /**
   Print the stored data to stream. Only used for debugging at the moment.
-  TODO: Turn into << operator
 */
 
 inline std::ostream &operator<<(std::ostream &os, DMatrix const &dmatrix)

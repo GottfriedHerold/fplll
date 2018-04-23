@@ -101,7 +101,7 @@ public:
   static constexpr MaybeFixed<nfixed> get_dim()
   {
     static_assert(nfixed_copy == nfixed, "");  // nfixed_copy defined in FOR_FIXED_DIM
-    return MaybeFixed<nfixed>(nfixed);
+    return MaybeFixed<nfixed>{nfixed};
   }
 
   FOR_VARIABLE_DIM
