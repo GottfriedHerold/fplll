@@ -124,6 +124,11 @@ public:
   static constexpr UIntClass value = nfixed;
 };
 
+/**
+  Comparison operators for the above. Note that we support mixed cases with
+  different values of nfixed.
+  For comparison with plain ints, we rely on conversion rules.
+*/
 template <int nfixed1, int nfixed2, class UIntClass1, class UIntClass2>
 constexpr bool operator==(MaybeFixed<nfixed1, UIntClass1> const &x1, MaybeFixed<nfixed2, UIntClass2> const &x2)
 {
@@ -154,10 +159,6 @@ constexpr bool operator>(MaybeFixed<nfixed1, UIntClass1> const &x1, MaybeFixed<n
 {
   return x1.get_num() > x2.get_num();
 }
-
-
-
-
 
 // Type normalization:
 // We turn any Trait class T with T::value==false into a standard std::false_type
