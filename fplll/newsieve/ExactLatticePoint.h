@@ -239,6 +239,11 @@ MaybeFixed<nfixed> ExactLatticePoint<ET, nfixed>::dim = MaybeFixed<nfixed>(nfixe
     Static Initializer: This class sets the dimension of the point
 ************************************************************/
 
+template<class ET, int nfixed>
+std::ostream &operator<<(std::ostream &, StaticInitializer<ExactLatticePoint<ET, nfixed>> const &);
+template<class ET, int nfixed>
+std::ostream &operator<<(std::istream &, StaticInitializer<ExactLatticePoint<ET, nfixed>> const &);
+
 // clang-format off
 template <class ET, int nfixed>
 class StaticInitializer< ExactLatticePoint<ET,nfixed> > final
@@ -249,17 +254,19 @@ class StaticInitializer< ExactLatticePoint<ET,nfixed> > final
   // clang-format on
 public:
   template <class T, TEMPL_RESTRICT_DECL2(IsArgForStaticInitializer<T>)>
-  StaticInitializer(T const &initializer) : StaticInitializer(initializer.dim)
+  explicit StaticInitializer(T const &initializer) : StaticInitializer(initializer.dim)
   {
   }
 
-  StaticInitializer(MaybeFixed<nfixed> const new_dim)
+  explicit StaticInitializer(MaybeFixed<nfixed> const new_dim)
   {
     assert(Parent::user_count > 0);
     if (Parent::user_count > 1)
     {
-      assert((new_dim == ExactLatticePoint<ET, nfixed>::dim));
-      // TODO: Throw exception!
+      if (!(new_dim == ExactLatticePoint<ET, nfixed>::dim))
+      {
+        throw std::runtime_error("Trying to reinit static Dimension of ExactLattice Point");
+      }
     }
     else
     {
@@ -273,6 +280,30 @@ public:
   {
     DEBUG_SIEVE_TRACEINITIATLIZATIONS("Deinitializing ExactLatticePoint with nfixed = "
                                       << nfixed << " Counter is " << Parent::user_count)
+  }
+  friend std::ostream &operator<<(std::ostream &os, StaticInitializer<ExactLatticePoint<ET,nfixed>> const &)
+  {
+    os << "Static Data for ExactLatticePoint ";
+    os << (nfixed < 0) ? "(fixed dim): " : "(variable dim): ";
+    os << ExactLatticePoint<ET, nfixed>::dim;
+    return os;
+  }
+  friend std::istream &operator>>(std::istream &is, StaticInitializer<ExactLatticePoint<ET,nfixed>> const &init_ob)
+  {
+    if (!string_consume(is,"Static Data for ExactLatticePoint")) throw bad_dumpread("Dumpread failure: ExactLatticePoint");
+    if (!string_consume(is, (nfixed < 0) ? "(fixed dim):" : "(variable dim):")) throw bad_dumpread("Dumpread failure: ExactLatticePoint");
+    decltype(ExactLatticePoint<ET, nfixed>::dim) new_dim;
+    is >> new_dim;
+    if(init_ob.get_user_count() > 1)
+    {
+      if(new_dim != ExactLatticePoint<ET,nfixed>::dim) throw std::runtime_error("Trying to overwrite static data for Exact lattice point, but more than 1 user");
+    }
+    ExactLatticePoint<ET,nfixed>::dim = new_dim;
+    return is;
+  }
+  explicit StaticInitializer(std::istream &is)
+  {
+    is >> *this;
   }
 };  // end of static initializer
 

@@ -235,7 +235,7 @@ class StaticInitializer : public DefaultStaticInitializer<T>
 
   friend std::ostream &operator<<(std::ostream &os, StaticInitializer<T> const &)
   {
-    os << "Using no-op Default Static Initializer";
+    os << "Using no-op Default Static Initializer"; // it would be nice to output sth. like T.name()
     return os;
   }
   friend std::istream &operator>>(std::istream &is, StaticInitializer<T> const &)
