@@ -182,7 +182,7 @@ template <class Implementation> class GeneralLatticePoint;
   TODO: Review / document which implications are set?
 */
 
-// In order to define e.g. Has_CoosRW, we use 3 steps (some traits only require 2):
+// In order to define e.g. Has_CoosRW, we use 3 steps (some traits only require 2 steps):
 // First, we need to give the "map" LatP -> LatticePointTraits<LatP>::Trait_CoosRW a name.
 // For this define template<class T> using Predicate_CoosRW = LatticePointTraits<T>::Trait_CoosRW;
 // Second we use (my)std::is_detected to turn this into a "map" T -> true/false.
@@ -242,6 +242,7 @@ GAUSS_SIEVE_OBTAIN_TRAIT_EXPRESSION(CoordinateType);
 GAUSS_SIEVE_OBTAIN_TRAIT_EXPRESSION(AbsoluteCooType);
 GAUSS_SIEVE_OBTAIN_TRAIT_EXPRESSION(RepCooType);
 
+// cleanup our macros
 #undef GAUSS_SIEVE_BINARY_TRAIT_PREDICATE_GET
 #undef GAUSS_SIEVE_BINARY_TRAIT_PREDICATE
 #undef GAUSS_SIEVE_OBTAIN_TRAIT_PREDICATE
@@ -345,7 +346,11 @@ template<class T> using ApproxLevelOf      = mystd::detected_or_t<std::integral_
 	       "Using template member function with wrong type.")
 // clang-format on
 
-// unsure whether to use reinterpret_casts here...
+// If a (generic) function f calls a function g and g might be overwritten by the actual concrete
+// lattice point class LatP, f's default implementation has to use static_cast<LatP*>(this)->g().
+// (otherwise, GeneralLatticePoint::g would be used.) Note that we "know" that the this pointer
+// really is of type *LatP rather than *GeneralLatticePoint, so static_cast is safe.
+// We define macros for this conversion:
 
 // clang-format off
 #define CREALTHIS static_cast<LatP const*>(this)

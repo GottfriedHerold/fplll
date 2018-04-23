@@ -1,3 +1,5 @@
+#error UNUSED FILE
+
 #ifndef GSO_LATTICE_POINT_H
 #define GSO_LATTICE_POINT_H
 

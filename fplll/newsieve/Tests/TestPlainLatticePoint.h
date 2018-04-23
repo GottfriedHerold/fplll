@@ -20,7 +20,6 @@ bool test_plain_LP()
   typedef GaussSieve::PlainLatticePoint<long, 10> LPfix;
   typedef GaussSieve::PlainLatticePoint<mpz_class,10> LPGMP;
   static_assert(GaussSieve::Has_InternalRepLinear<LPvar>::value,"");
-  static_assert(GaussSieve::Has_InternalRepLinear<LPvar>::value,"");
 
   GaussSieve::StaticInitializer<LPvar> init1(MaybeFixed<-1>{10});
   GaussSieve::StaticInitializer<LPfix> init2(MaybeFixed<10>{10});

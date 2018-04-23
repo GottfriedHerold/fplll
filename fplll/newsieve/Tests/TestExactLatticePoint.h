@@ -9,6 +9,7 @@
 #include "vector"
 #include "gmpxx.h"
 #include <iostream>
+//#include "TestLatticePoint.h"
 
 bool test_exact_LP()
 {
@@ -18,6 +19,9 @@ bool test_exact_LP()
   typedef GaussSieve::ExactLatticePoint<long, -1> LPvar;
   typedef GaussSieve::ExactLatticePoint<long, 10> LPfix;
   typedef GaussSieve::ExactLatticePoint<mpz_class,10> LPGMP;
+//  test_general_lattice_point<LPvar>(MaybeFixed<-1>{10}, 10);
+//  test_general_lattice_point<LPfix>(MaybeFixed<10>{10}, 10);
+//  test_general_lattice_point<LPGMP>(MaybeFixed<10>{10}, 10);
   static_assert(GaussSieve::IsALatticePoint<LPvar>::value,"");
   static_assert(GaussSieve::Has_InternalRepIsAbsolute<LPvar>::value,"");
 
