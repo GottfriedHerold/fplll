@@ -356,6 +356,13 @@ inline bool string_consume(std::istream &is, std::string const &str, bool elim_w
   return true;
 }
 
+class bad_dumpread : public std::runtime_error
+{
+  public:
+    template<class... Args> explicit bad_dumpread(Args&&... args)
+      : std::runtime_error(std::forward<Args>(args)...) {}
+};
+
 }  // end namespace
 
 #endif  // GAUSS_SIEVE_UTILITY_H

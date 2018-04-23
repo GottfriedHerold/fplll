@@ -77,14 +77,14 @@ public:
 
   virtual ~LengthTerminationCondition() {}
 
-  // exception in reading dumps -- unused
+  // exception indicating that read from dump failed.
   class bad_dumpread_LengthTermCond : public std::runtime_error
   {
   public:
     bad_dumpread_LengthTermCond() : runtime_error("Dump read failed for LengthTerminationCondition")
     {
     }
-  };  // exception indicating that read from dump failed.
+  };
 
   // dumping to stream
   virtual std::ostream &dump_to_stream(std::ostream &os) const override

@@ -334,12 +334,21 @@ inline std::ostream &operator<<(std::ostream &os, BlockOrthogonalSimHash<sim_has
 template <std::size_t sim_hash_len, std::size_t sim_hash_num, bool MT, class DimensionType>
 inline std::istream &operator>>(std::istream &is, BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType> &bo_sim_hash)
 {
-  // TOOD: throw exceptions on errors.
-  string_consume(is, "Number of orthogonal blocks:");
+  // local class for errors
+  class bad_dumpread_BlockOrthogonalSimHash : public bad_dumpread
+  {
+  public:
+    bad_dumpread_BlockOrthogonalSimHash() : bad_dumpread("Dump read failed for BlockOrthogonalSimHash")
+    {
+    }
+  };
+
+
+  if (!string_consume(is, "Number of orthogonal blocks:")) throw bad_dumpread_BlockOrthogonalSimHash();
   is >> bo_sim_hash.number_of_orthogonal_blocks;
-  string_consume(is, "Fast WH len:");
+  if (!string_consume(is, "Fast WH len:")) throw bad_dumpread_BlockOrthogonalSimHash();
   is >> bo_sim_hash.fast_walsh_hadamard_len;
-  string_consume(is, "Log2 thereof:");
+  if (!string_consume(is, "Log2 thereof:")) throw bad_dumpread_BlockOrthogonalSimHash();
   is >> bo_sim_hash.fast_walsh_hadamard_loglen;
 
   bo_sim_hash.pmatrices.clear();
@@ -350,31 +359,31 @@ inline std::istream &operator>>(std::istream &is, BlockOrthogonalSimHash<sim_has
   PMatrixBlock pmatrixblock;
   DMatrixBlock dmatrixblock;
 
-  string_consume(is, "PMatrices: [");
+  if (!string_consume(is, "PMatrices: [")) throw bad_dumpread_BlockOrthogonalSimHash();
   for(std::size_t i=0; i < bo_sim_hash.number_of_orthogonal_blocks; ++i)
   {
-    assert(string_consume(is, "["));
+    if (!string_consume(is, "[")) throw bad_dumpread_BlockOrthogonalSimHash();
     for(std::size_t j=0; j < num_of_transforms; ++j)
     {
       is >> pmatrixblock[j];
     }
-    assert(string_consume(is, "]"));
+    if (!string_consume(is, "]")) throw bad_dumpread_BlockOrthogonalSimHash();
     bo_sim_hash.pmatrices.push_back(std::move(pmatrixblock));
   }
-  string_consume(is, "]");
+  if (!string_consume(is, "]")) throw bad_dumpread_BlockOrthogonalSimHash();
 
-  string_consume(is, "DMatrices: [");
+  if (!string_consume(is, "DMatrices: [")) throw bad_dumpread_BlockOrthogonalSimHash();
   for(std::size_t i=0; i < bo_sim_hash.number_of_orthogonal_blocks; ++i)
   {
-    assert(string_consume(is,"["));
+    if(!string_consume(is,"[")) throw bad_dumpread_BlockOrthogonalSimHash();
     for(std::size_t j=0; j < num_of_transforms; ++j)
     {
       is >> dmatrixblock[j];
     }
-    assert(string_consume(is, "]"));
+    if (!string_consume(is, "]")) throw bad_dumpread_BlockOrthogonalSimHash();
     bo_sim_hash.dmatrices.push_back(std::move(dmatrixblock));
   }
-  assert(string_consume(is,"]"));
+  if (!string_consume(is, "]")) throw bad_dumpread_BlockOrthogonalSimHash();
   return is;
 }
 
@@ -450,8 +459,7 @@ inline void PMatrix::print(std::ostream &os) const
 
 inline std::istream &operator>>(std::istream &is, PMatrix &pmatrix)
 {
-  // TODO: Throw exceptions on failure
-  string_consume(is,"[");
+  if ( !string_consume(is,"[")) throw bad_dumpread("failed reading in PMatrix");
   pmatrix.permutation.clear();
   assert(pmatrix.permutation.empty());
   for (;is.peek() !=']'; )
@@ -461,7 +469,7 @@ inline std::istream &operator>>(std::istream &is, PMatrix &pmatrix)
     pmatrix.permutation.push_back(next);
   }
   pmatrix.permutation.shrink_to_fit();
-  string_consume(is,"]");
+  if (!string_consume(is,"]")) throw bad_dumpread("failed reading in PMatrix");
   return is;
 }
 
@@ -525,8 +533,7 @@ inline std::ostream &operator<<(std::ostream &os, DMatrix const &dmatrix)
 
 inline std::istream &operator>>(std::istream &is, DMatrix &dmatrix)
 {
-  // TODO: Throw exceptions on failure
-  string_consume(is,"[");
+  if (!string_consume(is,"[")) throw bad_dumpread("Dump read failed for DMatrix");
   dmatrix.diagonal.clear();
   assert(dmatrix.diagonal.empty());
   for (;is.peek() !=']'; )
@@ -534,11 +541,11 @@ inline std::istream &operator>>(std::istream &is, DMatrix &dmatrix)
     char symb;
     is >> symb;
 //    if(symb == ' ') continue; // not needed!
-    assert(symb == '+' || symb == '-'); // throw exception
+    if (!(symb == '+' || symb == '-')) throw bad_dumpread("Dump read failed for DMatrix");
     dmatrix.diagonal.push_back(symb=='+'?0:1);
   }
   dmatrix.diagonal.shrink_to_fit();
-  string_consume(is,"]"); // throw exception
+  if (!string_consume(is,"]")) throw bad_dumpread("Dump read failed for DMatrix");
   return is;
 }
 
