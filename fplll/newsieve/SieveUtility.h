@@ -79,6 +79,8 @@ public:
 // a lot of our classes. Some data structures make use of a known dimension.
 
 template <int nfixed = -1, class UIntClass = unsigned int> class MaybeFixed;
+//template <int nfixed1, int nfixed2, class UIntClass1, class UIntClass2>
+//constexpr inline bool operator==(MaybeFixed<nfixed1, UIntClass1> const &, MaybeFixed<nfixed2, UIntClass2> const &);
 
 template <class UIntClass>  // specialization for nfixed == -1
 class MaybeFixed<-1, UIntClass>
@@ -93,6 +95,7 @@ public:
   MaybeFixed() = default;  // Not sure whether we should allow uninitialized dims here. The issue is
                            // that we want the same interface in both cases.
   inline operator UIntClass() const { return value; }
+  // Note that this returns a reference! (this is useful if the address is constexpr)
   inline constexpr UIntClass const &get_num() const { return value; }
   UIntClass value;
 };
@@ -120,6 +123,41 @@ public:
   static inline constexpr UIntClass get_num() { return nfixed; }
   static constexpr UIntClass value = nfixed;
 };
+
+template <int nfixed1, int nfixed2, class UIntClass1, class UIntClass2>
+constexpr bool operator==(MaybeFixed<nfixed1, UIntClass1> const &x1, MaybeFixed<nfixed2, UIntClass2> const &x2)
+{
+  return x1.get_num() == x2.get_num();
+}
+template <int nfixed1, int nfixed2, class UIntClass1, class UIntClass2>
+constexpr bool operator!=(MaybeFixed<nfixed1, UIntClass1> const &x1, MaybeFixed<nfixed2, UIntClass2> const &x2)
+{
+  return x1.get_num() != x2.get_num();
+}
+template <int nfixed1, int nfixed2, class UIntClass1, class UIntClass2>
+constexpr bool operator<=(MaybeFixed<nfixed1, UIntClass1> const &x1, MaybeFixed<nfixed2, UIntClass2> const &x2)
+{
+  return x1.get_num() <= x2.get_num();
+}
+template <int nfixed1, int nfixed2, class UIntClass1, class UIntClass2>
+constexpr bool operator<(MaybeFixed<nfixed1, UIntClass1> const &x1, MaybeFixed<nfixed2, UIntClass2> const &x2)
+{
+  return x1.get_num() < x2.get_num();
+}
+template <int nfixed1, int nfixed2, class UIntClass1, class UIntClass2>
+constexpr bool operator>=(MaybeFixed<nfixed1, UIntClass1> const &x1, MaybeFixed<nfixed2, UIntClass2> const &x2)
+{
+  return x1.get_num() >= x2.get_num();
+}
+template <int nfixed1, int nfixed2, class UIntClass1, class UIntClass2>
+constexpr bool operator>(MaybeFixed<nfixed1, UIntClass1> const &x1, MaybeFixed<nfixed2, UIntClass2> const &x2)
+{
+  return x1.get_num() > x2.get_num();
+}
+
+
+
+
 
 // Type normalization:
 // We turn any Trait class T with T::value==false into a standard std::false_type
