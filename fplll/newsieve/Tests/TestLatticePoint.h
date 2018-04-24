@@ -8,6 +8,11 @@
 
 #include <sstream>
 
+// Note that test_general_lattice_point does NOT
+// test for the validity of general lattice points as defined per LatticePointConcept.h
+// (The issue is that initializiation and construction of lattice points is
+// class specific)
+
 // InitArg const &init_arg is the argument to the static_initializer
 template<class LatticePoint, int nfixed, class InitArg>
 bool test_general_lattice_point(InitArg const &init_arg, GaussSieve::MaybeFixed<nfixed> const  = {})

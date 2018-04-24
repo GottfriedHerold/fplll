@@ -393,7 +393,7 @@ I/O
 *************************/
 
 template <class LatP>
-inline std::ostream &GeneralLatticePoint<LatP>::write_lp_to_stream(std::ostream &os,
+inline std::ostream &GeneralLatticePoint<LatP>::print_lattice_point(std::ostream &os,
                                                                    bool const include_norm2,
                                                                    bool const include_approx) const
 {
@@ -417,29 +417,57 @@ inline std::ostream &GeneralLatticePoint<LatP>::write_lp_to_stream(std::ostream 
   return os;
 }
 
-template <class LatP>
-template <class Impl, TEMPL_RESTRICT_IMPL2(Has_ExposesInternalRep<Impl>)>
-inline std::ostream &GeneralLatticePoint<LatP>::write_lp_rep_to_stream(std::ostream &os) const
+template<class LatP>
+template<class Impl>
+inline bool GeneralLatticePoint<LatP>::serialize_lp(std::ostream &os) const
 {
   IMPL_IS_LATP;
-  DEBUG_TRACEGENERIC("Using generic writer (internal rep) for " << LatP::class_name())
+  static_assert(Has_ExposesInternalRep<Impl>::value,
+                "Lattice Point does not expose internal representation. Unknown how to serialize. Did you forget to overload serialize_lp?");
+  DEBUG_TRACEGENERIC("Using generic serializer for " << LatP::class_name())
   auto const dim = CREALTHIS->get_internal_rep_size();
   os << "[ ";
+  os << dim << "|";
   for (uint_fast16_t i = 0; i < dim; ++i)
   {
     os << CREALTHIS->get_internal_rep(i) << " ";
   }
   os << "]";
-  return os;
+  return static_cast<bool>(os); // indicates success, but ignores eof
 }
 
-FOR_LATTICE_POINT_LP
-std::istream &operator>>(std::istream &is, LP &LatP) { return LatP.read_from_stream(is); }
+template<class LatP>
+template<class Impl>
+inline bool GeneralLatticePoint<LatP>::unserialize_lp(std::istream &is)
+{
+  IMPL_IS_LATP;
+  static_assert(Has_ExposesInternalRep<Impl>::value,
+                "Lattice Point does not expose internal representation. Unknown how to un-serialize. Did you forget to overload unserialize_lp?");
+  static_assert(Has_InternalRep_RW<Impl>::value,"Cannot write to internal representation.");
+  DEBUG_TRACEGENERIC("Using generic unserializer for " << LatP::class_name())
+  if (!string_consume(is, "[ ")) return false;
+  auto const dim = REALTHIS->get_internal_rep_size();
+  decltype(dim) dim_read;
+  is >> dim_read;
+  if(dim != dim_read) return false;
+  if (!string_consume(is,"|")) return false;
+  for (uint_fast16_t i = 0; i < dim; ++i)
+  {
+    is >> REALTHIS->get_internal_rep(i);
+  }
+  if (!string_consume(is,"]")) return false;
+  REALTHIS->sanitize();
+  return true;
+}
+
+//FOR_LATTICE_POINT_LP
+//std::istream &operator>>(std::istream &is, LP &latp) { return latp.read_from_stream(is); }
 
 FOR_LATTICE_POINT_LP
-std::ostream &operator<<(std::ostream &os, LP const &LatP)
+//[[deprecated("Use print_lattice_point or serialze_lp instead")]]
+std::ostream &operator<<(std::ostream &os, LP const &latp)
 {
-  return LatP.write_lp_to_stream(os);
+  return latp.print_lattice_point(os);
 }
 
 /********************************

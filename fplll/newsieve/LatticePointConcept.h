@@ -504,17 +504,63 @@ public:
   void get_dim() const = delete;
 
   /**
-    Used for output to stream. Note that operator<< calls this (or an overloaded version)
-    Supposed to be overloaded for the specific class.
+    IO / Serialization:
+
+    For our other classes, we have the following conventions:
+    operator<< writes in human-readable format.
+    operator>> can be used to read output back in.
+
+    For lattice points, it is unclear whether the output should be human-readable or binary
+    (unformatted) and whether to include extra data (that can be computed from the other data,
+    such as norm2 or simhashes etc.)
+
+    For other classes, a human-readable format is chosen, because savings by using a binary format
+    are negligible (in the sense that the total amount of data that
+    is non-lattice points is small anyway and it simplifies things).
+
+    For lattice points, we want to have both a human-readable printing and a (possibly binary)
+    serialization.
+    In the case of human-readable printing, we want to OPTIONALLY print additional data.
+    (This makes reading back in again difficult).
+
+    So we choose the following: operator>> is a shorthand for
+    print_lattice_point(...) with some default options.
+
+    Reading back in via operator>> is not generally supported.
+    (The issue is that optional data makes this a pain)
+    Any any rate, we do not have guarantees like
+    {stream << point1; stream >> point2;} result in point1 == point2
+    or {string1 >> point; string2 << point;} result in string1 == string2
+    even if a particular class supports stream-input.
+
+    For this reason, we deprecate / delete operator<< and operator>> for lattice points.
+
+    For serialization purposes, we have serialize_lp and unserialize_lp
+    that serialize to / from stream. These may or may not be human readable, but have the above
+    guarantees.
+
+    Note: For serialization purposes, the first character output should not be a whitespace.
+    (Otherwise, using operator>> for other elements in the same stream will not work)
+    Prepend with some character if needed.
+
+
+    TODO: serialization support is not yet finished. The hardest problem is working around GMP
+          limitations (mpz_class has no good IO support, unformatted IO for mpz_t has only C-style
+          legacy interface)
   */
 
-  inline std::ostream &write_lp_to_stream(std::ostream &os, bool const include_norm2 = true,
+  inline std::ostream &print_lattice_point(std::ostream &os, bool const include_norm2 = true,
                                           bool const include_approx = true) const;
 
-  template <class Impl = LatP, TEMPL_RESTRICT_DECL2(Has_ExposesInternalRep<Impl>)>
-  inline std::ostream &write_lp_rep_to_stream(std::ostream &os) const;
+  // writes point to stream, possibly binary. Return value is true if successful
+  template<class Impl = LatP>
+  inline bool serialize_lp(std::ostream &os) const;
 
-  std::istream &read_from_stream(std::istream &is) = delete;
+  template<class Impl = LatP>
+  inline bool unserialize_lp(std::istream &is);
+  // construction from stream must be implemented in LatP's constructor.
+
+//  std::istream &read_from_stream(std::istream &is) = delete;
 
   /**
     Fills a lattice point with zeros.

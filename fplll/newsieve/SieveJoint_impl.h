@@ -114,7 +114,7 @@ void Sieve<SieveTraits,GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED>::dump_status_to_s
 
     if(howverb>=1) {
         of << "Best vector found so far=";
-        shortest_vector_found->write_lp_to_stream(of,true);
+        shortest_vector_found->print_lattice_point(of,true);
         of << endl;
     }
 

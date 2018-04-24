@@ -251,11 +251,11 @@ public:
     return elp.get_dim();
   }
 
-  // forward write_lp_to_stream
-  inline std::ostream &write_lp_to_stream(std::ostream &os, bool const include_norm2 = true,
+  // forward print_lattice_point
+  inline std::ostream &print_lattice_point(std::ostream &os, bool const include_norm2 = true,
                                           bool const include_approx = true) const
   {
-    elp.write_lp_to_stream(os, include_norm2, include_approx);
+    elp.print_lattice_point(os, include_norm2, include_approx);
     if (include_approx)
     {
       os << " SimHash: " << sim_hashes;
