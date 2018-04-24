@@ -132,18 +132,51 @@ public:
 #endif
   }
 
-  // TODO: Remove these constructors?
-  FOR_FIXED_DIM
-  constexpr explicit ExactLatticePoint(MaybeFixed<nfixed>) : ExactLatticePoint() {}
+  // TODO: Remove these constructors and only default-construct?
 
-  FOR_VARIABLE_DIM
-  CONSTEXPR_IN_NON_DEBUG_LP_INIT explicit ExactLatticePoint(MaybeFixed<nfixed> dim)
+  // For fixed dim:
+  template<int nfixed_copy = nfixed, int nfixed2, TEMPL_RESTRICT_DECL(nfixed_copy >= 0 && nfixed2 >=0)>
+  constexpr explicit ExactLatticePoint(MaybeFixed<nfixed2>) : ExactLatticePoint()
+  {
+    static_assert(nfixed_copy==nfixed && nfixed == nfixed2);
+  }
+
+  FOR_FIXED_DIM
+  CONSTEXPR_IN_NON_DEBUG_LP_INIT explicit ExactLatticePoint(MaybeFixed<-1> dim) : ExactLatticePoint()
+  {
+#ifdef DEBUG_SIEVE_LP_MATCHDIM
+    assert(dim == get_dim());
+#endif
+  }
+
+  FOR_FIXED_DIM
+  CONSTEXPR_IN_NON_DEBUG_LP_INIT explicit ExactLatticePoint(unsigned int dim) : ExactLatticePoint()
+  {
+#ifdef DEBUG_SIEVE_LP_MATCHDIM
+    assert(dim == get_dim());
+#endif
+  }
+
+  // For variable dim:
+  template<int nfixed_copy = nfixed, int nfixed2, TEMPL_RESTRICT_DECL(nfixed_copy == -1)>
+  CONSTEXPR_IN_NON_DEBUG_LP_INIT explicit ExactLatticePoint(MaybeFixed<nfixed2> dim)
       : ExactLatticePoint()
   {
 #ifdef DEBUG_SIEVE_LP_MATCHDIM
     assert(dim == get_dim());
 #endif
   }
+
+  FOR_VARIABLE_DIM
+  CONSTEXPR_IN_NON_DEBUG_LP_INIT explicit ExactLatticePoint(unsigned int dim)
+      : ExactLatticePoint()
+  {
+#ifdef DEBUG_SIEVE_LP_MATCHDIM
+    assert(dim == get_dim());
+#endif
+  }
+
+
 
   // TODO: Debug output and validation.
 
@@ -281,30 +314,40 @@ public:
     DEBUG_SIEVE_TRACEINITIATLIZATIONS("Deinitializing ExactLatticePoint with nfixed = "
                                       << nfixed << " Counter is " << Parent::user_count)
   }
+
   friend std::ostream &operator<<(std::ostream &os, StaticInitializer<ExactLatticePoint<ET,nfixed>> const &)
   {
     os << "Static Data for ExactLatticePoint ";
-    os << (nfixed < 0) ? "(fixed dim): " : "(variable dim): ";
-    os << ExactLatticePoint<ET, nfixed>::dim;
+    os << ((nfixed < 0) ? "(fixed dim): " : "(variable dim): ");
+    os << access_dim();
     return os;
   }
   friend std::istream &operator>>(std::istream &is, StaticInitializer<ExactLatticePoint<ET,nfixed>> const &init_ob)
   {
     if (!string_consume(is,"Static Data for ExactLatticePoint")) throw bad_dumpread("Dumpread failure: ExactLatticePoint");
     if (!string_consume(is, (nfixed < 0) ? "(fixed dim):" : "(variable dim):")) throw bad_dumpread("Dumpread failure: ExactLatticePoint");
-    decltype(ExactLatticePoint<ET, nfixed>::dim) new_dim;
+    mystd::remove_reference_t<decltype(access_dim())> new_dim;
     is >> new_dim;
     if(init_ob.get_user_count() > 1)
     {
-      if(new_dim != ExactLatticePoint<ET,nfixed>::dim) throw std::runtime_error("Trying to overwrite static data for Exact lattice point, but more than 1 user");
+      if(new_dim != access_dim()) throw std::runtime_error("Trying to overwrite static data for Exact lattice point, but more than 1 user");
     }
-    ExactLatticePoint<ET,nfixed>::dim = new_dim;
+    access_dim() = new_dim;
     return is;
   }
   explicit StaticInitializer(std::istream &is)
   {
     is >> *this;
   }
+
+  // this allows friends of StaticInitializer to access ExactLatticePoint<ET,nfixed>
+  // (since friend is not transitive in C++)
+  private:
+  static constexpr mystd::add_lvalue_reference_t<decltype(ExactLatticePoint<ET,nfixed>::dim)> access_dim()
+  {
+    return ExactLatticePoint<ET,nfixed>::dim;
+  }
+
 };  // end of static initializer
 
 }  // end of namespace

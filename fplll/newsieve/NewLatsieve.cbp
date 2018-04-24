@@ -63,6 +63,7 @@
 		<Unit filename="Tests/TestBlockOrthogonalSimHash.h" />
 		<Unit filename="Tests/TestEMV.h" />
 		<Unit filename="Tests/TestExactLatticePoint.h" />
+		<Unit filename="Tests/TestLatticePoint.h" />
 		<Unit filename="Tests/TestLazy.h" />
 		<Unit filename="Tests/TestList.h" />
 		<Unit filename="Tests/TestMTPRNG.h" />

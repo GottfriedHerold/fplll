@@ -202,6 +202,9 @@ template<class T>                  using decay_t         = typename std::decay<T
 template<bool b>                   using bool_constant   = std::integral_constant<bool,b>;
 template<bool b, class T = void>   using enable_if_t     = typename std::enable_if<b, T>::type;
 template<class T>                  using make_unsigend_t = typename std::make_unsigned<T>::type;
+template<class T>                  using add_lvalue_reference_t = typename std::add_lvalue_reference<T>::type;
+template<class T>                  using add_rvalue_reference_t = typename std::add_rvalue_reference<T>::type;
+template<class T>                  using remove_reference_t     = typename std::remove_reference<T>::type;
 // clang-format on
 
 // std::max is not (and can't be) constexpr until C++14 (where the def. of constexpr was relaxed).

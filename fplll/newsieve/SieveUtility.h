@@ -73,10 +73,15 @@ public:
   constexpr IgnoreArg() = default;
 };
 
-// MaybeFixed<-1> encapsulates a nonnegative runtime integer
-// MaybeFixed<nfixed> encapsulates a compile-time known integer nfixed.
-// This is used as a template parameter to propagate a fixed dimension through
-// a lot of our classes. Some data structures make use of a known dimension.
+/**
+ MaybeFixed<-1> encapsulates a nonnegative runtime integer
+ MaybeFixed<nfixed> encapsulates a compile-time known integer nfixed.
+ This is used as a template parameter to propagate a fixed dimension through
+ a lot of our classes. Some data structures make use of a known dimension.
+ While compiler optimizations (constant folding, emitting seperate versions of a function etc.)
+ sometimes work, in some cases, compile-time knowledge can even allow to use a different class
+ (e.g. std::array vs. std::vector).
+ */
 
 template <int nfixed = -1, class UIntClass = unsigned int> class MaybeFixed;
 //template <int nfixed1, int nfixed2, class UIntClass1, class UIntClass2>
@@ -111,14 +116,14 @@ public:
   static constexpr bool IsFixed = true;
 
   constexpr MaybeFixed() = default;
-  //#ifdef DEBUG_SIEVE_LP_MATCHDIM
-  //  constexpr  MaybeFixed(UIntClass const new_value) { assert(new_value == nfixed); }
-  //#else
+  #ifdef DEBUG_SIEVE_LP_MATCHDIM
+    CPP14CONSTEXPR  MaybeFixed(UIntClass const new_value) { assert(new_value == nfixed); }
+  #else
   template <class Integer, TEMPL_RESTRICT_DECL2(std::is_integral<Integer>)>
   constexpr MaybeFixed(Integer const)
   {
   }
-  // #endif
+  #endif
   FORCE_INLINE inline constexpr operator UIntClass() const { return nfixed; }
   static inline constexpr UIntClass get_num() { return nfixed; }
   static constexpr UIntClass value = nfixed;
@@ -158,6 +163,32 @@ template <int nfixed1, int nfixed2, class UIntClass1, class UIntClass2>
 constexpr bool operator>(MaybeFixed<nfixed1, UIntClass1> const &x1, MaybeFixed<nfixed2, UIntClass2> const &x2)
 {
   return x1.get_num() > x2.get_num();
+}
+
+// Stream IO:
+
+template <int nfixed, class UIntClass>
+std::ostream &operator<<(std::ostream &os, MaybeFixed<nfixed, UIntClass> const &num)
+{
+  os << num.get_num();
+  return os;
+}
+
+template <int nfixed, class UIntClass, TEMPL_RESTRICT_DECL(nfixed>=0)>
+std::istream &operator>>(std::istream &is, MaybeFixed<nfixed,UIntClass> const& )
+{
+  UIntClass dummy;
+  is >> dummy;
+  assert(dummy == nfixed);
+  return is;
+}
+
+template <int nfixed, class UIntClass, TEMPL_RESTRICT_DECL((nfixed<0))>
+std::istream &operator>>(std::istream &is, MaybeFixed<nfixed,UIntClass> &data)
+{
+  static_assert(nfixed == -1,"");
+  is >> data.value;
+  return is;
 }
 
 // Type normalization:
