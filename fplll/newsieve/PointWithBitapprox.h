@@ -17,6 +17,15 @@
   then AddBitApproximationToLP<ELP, CooSelection> is another lattice point class
   that includes a sim_hash (whose paramteres are controlled by CooSelection).
   This resulting class is convertible to / from ELP.
+
+  !!! IMPORTANT !!!
+  operations on the point DO NOT UPDATE the sim_hashes.
+  The user has to explicitly call update_bitapprox()
+  !!! IMPORTANT !!!
+  (This is really ugly, but unfortunately doing otherwise would cause unneccessary computations
+  of simhashes that are never used. Computing simhashes is relevant for the running time in
+  moderate dimensions.)
+
 */
 
 // We use class T = ELP dummy parameters for TEMPL_RESTRICT_*
@@ -265,18 +274,32 @@ public:
 
   // clang-format off
   // forward write_lp_rep_to_stream
-  template <class T = ELP>
-  inline std::ostream &write_lp_rep_to_stream(std::ostream &os) const
-  {
-    T_IS_ELP;
-    static_assert(Has_ExposesInternalRep<T>::value, "");
-    return elp.write_lp_rep_to_stream(os);
-  }
-  // clang-format on
+  // -- Functionality was removed from Lattice Point concept
+//  template <class T = ELP>
+//  inline std::ostream &write_lp_rep_to_stream(std::ostream &os) const
+//  {
+//    T_IS_ELP;
+//    static_assert(Has_ExposesInternalRep<T>::value, "");
+//    return elp.write_lp_rep_to_stream(os);
+//  }
+//  // clang-format on
 
-  //
-  // TODO: read_from_stream
-  //
+  // Note that in the Parent, these are member functions TEMPLATES!
+  // Here, they are not. This is weird, but gives correct behaviour (in terms of earlier errors)
+
+  // template<class Impl = LatP>
+  inline bool serialize_lp(std::ostream &os) const
+  {
+    return elp.serialize_lp(os);
+  }
+
+  // template<class Impl = LatP>
+  inline bool unserialize_lp(std::istream &is)
+  {
+    bool retval = elp.unserialize_lp(is);
+    update_bitapprox();
+    return retval;
+  }
 
   void fill_with_zero() { elp.fill_with_zero(); }
   void make_negative() { elp.make_negative(); }
