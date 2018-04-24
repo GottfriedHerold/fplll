@@ -20,8 +20,8 @@ bool test_exact_LP()
   typedef GaussSieve::ExactLatticePoint<long, 10> LPfix;
   typedef GaussSieve::ExactLatticePoint<mpz_class,10> LPGMP;
   test_general_lattice_point<LPvar,10>(MaybeFixed<-1>{10});
-//  test_general_lattice_point<LPfix,10>(MaybeFixed<10>{10});
-//  test_general_lattice_point<LPGMP,10>(MaybeFixed<10>{10});
+  test_general_lattice_point<LPfix,10>(MaybeFixed<10>{10});
+  test_general_lattice_point<LPGMP,10>(MaybeFixed<10>{10});
 //  static_assert(GaussSieve::IsALatticePoint<LPvar>::value,"");
   static_assert(GaussSieve::Has_InternalRepIsAbsolute<LPvar>::value,"");
 

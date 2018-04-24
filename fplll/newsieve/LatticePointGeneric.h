@@ -447,7 +447,7 @@ inline bool GeneralLatticePoint<LatP>::unserialize_lp(std::istream &is)
   DEBUG_TRACEGENERIC("Using generic unserializer for " << LatP::class_name())
   if (!string_consume(is, "[ ")) return false;
   auto const dim = REALTHIS->get_internal_rep_size();
-  decltype(dim) dim_read;
+  mystd::decay_t<decltype(dim)> dim_read;
   is >> dim_read;
   if(dim != dim_read) return false;
   if (!string_consume(is,"|")) return false;

@@ -20,7 +20,7 @@ bool test_general_lattice_point(InitArg const &init_arg, GaussSieve::MaybeFixed<
   static constexpr unsigned int dim = nfixed;
   static_assert(dim > 0, "Invalid dimension for test");
   static_assert(dim > 2, "Too small dimension for test"); // some accidential equalities would screw up tests
-  static_assert(dim < 1000, "Too large dimension for test"); // fear of overflows
+  static_assert(dim < 100, "Too large dimension for test"); // fear of overflows
   static_assert(GaussSieve::IsALatticePoint<LatticePoint>::value,"Not a lattice Point");
   GaussSieve::StaticInitializer<LatticePoint> init1{init_arg};
   GaussSieve::StaticInitializer<LatticePoint> init2{init_arg}; // double-init should work
@@ -87,7 +87,10 @@ bool test_general_lattice_point(InitArg const &init_arg, GaussSieve::MaybeFixed<
   assert(X1.is_zero() == true);
   X2.fill_with_zero();
   assert(X2.is_zero() == true);
-
+  assert(Y1 != Y2);
+  assert(Y1.serialize_lp(channel)); // channel << Y1
+  assert(Y2.unserialize_lp(channel)); // channel >> Y2
+  assert(Y1 == Y2);
   return true;
 }
 
