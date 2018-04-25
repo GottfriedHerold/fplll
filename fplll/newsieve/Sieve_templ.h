@@ -1,3 +1,5 @@
+// This file intentionally has no (traditional) include guards!
+
 // clang-format off
 // turned off for this file, which is only preprocessor stuff
 // because we want to have proper indentation for (nested) preprocessor #if's in this file.
@@ -44,7 +46,7 @@
 // them:
 // This would cause trouble with above macros getting set; in the case of Sieve.cpp, including
 // Sieve.h would be outright wrong, because Sieve.h has extern template statements.
-// The include guard used here is to raise an error if this is violated.
+// The non-standard include guard used here is to raise an error if this is violated.
 
 #ifdef SIEVE_TEMPL_H
   #error Including Sieve_templ.h twice

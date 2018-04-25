@@ -18,9 +18,9 @@
       The reason is that the thread synchronization requirements for sim_hashes are different from
       the requirements for the point: If we read a sim_hash that was only partially updated / messed
       up by concurrent threads, the resulting sim_hash is still a valid object (any sequence of bits
-      is, after all). It will at worst make us give a false positive / false negative in prediction.
-      Consequently, we can work with more relaxed atomics. Since memory access is actually a
-      bottleneck for the 2-sieve, this matters a lot.
+      is, after all). It will at worst give a false positive / false negative in prediction.
+      Consequently, we can work with more relaxed atomics. ("optimistic concurrency")
+      Since memory access is actually *THE* bottleneck for the 2-sieve, this matters a lot.
 
   We also try to maintain the same interface for the single- and multi-threaded versions.
   Since this is a bottleneck for the algorithm, we allow somewhat weird interface definitions (at
@@ -97,6 +97,7 @@ public:
   // type differs from GaussList_StoredPoint, it needs to be convertible
   // (AddBitApproximationToPoint (cf. PointWithApproximation.h) ensures the latter)
   // The !is_reference<Arg> in the restrictions makes this template only valid for actual rvalues.
+  // (Arg&& arg is an rvalue, Arg& &&arg is not)
 
   // Variant for Arg's without SimHashes
   template <class Arg, TEMPL_RESTRICT_DECL2(IsALatticePoint<mystd::decay_t<Arg>>,
@@ -139,8 +140,8 @@ private:
   typename SieveTraits::GaussList_StoredPoint *ptr_to_exact;  // owning pointer
 
 public:
-  // we keep the list sorted according to length. We define operator< to use sort() from std::list.
-  // (Note that comparions for the lattice points *ptr_to_exact are by norm2)
+  // we keep the list sorted according to length. We define operator< in order to use sort()
+  // from std::list. (Note that comparions for the lattice points *ptr_to_exact are by norm2)
   bool operator<(STNode const &other) const { return *ptr_to_exact < *(other.ptr_to_exact); }
 };
 
@@ -158,9 +159,6 @@ public:
 
 template<class SieveTraits, bool MT> class GaussVectorWithBitApprox;
 template<class SieveTraits, bool MT> class GaussIteratorBitApproxForVector;
-
-
-
 
 // clang-format off
 template<class SieveTraits>
@@ -193,8 +191,7 @@ public:
 
   // Sole constructor. The argument is used to initialize the static data of the used lattice point
   // classes.
-  // NOTE / TODO: Making this noexcept means we have to catch reinitializations in the caller.
-  explicit GaussListWithBitApprox(GlobalStaticDataInitializer const &static_data) noexcept
+  explicit GaussListWithBitApprox(GlobalStaticDataInitializer const &static_data)
       : init_stored_point(static_data),
         init_return_type(static_data),
         actual_list()

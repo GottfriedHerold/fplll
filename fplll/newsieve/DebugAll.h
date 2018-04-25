@@ -6,6 +6,8 @@
 #ifndef DEBUG_ALL_H
 #define DEBUG_ALL_H
 
+// We have no #includes here. Note that this file gets included via DefaultIncludes.h
+
 /**
   We recognize the following debug symbols:
   DEBUG_SIEVE_SILENT_ALL

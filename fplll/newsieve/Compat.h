@@ -11,6 +11,8 @@
 #ifndef SIEVE_GAUSS_COMPAT_H
 #define SIEVE_GAUSS_COMPAT_H
 
+// This file must only include standard library headers.
+// This file gets included via DefaultIncludes.h
 #include <type_traits>
 #include <utility>
 
@@ -195,7 +197,7 @@ namespace mystd
 {
 // some often-used shorthands to avoid having to use typename (my)std::foo<Bar>::type
 // we use (my)std::foo_t<Bar> instead
-// completely identical to the corresponding std:: definitions.
+// completely identical to the corresponding std:: definitions that were added to C++ post-C++11
 // clang-format off
 template<bool b, class T, class F> using conditional_t   = typename std::conditional<b, T, F>::type;
 template<class T>                  using decay_t         = typename std::decay<T>::type;

@@ -18,6 +18,8 @@
 #define TEST_BLOCKORTHOGONAL_SIM_HASH
 //#define TEST_LIST
 //#define TEST_ARRAY_LIST
+#define TEST_QUEUE
+
 
 // clang-format off
 #ifdef TEST_ALL
@@ -114,12 +116,14 @@
 */
 
 #ifdef TEST_SHI_SAMPLER
-  #include "ShiSampler_impl.h"
+  #include "GPVSampler_impl.h"
   #include "Sampler_impl.h"
 #endif
 
 #ifdef TEST_QUEUE
   #include "GaussQueue_impl.h"
+  #include "GPVSampler_impl.h"
+  #include "Sampler_impl.h"
 #endif
 
 // clang-format on

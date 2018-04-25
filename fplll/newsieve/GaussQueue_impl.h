@@ -16,14 +16,15 @@ namespace GaussSieve
 template <class SieveTraits>
 GaussQueue<SieveTraits, false>::GaussQueue(Sieve<SieveTraits, false> *const caller_sieve,
                                           GlobalStaticDataInitializer const &static_data,
-                                          int seed_sampler,
+                                          int new_seed_sampler,
                                           Sampler<SieveTraits, false, std::mt19937_64, std::seed_seq> *user_sampler)
     : init_data_type(static_data),
       init_ret_type(static_data),
       main_queue(),
       gauss_sieve(caller_sieve),
+      seed_sampler(new_seed_sampler),
       sampler(user_sampler),
-      sampler_owned(user_sampler == nullptr)
+      sampler_auto_created(false)
 // clang-format on
 {
 #ifdef DEBUG_SIEVE_STANDALONE_QUEUE
@@ -33,13 +34,7 @@ GaussQueue<SieveTraits, false>::GaussQueue(Sieve<SieveTraits, false> *const call
 #endif
   if (sampler == nullptr)
   {
-    // Use seed_sampler to init the rng. The other numbers spell "SAMPLER" in ASCII, they are here
-    //  because we use the very same seed elsewhere as well (Think of sees_seq as a Hash)
-    std::seed_seq seed{83, 65, 77, 80, 76, 69, 82, seed_sampler};
-    DEBUG_SIEVE_TRACEINITIATLIZATIONS("Initializing our own sampler. Using GPVSamplerExtended")
-    sampler = new GPVSamplerExtended<SieveTraits, false, std::mt19937_64, std::seed_seq>(seed, caller_sieve->get_ambient_dimension() / 3 );
-//    sampler = new GPVSampler<SieveTraits, false, std::mt19937_64, std::seed_seq>(seed );
-//     sampler = new UniformSampler<SieveTraits, false, std::mt19937_64, std::seed_seq>(seed,2);
+    auto_gen_sampler(); // create our own sampler and set sampler_auto_created
   }
   assert(sampler != nullptr);
 }
@@ -102,11 +97,82 @@ GaussQueue<SieveTraits, false>::~GaussQueue()
     main_queue.pop();
   }
 #endif
-  if (sampler_owned)
+  if (sampler_auto_created)
   {
     delete sampler;
   }
 }
+
+template<class SieveTraits>
+auto GaussQueue<SieveTraits, false>::set_sampler(SamplerPtr const &new_sampler_ptr) -> SamplerPtr
+{
+  if(sampler_auto_created)
+  {
+    delete sampler;
+    sampler = nullptr;
+    sampler_auto_created = false;
+  }
+  SamplerPtr old_val = sampler;
+  sampler = new_sampler_ptr;
+  if(sampler == nullptr)
+  {
+    auto_gen_sampler();
+  }
+  return old_val;
+}
+
+template<class SieveTraits>
+void GaussQueue<SieveTraits, false>::auto_gen_sampler()
+{
+  assert(sampler == nullptr);
+  assert(sampler_auto_created == false);
+    // Use seed_sampler to init the rng. The other numbers spell "SAMPLER" in ASCII, they are here
+    //  because we use the very same seed elsewhere as well (Think of sees_seq as a Hash)
+
+  std::seed_seq seed{83, 65, 77, 80, 76, 69, 82, seed_sampler};
+  // For the standalone queue, we do not have a caller sieve and do not know the dimension.
+  // Q: Should the initial dimension be set during init from the base rather than at construction?
+#ifdef DEBUG_SIEVE_STANDALONE_QUEUE
+  DEBUG_SIEVE_TRACEINITIATLIZATIONS("Initializing our own sampler. Using GPVSampler")
+  sampler = new GPVSampler<SieveTraits, false, std::mt19937_64, std::seed_seq>(seed);
+#else
+  DEBUG_SIEVE_TRACEINITIATLIZATIONS("Initializing our own sampler. Using GPVSamplerExtended")
+  sampler = new GPVSamplerExtended<SieveTraits, false, std::mt19937_64, std::seed_seq>(seed, gauss_sieve->get_ambient_dimension() / 3 );
+#endif
+  sampler_auto_created = true;
+//    sampler = new GPVSampler<SieveTraits, false, std::mt19937_64, std::seed_seq>(seed );
+//     sampler = new UniformSampler<SieveTraits, false, std::mt19937_64, std::seed_seq>(seed,2);
+
+// Note that the sampler will LATER be initialized from the Sieve itself when the sieve is actually
+// run. This late-initialization allows to construct samplers that outlive the main sieve object.
+}
+
+/**
+  IO:
+*/
+
+template<class SieveTraits>
+std::ostream &operator<<(std::ostream &os, GaussQueue<SieveTraits,false> const &gauss_queue)
+{
+  assert(false); // need to take care about internal status of sampler
+  return os;
+}
+
+template<class SieveTraits>
+bool GaussQueue<SieveTraits, false>::serialize_gauss_queue(std::ostream &os) const
+{
+  assert(false);
+  return true;
+}
+
+template<class SieveTraits>
+bool GaussQueue<SieveTraits, false>::unserialize_gauss_queue(std::istream &is)
+{
+  assert(false);
+  return true;
+}
+
+
 // clang-format on
 
 }  // end namespace GaussSieve

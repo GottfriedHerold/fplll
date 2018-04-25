@@ -145,7 +145,7 @@ public:
   // used to possibly optimize the frequency with which check() / check_vec() is called.
   virtual TermCondDependencyType dependency_type() const { return TermCondDependencyType::any; }
 
-  // run-time type information. This may be needed / helpful to implement duming / reading back
+  // run-time type information. This may be needed / helpful to implement dumping / reading back
   // dumps to let the sieve know the type of termination condition.
   virtual TerminationConditionType termination_condition_type() const
   {
@@ -154,8 +154,8 @@ public:
 
 private:
   // The stream operators<< and >> forward to these. May be overloaded.
-  // Note that if termination_condition_type returns user_defined, reading back probably won't work.
-  // from inside the sieve for initialization, as the sieve code has no way of knowning the type.
+  // Note that if termination_condition_type returns user_defined, reading back probably won't work
+  // from inside the sieve for initialization, as the sieve code has no way of knowing the type.
   // The dummy implementation is a no-op.
   // clang-format off
   virtual std::ostream &dump_to_stream(std::ostream &os) const { return os; }

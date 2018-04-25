@@ -5,10 +5,10 @@
 #include "fplll.h"
 #include "../Typedefs.h"
 #include "gmpxx.h"
-#include "../ShiSampler.h"
 #include <random>
 #include "../LatticeBases.h"
 #include "../GaussQueue.h"
+#include "../GPVSampler.h"
 
 bool test_queue()
 {
@@ -23,7 +23,7 @@ bool test_queue()
   fplll::lll_reduction(B, fplll::LLL_DEF_DELTA, fplll::LLL_DEF_ETA, fplll::LM_WRAPPER);
   using Traits = GaussSieve::DefaultSieveTraits<mpz_class, false, -1>;
   typename Traits::GlobalStaticDataInitializer init_arg (dim);
-  using Sampler = GaussSieve::ShiSampler<Traits,false,std::mt19937,std::seed_seq>;
+  using Sampler = GaussSieve::GPVSampler<Traits,false,std::mt19937,std::seed_seq>;
   GaussSieve::SieveLatticeBasis<Traits,false> sieve_basis(B,init_arg); // convert to SieveLatticeBasis
 
 
@@ -33,7 +33,8 @@ bool test_queue()
   sampler2.init(nullptr, sieve_basis);
 
   // gauss_queue contains another sampler.
-  GaussSieve::GaussQueue<Traits,false> gauss_queue(nullptr,init_arg);
+  GaussSieve::GaussQueue<Traits,false> gauss_queue(nullptr,init_arg, 12345, nullptr);
+  // We have to initialize the sampler inside the seed as well.
   gauss_queue.sampler->init(nullptr, sieve_basis);
 
   std::cout << "taking 20 elements from the queue (sampling)" << std::endl;

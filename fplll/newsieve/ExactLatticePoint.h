@@ -298,7 +298,7 @@ public:
     {
       if (!(new_dim == ExactLatticePoint<ET, nfixed>::dim))
       {
-        throw std::runtime_error("Trying to reinit static Dimension of ExactLattice Point");
+        throw bad_reinit_static("Trying to reinit static dimension of ExactLattice Point");
       }
     }
     else
@@ -326,11 +326,11 @@ public:
   {
     if (!string_consume(is,"Static Data for ExactLatticePoint")) throw bad_dumpread("Dumpread failure: ExactLatticePoint");
     if (!string_consume(is, (nfixed < 0) ? "(fixed dim):" : "(variable dim):")) throw bad_dumpread("Dumpread failure: ExactLatticePoint");
-    mystd::remove_reference_t<decltype(access_dim())> new_dim;
-    is >> new_dim;
+    mystd::decay_t<decltype(access_dim())> new_dim;
+    if (!(is >> new_dim)) throw bad_dumpread("Dumpread failure: ExactLatticePoint");
     if(init_ob.get_user_count() > 1)
     {
-      if(new_dim != access_dim()) throw std::runtime_error("Trying to overwrite static data for Exact lattice point, but more than 1 user");
+      if(new_dim != access_dim()) throw bad_reinit_static("Trying to overwrite static data for Exact lattice point, but more than 1 user");
     }
     access_dim() = new_dim;
     return is;

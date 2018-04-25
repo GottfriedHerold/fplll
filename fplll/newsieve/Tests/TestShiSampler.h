@@ -1,3 +1,5 @@
+#error module no longer exists
+
 #ifndef TEST_SHI_SAMPLER_H
 #define TEST_SHI_SAMPLER_H
 

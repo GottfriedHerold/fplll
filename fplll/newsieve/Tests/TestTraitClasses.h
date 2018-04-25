@@ -1,3 +1,5 @@
+#error outdated
+
 #ifndef TEST_TRAIT_CLASSES_H
 #define TEST_TRAIT_CLASSES_H
 

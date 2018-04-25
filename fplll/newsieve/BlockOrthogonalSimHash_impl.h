@@ -72,6 +72,7 @@ BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType_arg>::
 // clang-format off
 template <std::size_t sim_hash_len, std::size_t sim_hash_num, bool MT, class DimensionType_arg>
 template <class T>
+[[deprecated]]
 inline auto BlockOrthogonalSimHash<sim_hash_len,sim_hash_num,MT,DimensionType_arg>::
     fast_partial_walsh_hadamard(std::vector<T> input) const
     -> std::vector<T>
@@ -345,11 +346,11 @@ inline std::istream &operator>>(std::istream &is, BlockOrthogonalSimHash<sim_has
 
 
   if (!string_consume(is, "Number of orthogonal blocks:")) throw bad_dumpread_BlockOrthogonalSimHash();
-  is >> bo_sim_hash.number_of_orthogonal_blocks;
+  if (!(is >> bo_sim_hash.number_of_orthogonal_blocks)) throw bad_dumpread_BlockOrthogonalSimHash();
   if (!string_consume(is, "Fast WH len:")) throw bad_dumpread_BlockOrthogonalSimHash();
-  is >> bo_sim_hash.fast_walsh_hadamard_len;
+  if (!(is >> bo_sim_hash.fast_walsh_hadamard_len)) throw bad_dumpread_BlockOrthogonalSimHash();
   if (!string_consume(is, "Log2 thereof:")) throw bad_dumpread_BlockOrthogonalSimHash();
-  is >> bo_sim_hash.fast_walsh_hadamard_loglen;
+  if (!(is >> bo_sim_hash.fast_walsh_hadamard_loglen)) throw bad_dumpread_BlockOrthogonalSimHash();
 
   bo_sim_hash.pmatrices.clear();
   bo_sim_hash.dmatrices.clear();
@@ -365,7 +366,7 @@ inline std::istream &operator>>(std::istream &is, BlockOrthogonalSimHash<sim_has
     if (!string_consume(is, "[")) throw bad_dumpread_BlockOrthogonalSimHash();
     for(std::size_t j=0; j < num_of_transforms; ++j)
     {
-      is >> pmatrixblock[j];
+      if (!(is >> pmatrixblock[j])) throw bad_dumpread_BlockOrthogonalSimHash();
     }
     if (!string_consume(is, "]")) throw bad_dumpread_BlockOrthogonalSimHash();
     bo_sim_hash.pmatrices.push_back(std::move(pmatrixblock));
@@ -378,7 +379,7 @@ inline std::istream &operator>>(std::istream &is, BlockOrthogonalSimHash<sim_has
     if(!string_consume(is,"[")) throw bad_dumpread_BlockOrthogonalSimHash();
     for(std::size_t j=0; j < num_of_transforms; ++j)
     {
-      is >> dmatrixblock[j];
+      if (!(is >> dmatrixblock[j])) throw bad_dumpread_BlockOrthogonalSimHash();
     }
     if (!string_consume(is, "]")) throw bad_dumpread_BlockOrthogonalSimHash();
     bo_sim_hash.dmatrices.push_back(std::move(dmatrixblock));
@@ -462,10 +463,10 @@ inline std::istream &operator>>(std::istream &is, PMatrix &pmatrix)
   if ( !string_consume(is,"[")) throw bad_dumpread("failed reading in PMatrix");
   pmatrix.permutation.clear();
   assert(pmatrix.permutation.empty());
-  for (;is.peek() !=']'; )
+  for (; (!(is.eof())) && is.peek() !=']'; ) // if we hit eof, the next string_consume will throw
   {
     uint_fast16_t next;
-    is >> next;
+    if (!(is >> next)) throw bad_dumpread("failed reading in PMatrix");
     pmatrix.permutation.push_back(next);
   }
   pmatrix.permutation.shrink_to_fit();
@@ -507,11 +508,8 @@ template <class T> inline void DMatrix::apply(std::vector<T> &vec) const
   }
 }
 
-
-
-
 /**
-  Print the stored data to stream. Only used for debugging at the moment.
+  IO for DMatrix
 */
 
 inline std::ostream &operator<<(std::ostream &os, DMatrix const &dmatrix)
@@ -535,10 +533,10 @@ inline std::istream &operator>>(std::istream &is, DMatrix &dmatrix)
   if (!string_consume(is,"[")) throw bad_dumpread("Dump read failed for DMatrix");
   dmatrix.diagonal.clear();
   assert(dmatrix.diagonal.empty());
-  for (;is.peek() !=']'; )
+  for (; (!(is.eof())) && is.peek() !=']'; )
   {
     char symb;
-    is >> symb;
+    if (!(is >> symb)) throw bad_dumpread("Dump read failed for DMatrix"); // This line should never fail.
 //    if(symb == ' ') continue; // not needed!
     if (!(symb == '+' || symb == '-')) throw bad_dumpread("Dump read failed for DMatrix");
     dmatrix.diagonal.push_back(symb=='+'?0:1);

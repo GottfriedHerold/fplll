@@ -100,7 +100,7 @@ public:
     {
       throw bad_dumpread_LengthTermCond();
     }
-    is >> target_norm2;
+    if (!(is >> target_norm2)) throw bad_dumpread_LengthTermCond();
     return is;
   }
 

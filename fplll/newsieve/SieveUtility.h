@@ -426,10 +426,20 @@ inline bool string_consume(std::istream &is, std::string const &str, bool elim_w
   return true;
 }
 
+// exception thrown when reading data fails
 class bad_dumpread : public std::runtime_error
 {
   public:
     template<class... Args> explicit bad_dumpread(Args&&... args)
+      : std::runtime_error(std::forward<Args>(args)...) {}
+};
+
+// exception thrown when trying to reinit static data with different values
+// while the old static data is still in use
+class bad_reinit_static : public std::runtime_error
+{
+  public:
+    template<class... Args> explicit bad_reinit_static(Args&&... args)
       : std::runtime_error(std::forward<Args>(args)...) {}
 };
 
