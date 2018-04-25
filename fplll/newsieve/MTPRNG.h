@@ -16,7 +16,7 @@ This file also contains some basic rejection sampling routines for sampling Gaus
 
 namespace GaussSieve
 {
-
+// forward declaration:
 // wrapper around (a vector of) random number engines of type Engine
 // This is used to unify the single and multi-threaded case
 template <class Engine, bool MT, class Sseq> class MTPRNG;
@@ -49,15 +49,20 @@ template <class Engine, bool MT, class Sseq> class MTPRNG;
  s2pi = s^2 / pi and maxdeviation = cutoff * s as parameters.
 
  The implementation is just a simple rejection sampling.
- */
+ Note that for the sieve, we do NOT need high quality Gaussians.
+*/
 
+// the template argument Z (e.g. int) has to be explicitly provided.
 template <class Z, class Engine>
 Z sample_z_gaussian(double s, double const center, Engine &engine, double const cutoff);
 
 template <class Z, class Engine>
 Z sample_z_gaussian_VMD(double const s2pi, double const center, Engine &engine,
                         double const maxdeviation);
+
+// Samples uniformly between 0 and max_val (inclusive)
 template <class Engine> unsigned int sample_uniform(unsigned int max_val, Engine &engine);
+
 
 /**
 The class MTPRNG is just a wrapper around a PRNG engine to facilitate switching to multi-threaded.
@@ -86,24 +91,32 @@ Note that for obtaining the per-thread seeds from the master seeds, we use a fix
 engine and not the engine given as template parameter.
 */
 
-// MTPRNG for MT = true, i.e. multi-threaded case.
+
+
+/************************
+ * Multi-threaded case. *
+ ************************/
+
 template <class Engine, class Sseq> class MTPRNG<Engine, true, Sseq>
 {
 public:
   // clang-format off
   // constructs an uninitialized MTPRNG
-  // note that _seq is actually changed in seeded(_seq) !
-  explicit MTPRNG(Sseq &_seq) : seeder(_seq), engines(0), num_threads(0)
+  // note that _seq is actually changed in seeder(_seq) !
+  explicit MTPRNG(Sseq &_seq) : engines(0), num_threads(0)
   {
     DEBUG_SIEVE_TRACEINITIATLIZATIONS("Constructing (yet-uninitialized) MT RNG engines.")
+    reseed(_seq);
   }
+
   // clang-format on
   inline void reseed(Sseq &_seq);
 
   /**
   will make sure at least _num_threads engines are actually running, starting new ones as desired.
-  Will never reseed/restart already running engines. Reducing the number of threads and increasing
-  it back saves the random state (unless we reseed).
+  Will never reseed/restart already running engines. Using init to reduct the number of threads
+  "suspends" the corrensponding rngs (calling them is disallowed).
+  Reducing the number of threads and increasing it back saves the random state (unless we reseed).
   */
   inline void init(unsigned int const _num_threads);
   inline Engine &rnd(unsigned int const thread)
@@ -120,14 +133,27 @@ public:
     return engines[thread];
   }
 
+  bool serialize_mtprng(std::ostream &os) const = delete;
+//  {
+//    os << seeder << " ";
+//    os << "Number of Engines" << engines.size() << '\n' << "[";
+//    for(typename std::vector<Engine>::size_type i = 0; i < engines.size(); ++i)
+//    {
+//      os << engines[i] << " , ";
+//    }
+//    os << "]" << '\n';
+//  }
+  bool unserialize_mtprng(std::istream &is) = delete;
+
 private:
   // seeded with initial seq and consecutively used to seed the children PRNGs.
-  std::mt19937_64 seeder;
+  std::mt19937_64 seeder; // we use this exactly engines.size() many times after (re-)seeding,
+                          // irrespective of changes to num_threads
   std::vector<Engine> engines;
-  // number of initialized engines. May differ from size of the vector.
+  // number of "active" engines. May differ from size of the vector.
   // In particular, num_threads = 0 means uninitialized.
   unsigned int num_threads;
-  Sseq seq;
+//  Sseq seq;
   /**
      number of 32bit values to use as seeds for the underlying engine(s). Technically, we could use
      state_size if the engine provides it, but not even all default engines do.
@@ -135,7 +161,11 @@ private:
   static unsigned int constexpr seed_length = 20;
 };
 
-// singlethreaded case of MTPRNG: just wrapper around Engine
+/************************
+ * Single-threaded case *
+ ************************/
+
+// just wrapper around Engine
 template <class Engine, class Sseq> class MTPRNG<Engine, false, Sseq>
 {
 public:
@@ -151,6 +181,24 @@ public:
   FORCE_INLINE inline void init(unsigned int const = 1)
   {
     DEBUG_SIEVE_TRACEINITIATLIZATIONS("Initializing Single-Threaded RNG Engines.")
+  }
+
+  bool serialize_mtprng(std::ostream &os) const
+  {
+    os << engine;
+    return static_cast<bool>(os);
+  }
+
+  bool unserialize_mtprng(std::istream &is)
+  {
+    is >> engine;
+    return static_cast<bool>(is);
+  }
+
+  explicit MTPRNG(std::istream &is)
+  {
+    DEBUG_SIEVE_TRACEINITIATLIZATIONS("Constructing ST RNG from stream")
+    if (!(unserialize_mtprng(is))) throw bad_dumpread("Could not deserialize RNG");
   }
 
   // Argument is number of thread. It is ignored.
@@ -175,10 +223,12 @@ template <class Engine, class Sseq>
 inline void MTPRNG<Engine, true, Sseq>::reseed(Sseq &_seq)
 // clang-format on
 {
-  seeder.seed(_seq);
+  seeder.seed(_seq); // seed the pre-RNG seeder whose output is used to seed the engines.
   unsigned int old_threads = num_threads;
   num_threads              = 0;
-  init(old_threads);  // will restart all engines, because num_threads = 0;
+  engines.clear();
+  assert(engines.size()==0);
+  init(old_threads);  // will restart all engines.
 }
 
 template <class Engine, class Sseq>
@@ -187,16 +237,17 @@ inline void MTPRNG<Engine, true, Sseq>::init(unsigned int const new_num_threads)
   DEBUG_SIEVE_TRACEINITIATLIZATIONS("(Re-)initializing Multithreaded RNG Engines")
   DEBUG_SIEVE_TRACEINITIATLIZATIONS("setting number of threads as" << new_num_threads)
 
-  if (new_num_threads <= num_threads)
+  num_threads = new_num_threads;
+  if (new_num_threads <= engines.size())
   {
-    // no need to initalize. We do not actually change num_threads until reseed is called.
     return;
   }
-  engines.resize(new_num_threads);
+  unsigned int const old_size = engines.size();
+  engines.resize(num_threads);
   engines.shrink_to_fit();
   uint32_t per_engine_seed[seed_length];
   // else initialize remaining threads
-  for (unsigned int i = num_threads; i < new_num_threads; ++i)
+  for (unsigned int i = old_size; i < num_threads; ++i)
   {
 
     for (unsigned int j = 0; j < seed_length; ++j)
@@ -206,14 +257,18 @@ inline void MTPRNG<Engine, true, Sseq>::init(unsigned int const new_num_threads)
     std::seed_seq per_engine_see_seq(per_engine_seed, per_engine_seed + seed_length);
     engines[i].seed(per_engine_see_seq);
   }
-  num_threads = new_num_threads;
 }
+
+/**
+  Single-theaded implementation details
+*/
 
 // clang-format off
 template <class Engine, class Sseq>
 inline void MTPRNG<Engine, false, Sseq>::reseed(Sseq &_seq)
 // clang-format on
 {
+  // preprocess _seq in a way that matches the multithreaded case
   std::mt19937_64 seeder(_seq);
   uint32_t per_engine_seed[seed_length];
   for (unsigned int j = 0; j < seed_length; ++j)
@@ -224,7 +279,10 @@ inline void MTPRNG<Engine, false, Sseq>::reseed(Sseq &_seq)
   engine.seed(derived_seed_seq);
 }
 
-// implementation of the samplers. Just plain old rejection sampling.
+/**
+  implementation of the auxiliary samplers, not part of MTPRNG
+*/
+
 template <class Z, class Engine>
 inline Z sample_z_gaussian(double s, double const center, Engine &engine, double const cutoff)
 {
@@ -250,9 +308,6 @@ inline Z sample_z_gaussian(double s, double const center, Engine &engine, double
 
   s = s * s / pi;  // overwriting (local copy of) s. We only care about s^2/pi anyway.
 
-  // does not really work in a portable way, so we do not bother
-  // std::fenv_t env;
-  // feholdexcept( &env); //This disables all floating-point exceptions.
 
   // use rejection sampling
   while (true)
@@ -277,8 +332,6 @@ inline Z sample_z_gaussian(double s, double const center, Engine &engine, double
 
     if (rejection_test(engine) < std::exp(-std::fma(dist, dist, adj) / s))
     {
-      // std::feclearexcept(FE_UNDERFLOW);
-      // std::feupdateenv(&env);
       return result;
     }
   }
@@ -289,10 +342,6 @@ template <class Z, class Engine>
 inline Z sample_z_gaussian_VMD(double const s2pi, double const center, Engine &engine,
                                double const maxdeviation)
 {
-  // Note : The following allows to access / modify floating point exceptions and modes.
-  //#pragma STDC FENV_ACCESS on
-  // This is too compiler/implementation-specific and does not work most of the time...
-
   static_assert(std::is_integral<Z>::value,
                 "Return type for sample_z_gaussian must be POD integral type.");
   std::uniform_int_distribution<Z> uniform_in_range(std::floor(center - maxdeviation),
@@ -301,8 +350,6 @@ inline Z sample_z_gaussian_VMD(double const s2pi, double const center, Engine &e
   Z const closest_int = std::round(center);
   double const adj    = -(center - closest_int) * (center - closest_int);
 
-  // std::fenv_t env;
-  // feholdexcept( &env); //This disables all floating-point exceptions.
 
   while (true)
   {
@@ -311,8 +358,6 @@ inline Z sample_z_gaussian_VMD(double const s2pi, double const center, Engine &e
 
     if (rejection_test(engine) < std::exp(-std::fma(dist, dist, adj) / s2pi))
     {
-      // std::feclearexcept(FE_UNDERFLOW);
-      // std::feupdateenv(&env);
       return result;
     }
   }

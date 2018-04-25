@@ -6,7 +6,7 @@
  samplers are derived. We use dynamic (runtime) polymorphism for the sampler.
 
  Having such a virtual interface class allows us to take a user-provided sampler whose internal
- workings we do not anticipate. The main sieve class (or possibly the queue stored inside) contains
+ workings we do not anticipate. The main sieve class (or rather the queue stored inside) contains
  a pointer to a Sampler object (or rather a type derived from Sampler)
  The overhead of virtual dispatch is negligible for sampling.
  (Sampling does not dominate the running time and even if we use a slow sampler, the dispatch cost
@@ -17,6 +17,10 @@
  dependencies (This is done to give user-provided samplers access to the sieve's data).
  For this reason, parts of the implementation are in Sampler_impl.h, which is included *after* all
  *.h files in SieveGauss_main.h
+
+ The associating with a GaussSieve object is performed by an init() function _after_ construction
+ of the actual sieve object. The reason is that the lifetime of a (user-provided) sampler will be
+ a superset of the lifetime of the GaussSieve object.
 */
 
 #ifndef SAMPLER_H
