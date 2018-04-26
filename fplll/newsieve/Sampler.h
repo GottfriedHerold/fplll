@@ -101,7 +101,10 @@ public:
       std::istream &is, Sampler<SieveTraits, MT, Engine, Sseq> *const samplerptr);
 
   // constructor: this associates the Sampler with our sieve.
-  // inital_seed is used to seed our randomness source.
+  // inital_seed is used to seed our randomness source AND MODIFIED.
+  // (Note that Sseq is typically neither copyable not moveable and STL functions do not take
+  // rvalue - reference ( IMO, this is questionable design; also some standard library variants
+  // outright violate this )
   // Note that we may construct an unassociated sampler and associate it later.
   explicit Sampler<SieveTraits, MT, Engine, Sseq>(Sseq &initial_seed)
       : engine(initial_seed), sieveptr(nullptr)

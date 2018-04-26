@@ -102,12 +102,8 @@ template <class Engine, class Sseq> class MTPRNG<Engine, true, Sseq>
 public:
   // clang-format off
   // constructs an uninitialized MTPRNG
-  // note that _seq is actually changed in seeder(_seq) !
-  explicit MTPRNG(Sseq &_seq) : engines(0), num_threads(0)
-  {
-    DEBUG_SIEVE_TRACEINITIATLIZATIONS("Constructing (yet-uninitialized) MT RNG engines.")
-    reseed(_seq);
-  }
+  // note that _seq is actually changed and unusable after the call!
+  explicit MTPRNG(Sseq &_seq);
 
   // clang-format on
   inline void reseed(Sseq &_seq);
@@ -119,31 +115,20 @@ public:
   Reducing the number of threads and increasing it back saves the random state (unless we reseed).
   */
   inline void init(unsigned int const _num_threads);
+
   inline Engine &rnd(unsigned int const thread)
   {
-// clang-format off
-    // Note that if init is used to decrease num_threads, then
-    // rnd(thread-number) for thread-number that was was made invalid by the decrease
-    // would actually work until reseed is called.
-    // This is considered wrong usage of the class and not allowed.
-// clang-format on
 #ifdef DEBUG_SIEVE_MTPRNG_THREAD_RANGE
-    assert(thread < num_threads);
+    assert(thread < num_threads);  // might actually work if num_threads < engines.size()
 #endif
     return engines[thread];
   }
 
-  bool serialize_mtprng(std::ostream &os) const = delete;
-//  {
-//    os << seeder << " ";
-//    os << "Number of Engines" << engines.size() << '\n' << "[";
-//    for(typename std::vector<Engine>::size_type i = 0; i < engines.size(); ++i)
-//    {
-//      os << engines[i] << " , ";
-//    }
-//    os << "]" << '\n';
-//  }
-  bool unserialize_mtprng(std::istream &is) = delete;
+  bool serialize_mtprng(std::ostream &os) const;
+  bool unserialize_mtprng(std::istream &is);
+  explicit MTPRNG(std::istream &is);
+  bool operator==(MTPRNG const &other) const;
+  bool operator!=(MTPRNG const &other) const;
 
 private:
   // seeded with initial seq and consecutively used to seed the children PRNGs.
@@ -153,7 +138,6 @@ private:
   // number of "active" engines. May differ from size of the vector.
   // In particular, num_threads = 0 means uninitialized.
   unsigned int num_threads;
-//  Sseq seq;
   /**
      number of 32bit values to use as seeds for the underlying engine(s). Technically, we could use
      state_size if the engine provides it, but not even all default engines do.
@@ -204,6 +188,8 @@ public:
   // Argument is number of thread. It is ignored.
   // Note: non-const constexpr (in C++14) is exactly what we need.
   CPP14CONSTEXPR inline Engine &rnd(unsigned int const = 0) { return engine; }
+  bool operator==(MTPRNG const &other) const { return engine == other.engine; }
+  bool operator!=(MTPRNG const &other) const { return engine != other.engine; }
 
 private:
   Engine engine;
@@ -214,165 +200,11 @@ private:
   static unsigned int constexpr seed_length = 20;
 };  // End of MTPRNG
 
-/**
-  out-of class definitions:
-*/
-
-// clang-format off
-template <class Engine, class Sseq>
-inline void MTPRNG<Engine, true, Sseq>::reseed(Sseq &_seq)
-// clang-format on
-{
-  seeder.seed(_seq); // seed the pre-RNG seeder whose output is used to seed the engines.
-  unsigned int old_threads = num_threads;
-  num_threads              = 0;
-  engines.clear();
-  assert(engines.size()==0);
-  init(old_threads);  // will restart all engines.
-}
-
-template <class Engine, class Sseq>
-inline void MTPRNG<Engine, true, Sseq>::init(unsigned int const new_num_threads)
-{
-  DEBUG_SIEVE_TRACEINITIATLIZATIONS("(Re-)initializing Multithreaded RNG Engines")
-  DEBUG_SIEVE_TRACEINITIATLIZATIONS("setting number of threads as" << new_num_threads)
-
-  num_threads = new_num_threads;
-  if (new_num_threads <= engines.size())
-  {
-    return;
-  }
-  unsigned int const old_size = engines.size();
-  engines.resize(num_threads);
-  engines.shrink_to_fit();
-  uint32_t per_engine_seed[seed_length];
-  // else initialize remaining threads
-  for (unsigned int i = old_size; i < num_threads; ++i)
-  {
-
-    for (unsigned int j = 0; j < seed_length; ++j)
-    {
-      per_engine_seed[j] = seeder();
-    }
-    std::seed_seq per_engine_see_seq(per_engine_seed, per_engine_seed + seed_length);
-    engines[i].seed(per_engine_see_seq);
-  }
-}
-
-/**
-  Single-theaded implementation details
-*/
-
-// clang-format off
-template <class Engine, class Sseq>
-inline void MTPRNG<Engine, false, Sseq>::reseed(Sseq &_seq)
-// clang-format on
-{
-  // preprocess _seq in a way that matches the multithreaded case
-  std::mt19937_64 seeder(_seq);
-  uint32_t per_engine_seed[seed_length];
-  for (unsigned int j = 0; j < seed_length; ++j)
-  {
-    per_engine_seed[j] = seeder();
-  }
-  std::seed_seq derived_seed_seq(per_engine_seed, per_engine_seed + seed_length);
-  engine.seed(derived_seed_seq);
-}
-
-/**
-  implementation of the auxiliary samplers, not part of MTPRNG
-*/
-
-template <class Z, class Engine>
-inline Z sample_z_gaussian(double s, double const center, Engine &engine, double const cutoff)
-{
-  static_assert(std::is_integral<Z>::value,
-                "Return type for sample_z_gaussian must be POD integral type.");
-
-  // maximum deviation of the Gaussian from the center. Note that maxdev may be 1.
-  Z const maxdev = static_cast<Z>(std::ceil(s * cutoff));
-
-  // uniform distribution on the set of possible outputs.
-  std::uniform_int_distribution<Z> uniform_in_range(std::floor(center - maxdev),
-                                                    std::ceil(center + maxdev));
-
-  // defaults to value from [0,1), used in rejection sampling to make the decision.
-  std::uniform_real_distribution<double> rejection_test(0.0, 1.0);
-
-  // closest int to center, i.e. most likely value.
-  Z const closest_int = std::round(center);
-
-  // negative squared distance to most likely value.
-  // This is used to scale up the Gaussian weight function s.t. it is 1 at the most likely value.
-  double const adj = -(center - closest_int) * (center - closest_int);
-
-  s = s * s / pi;  // overwriting (local copy of) s. We only care about s^2/pi anyway.
 
 
-  // use rejection sampling
-  while (true)
-  {
-    Z result    = uniform_in_range(engine);  // sample uniform result.
-    double dist = result - center;
-    // compute Gaussian weight. std::fma(dist,dist,adj) computes dist^2 + adj = (result-center)^2  -
-    // MIN{(result-center)^2 | result integral}.
-    //(fma = fused-multiply-add)
-    // Recall that s was overwritten to be s^2/pi.
-
-    // Note that the argument of the exp-function might be a tiny positive value due to numeric
-    // error
-    //(Even if result==closest_int, adj = ROUND((closest_int-center)^2), the computation of
-    // std::fma(dist,dist,adj) does not round the intermediate dist^2, leading to a non-zero
-    // argument)
-    // In particular, it is conceivable that floating point underruns occur in the std::fma - call.
-    // Furthermore, if cutoff is large or if s<<1 (in this case, the issue is the rounding when we
-    // determined the range), the argument to exp can be extremely small, leading to further
-    // potential underruns.
-    // We do not care about this for now...
-
-    if (rejection_test(engine) < std::exp(-std::fma(dist, dist, adj) / s))
-    {
-      return result;
-    }
-  }
-}
-
-// Version taking in s^2/pi and (absolute) maximum deviation. Works just as above.
-template <class Z, class Engine>
-inline Z sample_z_gaussian_VMD(double const s2pi, double const center, Engine &engine,
-                               double const maxdeviation)
-{
-  static_assert(std::is_integral<Z>::value,
-                "Return type for sample_z_gaussian must be POD integral type.");
-  std::uniform_int_distribution<Z> uniform_in_range(std::floor(center - maxdeviation),
-                                                    std::ceil(center + maxdeviation));
-  std::uniform_real_distribution<double> rejection_test(0.0, 1.0);
-  Z const closest_int = std::round(center);
-  double const adj    = -(center - closest_int) * (center - closest_int);
-
-
-  while (true)
-  {
-    Z result    = uniform_in_range(engine);  // sample uniform result.
-    double dist = result - center;
-
-    if (rejection_test(engine) < std::exp(-std::fma(dist, dist, adj) / s2pi))
-    {
-      return result;
-    }
-  }
-}
-
-// Samples uniformly at random from the interval [0, max_val]
-// clang-format off
-template <class Engine>
-inline unsigned int sample_uniform(unsigned int max_val, Engine &engine)
-// clang-format on
-{
-  std::uniform_int_distribution<int> uniform_in_range(0, max_val);
-  return uniform_in_range(engine);
-}
 
 }  // end of namespace GaussSieve
+
+#include "MTPRNG_impl.h"
 
 #endif

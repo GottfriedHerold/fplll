@@ -72,7 +72,7 @@ UniformSampler<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
   {
     vec.fill_with_zero();
 
-    for (unsigned int i = 0; i < sparcity; ++i)
+    for (unsigned int i = 0; i < sparsity; ++i)
     {
       vec += basis[sample_uniform<Engine>(current_rank - 1, engine.rnd(thread))];
       vec -= basis[sample_uniform<Engine>(current_rank - 1, engine.rnd(thread))];

@@ -12,8 +12,8 @@
 #include "fplll/nr/nr.h"
 
 /* Sparce uniform sampler
- * Chooses sparcity-many '1'-coefficients at random from {0,..,dim-1}
- * and sparcity-many '-1'-coefficients from {0,..., dim-1}
+ * Chooses sparsity-many '1'-coefficients at random from {0,..,dim-1}
+ * and sparsity-many '-1'-coefficients from {0,..., dim-1}
  *  */
 
 namespace GaussSieve
@@ -30,10 +30,10 @@ public:
   using LengthType     = typename SieveTraits::LengthType;
   using RetType       = typename SieveTraits::GaussSampler_ReturnType;
   // clang-format off
-  explicit UniformSampler(Sseq &seq, unsigned int inp_sparcity)
-      : Sampler<SieveTraits,MT,Engine,Sseq>(seq),
+  explicit UniformSampler(Sseq &seq, unsigned int inp_sparsity)
+      : Sampler<SieveTraits,MT,Engine,Sseq>(std::move(seq)),
         // dim, lattice_rank un-/ or default-initialized.
-        sparcity(inp_sparcity),
+        sparsity(inp_sparsity),
         initialized(false),
         static_init_rettype(nullptr),
         static_init_plainpoint(nullptr)
@@ -62,7 +62,7 @@ private:
   DimensionType dim;
   uint_fast16_t lattice_rank;
 
-  unsigned int sparcity;
+  unsigned int sparsity;
   bool initialized;
 
 protected:
