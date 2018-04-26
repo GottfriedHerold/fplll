@@ -55,6 +55,14 @@ void Sampler<SieveTraits, MT, Engine, Sseq>::init(
   DEBUG_SIEVE_TRACEINITIATLIZATIONS("Finished Initializing Sampler.")
 }
 
+template<class SieveTraits, bool MT, class Engine, class Sseq>
+Sampler<SieveTraits, MT, Engine, Sseq>::Sampler(std::istream &is)
+  :sieveptr(nullptr) // the other members are overwritten anyway
+{
+  is >> *this;
+}
+
+
 template <class SieveTraits, bool MT, class Engine, class Sseq>
 inline std::ostream &operator<<(std::ostream &os,
                                 Sampler<SieveTraits, MT, Engine, Sseq> const &sampler)
