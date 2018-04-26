@@ -57,18 +57,32 @@ void Sampler<SieveTraits, MT, Engine, Sseq>::init(
 
 template <class SieveTraits, bool MT, class Engine, class Sseq>
 inline std::ostream &operator<<(std::ostream &os,
-                                Sampler<SieveTraits, MT, Engine, Sseq> *const samplerptr)
+                                Sampler<SieveTraits, MT, Engine, Sseq> const &sampler)
 {
-  std::cerr << "Not implemented yet. (Generic Sampler,streamout)" << std::endl << std::flush;
-  return os;
+  os << "Sampler type" << static_cast<int>(sampler.sampler_type()) << '\n';
+  os << "Randomness state:" << sampler.engine;
+#ifdef PROGRESSIVE
+  os << '\n' << "Progressive Rank" << sampler.progressive_rank;
+#endif
+  return sampler.dump_to_stream(os); // handoff to virtual function.
 }
 
 template <class SieveTraits, bool MT, class Engine, class Sseq>
 inline std::istream &operator>>(std::istream &is,
-                                Sampler<SieveTraits, MT, Engine, Sseq> *const samplerptr)
+                                Sampler<SieveTraits, MT, Engine, Sseq> &sampler)
 {
-  std::cerr << "Not implemented yet. (Generic Sampler,streamin)" << std::endl << std::flush;
-  return is;
+
+  if (!string_consume(is,"Sampler type")) throw bad_dumpread("Could not read sampler");
+  int x;
+  if (!(is >> x)) throw bad_dumpread("Could not read sampler");
+  if (static_cast<int>(sampler.sampler_type()) != x) throw bad_dumpread("Wrong type of sampler");
+  if (!string_consume(is,"Randomness state:")) throw bad_dumpread("Could not read sampler");
+  if (!(is >> sampler.engine)) throw bad_dumpread("Could not read sampler");
+#ifdef PROGRESSIVE
+  if (!string_consume(is,"Progressive Rank")) throw bad_dumpread("Could not read sampler");
+  if (!(is >> sampler.progressive_rank)) throw bad_dumpread("Could not read sampler");
+#endif
+  return sampler.read_from_stream(is);
 }
 
 // explicit instantiation of template

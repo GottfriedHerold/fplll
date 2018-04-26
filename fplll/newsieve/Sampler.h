@@ -43,15 +43,14 @@ template <class SieveTraits, bool MT> class Sieve;
 template <class SieveTraits, bool MT, class Engine = std::mt19937_64, class Sseq = std::seed_seq>
 class Sampler;
 
-// printing
+// forward-declaring IO: These (un-)serialize the RNG state and then hand-off to virtual functions
 template <class SieveTraits, bool MT, class Engine, class Sseq>
 inline std::ostream &operator<<(std::ostream &os,
-                                Sampler<SieveTraits, MT, Engine, Sseq> *const samplerptr);
+                                Sampler<SieveTraits, MT, Engine, Sseq> const &sampler);
 
-// reading (may also be used by constructor from istream)
 template <class SieveTraits, bool MT, class Engine, class Sseq>
 inline std::istream &operator>>(std::istream &is,
-                                Sampler<SieveTraits, MT, Engine, Sseq> *const samplerptr);
+                                Sampler<SieveTraits, MT, Engine, Sseq> &sampler);
 
 // samplers that we recognize. This is used as a form of runtime - type - information used when
 // dumping objects (It is also useful if we ever want to support reading back from dump files if
@@ -78,7 +77,7 @@ Note that the Sampler parent class manages the randomness source.
 
 IMPORTANT:  The main sieve can take a user-provided sampler, which may be of any possibly
             user-defined class derived from Sampler.
-            This user-defined sampler object will be constructed *before* the sieve and may outlive
+            This user-defined sampler object may be constructed *before* the sieve and may outlive
             the sieve. For that reason, some initializations are defered from the constructor to
             init() / custom_init, which get called after the sampler is associated with the sieve.
             If the macro DEBUG_SIEVE_STANDALONE_SAMPLER is set, we may even use the sampler without
@@ -95,22 +94,34 @@ template <class SieveTraits, bool MT, class Engine, class Sseq> class Sampler
 public:
   using GaussSampler_ReturnType = typename SieveTraits::GaussSampler_ReturnType;
   friend std::ostream &operator<< <SieveTraits, MT, Engine, Sseq>(
-      std::ostream &os, Sampler<SieveTraits, MT, Engine, Sseq> *const samplerptr);
-  // unsure about signature
+      std::ostream &os, Sampler<SieveTraits, MT, Engine, Sseq> const &sampler);
   friend std::istream &operator>> <SieveTraits, MT, Engine, Sseq>(
-      std::istream &is, Sampler<SieveTraits, MT, Engine, Sseq> *const samplerptr);
+      std::istream &is, Sampler<SieveTraits, MT, Engine, Sseq> &sampler);
 
-  // constructor: this associates the Sampler with our sieve.
+  // constructor: this constructs and unaccociated Sampler. The pointer to an associated sieve is
+  // set later.
   // inital_seed is used to seed our randomness source AND MODIFIED.
   // (Note that Sseq is typically neither copyable not moveable and STL functions do not take
   // rvalue - reference ( IMO, this is questionable design; also some standard library variants
-  // outright violate this )
-  // Note that we may construct an unassociated sampler and associate it later.
-  explicit Sampler<SieveTraits, MT, Engine, Sseq>(Sseq &initial_seed)
-      : engine(initial_seed), sieveptr(nullptr)
+  // outright violate this ). Morally, the argument is an rvalue-ref.
+protected:
+  explicit Sampler(Sseq &initial_seed) : engine(initial_seed), sieveptr(nullptr)
   {
     DEBUG_SIEVE_TRACEINITIATLIZATIONS("Constructing Sampler (general).")
   }
+  explicit Sampler(std::istream &is);
+
+public:
+  // reseeds the managed RNG(s)
+  void reseed(Sseq &seed) { engine.reseed(seed); }
+  // sets the number of different RNG states that we keep (each thread keeps a separate RNG state)
+  // No-OP in the single-threaded case.
+  void set_num_threads(unsigned int num_threads)
+  {
+    CPP17CONSTEXPRIF (MT==false) { assert(num_threads == 1); }
+    engine.init(num_threads);
+  }
+
 
   // init is called by the sieve when we we start. it associates the sampler with the calling sieve.
   // we then call custom_init with the input_basis provided by the seed.
@@ -156,8 +167,6 @@ public:
   This may be used to determine how to interpret a dump file. Defaults to user-defined.
   Other values mean that the GaussSieve dumping routine is aware of the type, simplifying the
   syntax for dumping / reading.
-
-  TODO: Dumping / reading is not yet implemented.
   */
   virtual SamplerType sampler_type() const { return SamplerType::user_defined; }
 
@@ -172,7 +181,7 @@ private:
   {
     DEBUG_SIEVE_TRACEINITIATLIZATIONS("No custom initialization for sampler requested.")
   }
-  // dummy implementation of << operator.
+  // stream operators hand off to these functions after processing the RNG state
   virtual std::ostream &dump_to_stream(std::ostream &os) { return os; }
   // dummy implementation of >> operator.
   virtual std::istream &read_from_stream(std::istream &is) { return is; }

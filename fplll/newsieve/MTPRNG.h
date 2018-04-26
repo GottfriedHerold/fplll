@@ -207,8 +207,6 @@ private:
 };  // End of MTPRNG
 
 
-
-
 }  // end of namespace GaussSieve
 
 #include "MTPRNG_impl.h"
