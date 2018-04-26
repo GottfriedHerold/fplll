@@ -13,13 +13,14 @@
 //#define TEST_LAZY
 //#define TEST_APPROXIMATIONS
 //#define TEST_PLAIN_LATTICE_POINT
-#define TEST_EXACT_LATTICE_POINT
-#define TEST_SIMHASHES
-#define TEST_BLOCKORTHOGONAL_SIM_HASH
 //#define TEST_LIST
 //#define TEST_ARRAY_LIST
-#define TEST_QUEUE
+//#define TEST_QUEUE
 
+#define TEST_MTPRNG
+//#define TEST_BLOCKORTHOGONAL_SIM_HASH
+//#define TEST_EXACT_LATTICE_POINT
+//#define TEST_SIMHASHES
 
 // clang-format off
 #ifdef TEST_ALL
@@ -29,7 +30,6 @@
   #define TEST_EXACT_LATTICE_POINT
   #define TEST_MTPRNG
   #define TEST_BASIS_UTILS
-  #define TEST_SHI_SAMPLER
   #define TEST_QUEUE
   #define TEST_LIST
   #define TEST_EMV

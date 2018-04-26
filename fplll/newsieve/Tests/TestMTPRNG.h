@@ -5,6 +5,7 @@
 #include <vector>
 #include <iostream>
 #include <random>
+#include <sstream>
 
 bool test_mtprng()
 {
@@ -72,6 +73,25 @@ for(unsigned int i=0;i<30;++i)
   results2[i]=stprng.rnd(0)();
 }
 assert(results1==results2);
+
+std::stringstream channel;
+
+
+std::seed_seq sseq_forcopy1({235,1});
+std::seed_seq sseq_forcopy2({1243});
+
+GaussSieve::MTPRNG< std::mt19937_64, true, std::seed_seq> mtprng_copy(sseq_forcopy1);
+GaussSieve::MTPRNG< std::mt19937_64, false, std::seed_seq> stprng_copy(sseq_forcopy2);
+
+channel.clear();
+channel << mtprng;
+channel >> mtprng_copy;
+channel.clear();
+channel << stprng;
+channel >> stprng_copy;
+assert(mtprng == mtprng_copy);
+assert(stprng == stprng_copy);
+
 
 
 // This is just to see that

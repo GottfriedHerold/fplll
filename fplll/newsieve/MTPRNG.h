@@ -20,6 +20,10 @@ namespace GaussSieve
 // wrapper around (a vector of) random number engines of type Engine
 // This is used to unify the single and multi-threaded case
 template <class Engine, bool MT, class Sseq> class MTPRNG;
+template <class Engine, bool MT, class Sseq>
+std::ostream &operator<<(std::ostream &, MTPRNG<Engine, MT, Sseq> const &);
+template <class Engine, bool MT, class Sseq>
+std::istream &operator>>(std::istream &, MTPRNG<Engine, MT, Sseq> &);
 
 /**
 
@@ -123,6 +127,8 @@ public:
 #endif
     return engines[thread];
   }
+
+// operators<< and >> just relay to those:
 
   bool serialize_mtprng(std::ostream &os) const;
   bool unserialize_mtprng(std::istream &is);

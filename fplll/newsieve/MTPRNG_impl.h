@@ -7,6 +7,20 @@
 namespace GaussSieve
 {
 
+template<class Engine, bool MT, class Sseq>
+std::ostream &operator<<(std::ostream &os, MTPRNG<Engine, MT, Sseq> const &mtprng)
+{
+  if (mtprng.serialize_mtprng(os) == false) throw std::runtime_error("Could write MTPRNG");
+  return os;
+}
+
+template<class Engine, bool MT, class Sseq>
+std::istream &operator>>(std::istream &is, MTPRNG<Engine, MT, Sseq> &mtprng)
+{
+  if (mtprng.unserialize_mtprng(is) == false) throw bad_dumpread("Could not read in MTPRNG");
+  return is;
+}
+
 template<class Engine, class Sseq>
 MTPRNG<Engine, true, Sseq>::MTPRNG(Sseq &_seq) : engines(0), num_threads(0)
   {
