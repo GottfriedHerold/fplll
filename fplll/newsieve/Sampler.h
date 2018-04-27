@@ -109,7 +109,8 @@ protected:
   {
     DEBUG_SIEVE_TRACEINITIATLIZATIONS("Constructing Sampler (general).")
   }
-  explicit Sampler(std::istream &is);
+  // constructs parent subobject for derived type. derived_sampler_type is what we expect to read in the dump.
+  explicit Sampler(std::istream &is, SamplerType const &derived_sampler_type);
 
 public:
   // reseeds the managed RNG(s)

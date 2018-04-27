@@ -52,7 +52,7 @@ public:
   }
   // clang-format on
 
-  virtual SamplerType sampler_type() const override { return SamplerType::GPVExtended_sampler; };
+  virtual SamplerType sampler_type() const override { return SamplerType::GPVExtended_sampler; }
   virtual ~GPVSamplerExtended()
   {
     if (initialized)
@@ -60,8 +60,20 @@ public:
       delete static_init_plainpoint;
       delete static_init_rettype;
     }
-  };
+  }
   virtual inline RetType sample(int const thread = 0) override;
+
+  explicit GPVSamplerExtended(std::istream &is)
+    : Sampler<SieveTraits, MT, Engine, Sseq>(is, SamplerType::GPVExtended_sampler),
+      //start_babai  // overwritten anyway
+      //cutoff(0.0), // overwritten anyway
+      initialized(false),
+      static_init_rettype(nullptr),
+      static_init_plainpoint(nullptr)
+  {
+      if (!read_from_stream(is)) throw bad_dumpread("Could not init GPVExtended Sampler from stream");
+  }
+
 
 private:
   inline virtual void custom_init(SieveLatticeBasis<SieveTraits, MT> const &input_basis) override;

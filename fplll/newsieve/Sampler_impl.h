@@ -55,11 +55,24 @@ void Sampler<SieveTraits, MT, Engine, Sseq>::init(
   DEBUG_SIEVE_TRACEINITIATLIZATIONS("Finished Initializing Sampler.")
 }
 
+// This is used to construct the parent (sub-)object inside a derived class.
+// In the context of this function, the dynamic type of *this is Sampler, not something derived.
 template<class SieveTraits, bool MT, class Engine, class Sseq>
-Sampler<SieveTraits, MT, Engine, Sseq>::Sampler(std::istream &is)
+Sampler<SieveTraits, MT, Engine, Sseq>::Sampler(std::istream &is, SamplerType const &derived_sampler_type)
   :sieveptr(nullptr) // the other members are overwritten anyway
 {
-  is >> *this;
+  // this is almost identical to operator>> except that we check against derived_sampler_type
+  // rather than this->sampler_type() and we do not hand-off to read_from_stream
+  if (!string_consume(is,"Sampler type")) throw bad_dumpread("Could not read sampler");
+  int x;
+  if (!(is >> x)) throw bad_dumpread("Could not read sampler");
+  if (static_cast<int>(derived_sampler_type) != x) throw bad_dumpread("Wrong type of sampler");
+  if (!string_consume(is,"Randomness state:")) throw bad_dumpread("Could not read sampler");
+  if (!(is >> engine)) throw bad_dumpread("Could not read sampler");
+#ifdef PROGRESSIVE
+  if (!string_consume(is,"Progressive Rank")) throw bad_dumpread("Could not read sampler");
+  if (!(is >> progressive_rank)) throw bad_dumpread("Could not read sampler");
+#endif
 }
 
 
@@ -79,7 +92,6 @@ template <class SieveTraits, bool MT, class Engine, class Sseq>
 inline std::istream &operator>>(std::istream &is,
                                 Sampler<SieveTraits, MT, Engine, Sseq> &sampler)
 {
-
   if (!string_consume(is,"Sampler type")) throw bad_dumpread("Could not read sampler");
   int x;
   if (!(is >> x)) throw bad_dumpread("Could not read sampler");

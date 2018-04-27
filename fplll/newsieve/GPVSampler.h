@@ -25,7 +25,7 @@ namespace GaussSieve
 // forward declaration
 template <class SieveTraits, bool MT> class Sieve;
 
-template <class SieveTraits, bool MT, class Engine, class Sseq> class ShiSampler;
+template <class SieveTraits, bool MT, class Engine, class Sseq> class GPVSampler;
 
 template <class SieveTraits, bool MT, class Engine, class Sseq>
 class GPVSampler final : public Sampler<SieveTraits, MT, Engine, Sseq>
@@ -51,7 +51,7 @@ public:
     DEBUG_SIEVE_TRACEINITIATLIZATIONS("Constructing GPVSampler.")
   }
   // clang-format on
-
+  // TODO: Only return "correct" sample type if template args are "good"
   virtual SamplerType sampler_type() const override { return SamplerType::GPV_sampler; }
   virtual ~GPVSampler()
   {
@@ -64,7 +64,7 @@ public:
   virtual inline RetType sample(int const thread = 0) override;
 
   explicit GPVSampler(std::istream &is)
-    : Sampler<SieveTraits, MT, Engine, Sseq>(is),
+    : Sampler<SieveTraits, MT, Engine, Sseq>(is, SamplerType::GPV_sampler),
       //cutoff(0.0), //overwritten anyway
       initialized(false),
       static_init_rettype(nullptr),

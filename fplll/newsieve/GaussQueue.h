@@ -52,7 +52,7 @@ template <class SieveTraits, bool MT>
 std::ostream &operator<<(std::ostream& os, GaussQueue<SieveTraits,MT> const &gauss_queue);
 // *Formatted* Input deactivated. There is a serialize / unserialize function, though.
 template <class SieveTraits, bool MT>
-std::istream &operator<<(std::istream& is, GaussQueue<SieveTraits,MT> &gauss_queue) = delete;
+std::istream &operator>>(std::istream& is, GaussQueue<SieveTraits,MT> &gauss_queue) = delete;
 
 
 template <class SieveTraits>  // single-threaded version:
@@ -150,12 +150,13 @@ public:
   friend std::ostream& operator<< <SieveTraits, false>(std::ostream& os, GaussQueue<SieveTraits,false> const &gauss_queue);
   inline bool serialize_gauss_queue(std::ostream &os) const;
   inline bool unserialize_gauss_queue(std::istream &is);
-  explicit inline GaussQueue(std::istream &is) = delete; // TODO: Implement
+  explicit inline GaussQueue(std::istream &is); // TODO: Implement, Change parameters
 
 private:
+
   // clang-format off
-  StaticInitializer<DataType> const init_data_type;
-  StaticInitializer<RetType>  const init_ret_type;
+  StaticInitializer<DataType> init_data_type;
+  StaticInitializer<RetType>  init_ret_type;
   QueueType main_queue;                          // actual queue of lattice points to be processed.
   Sieve<SieveTraits, false> *const gauss_sieve;  // pointer to caller object.
   int seed_sampler; // seed for auto-generated sampler;

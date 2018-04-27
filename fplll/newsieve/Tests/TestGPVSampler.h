@@ -42,15 +42,15 @@ bool test_gpv_sampler()
 
   std::stringstream channel;
   channel << sampler;
-//  Sampler sampler2(channel);
-//  sampler2.init(nullptr, sieve_basis);
-//  std::cout << sampler2.sample() << std::endl;
-//  channel.clear();
-//  sampler << channel;
-//  Sampler sampler3(sseq);
-//  channel >> sampler3;
-//  sampler3.init(nullptr, sieve_basis);
-//  std::cout << sampler3.sample() << std::endl;
+  Sampler sampler2(channel);
+  sampler2.init(nullptr, sieve_basis);
+  std::cout << sampler2.sample() << std::endl;
+  channel.clear();
+  channel << sampler;
+  Sampler sampler3(sseq);
+  channel >> sampler3;
+  sampler3.init(nullptr, sieve_basis);
+  std::cout << sampler3.sample() << std::endl;
 
 
   return true;

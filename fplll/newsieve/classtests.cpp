@@ -15,7 +15,7 @@
 //#define TEST_PLAIN_LATTICE_POINT
 //#define TEST_LIST
 //#define TEST_ARRAY_LIST
-//#define TEST_QUEUE
+#define TEST_QUEUE
 
 #define TEST_MTPRNG
 //#define TEST_BLOCKORTHOGONAL_SIM_HASH
