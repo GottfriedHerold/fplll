@@ -24,6 +24,8 @@ template <class Engine, bool MT, class Sseq>
 std::ostream &operator<<(std::ostream &, MTPRNG<Engine, MT, Sseq> const &);
 template <class Engine, bool MT, class Sseq>
 std::istream &operator>>(std::istream &, MTPRNG<Engine, MT, Sseq> &);
+template <class SieveTraits, bool MT, class Engine, class Sseq> class Sampler;
+
 
 /**
 
@@ -112,6 +114,11 @@ public:
   // clang-format on
   inline void reseed(Sseq &_seq);
 
+private:
+  explicit MTPRNG() = default;
+  template <class, bool, class, class> friend class Sampler;
+public:
+
   /**
   will make sure at least _num_threads engines are actually running, starting new ones as desired.
   Will never reseed/restart already running engines. Using init to reduct the number of threads
@@ -165,6 +172,11 @@ public:
     reseed(_seq);
   }
   inline void reseed(Sseq &_seq);
+
+private:
+  template <class, bool, class, class> friend class Sampler;
+  explicit MTPRNG()  = default;
+public:
 
   // does nothing. The (ignored) argument corresponds is to ensure a consistent interface to
   // to the multithreaded case, where it is the number of threads.

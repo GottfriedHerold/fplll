@@ -39,6 +39,7 @@
 		<Unit filename="LatticePointConcept.h" />
 		<Unit filename="LatticePointGeneric.h" />
 		<Unit filename="MTPRNG.h" />
+		<Unit filename="MTPRNG_impl.h" />
 		<Unit filename="PlainLatticePoint.h" />
 		<Unit filename="PointWithBitapprox.h" />
 		<Unit filename="Sampler.h" />
