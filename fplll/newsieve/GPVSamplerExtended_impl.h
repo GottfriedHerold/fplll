@@ -144,7 +144,7 @@ GPVSamplerExtended<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
 }
 
 template <class SieveTraits, bool MT, class Engine, class Sseq>
-inline std::ostream &GPVSamplerExtended<SieveTraits, MT, Engine, Sseq>::dump_to_stream(std::ostream &os)
+inline std::ostream &GPVSamplerExtended<SieveTraits, MT, Engine, Sseq>::dump_to_stream(std::ostream &os) const
 {
   os << "cutoff" << cutoff <<'\n';
   os << "StartBabai" << start_babai;

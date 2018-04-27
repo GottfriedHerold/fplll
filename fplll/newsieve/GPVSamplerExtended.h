@@ -65,7 +65,7 @@ public:
 
 private:
   inline virtual void custom_init(SieveLatticeBasis<SieveTraits, MT> const &input_basis) override;
-  inline virtual std::ostream &dump_to_stream(std::ostream &os) override;
+  inline virtual std::ostream &dump_to_stream(std::ostream &os) const override;
   inline virtual std::istream &read_from_stream(std::istream &is) override;
 
   // mu_i,j = r_i,j / ||b*_j||^2.. lower triangular matrix

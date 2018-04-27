@@ -100,7 +100,7 @@ void GPVSampler<SieveTraits, MT, Engine, Sseq>::custom_init(
 */
 
 template <class SieveTraits, bool MT, class Engine, class Sseq>
-inline std::ostream &GPVSampler<SieveTraits, MT, Engine, Sseq>::dump_to_stream(std::ostream &os)
+inline std::ostream &GPVSampler<SieveTraits, MT, Engine, Sseq>::dump_to_stream(std::ostream &os) const
 {
   os << "cutoff" << cutoff;
   return os;

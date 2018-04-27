@@ -12,8 +12,8 @@
 #include "fplll/nr/nr.h"
 
 /* Sparce uniform sampler
- * Chooses sparsity-many '1'-coefficients at random from {0,..,dim-1}
- * and sparsity-many '-1'-coefficients from {0,..., dim-1}
+ * Chooses sparsity-many '1'-coefficients at random from {0,..,rank-1}
+ * and sparsity-many '-1'-coefficients from {0,..., rank-1}
  *  */
 
 namespace GaussSieve

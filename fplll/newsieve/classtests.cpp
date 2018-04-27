@@ -21,6 +21,7 @@
 //#define TEST_BLOCKORTHOGONAL_SIM_HASH
 //#define TEST_EXACT_LATTICE_POINT
 //#define TEST_SIMHASHES
+#define TEST_GPV_SAMPLER
 
 // clang-format off
 #ifdef TEST_ALL
@@ -37,7 +38,7 @@
   #define TEST_LAZY
   #define TEST_ARRAY_LIST
   #define TEST_BLOCKORTHOGONAL_SIM_HASH
-
+  #define TEST_GPV_SAMPLER
   #define TEST_SIMHASHES
 #endif
 
@@ -71,8 +72,8 @@
   #include "Tests/TestBasisUtils.h"
 #endif
 
-#ifdef TEST_SHI_SAMPLER
-  #include "Tests/TestShiSampler.h"
+#ifdef TEST_GPV_SAMPLER
+  #include "Tests/TestGPVSampler.h"
 #endif
 
 #ifdef TEST_QUEUE
@@ -115,7 +116,7 @@
   Late includes:
 */
 
-#ifdef TEST_SHI_SAMPLER
+#ifdef TEST_GPV_SAMPLER
   #include "GPVSampler_impl.h"
   #include "Sampler_impl.h"
 #endif
@@ -167,10 +168,10 @@ int main(int argc, char **argv)
   }
 #endif
 
-#ifdef TEST_SHI_SAMPLER
-  if (test_shi_sampler())
+#ifdef TEST_GPV_SAMPLER
+  if (test_gpv_sampler())
   {
-    std::cout << "Sampler works as expected." << std::endl;
+    std::cout << "GPV Sampler works as expected." << std::endl;
   }
 #endif
 

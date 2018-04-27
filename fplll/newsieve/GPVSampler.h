@@ -74,7 +74,7 @@ public:
   }
 private:
   inline virtual void custom_init(SieveLatticeBasis<SieveTraits, MT> const &input_basis) override;
-  virtual inline std::ostream &dump_to_stream(std::ostream &os) override;
+  virtual inline std::ostream &dump_to_stream(std::ostream &os) const override;
   virtual inline std::istream &read_from_stream(std::istream &is) override;
 
   std::vector<std::vector<double>> mu_matrix;  // copied from basis.
