@@ -138,7 +138,7 @@ public:
   template<int nfixed_copy = nfixed, int nfixed2, TEMPL_RESTRICT_DECL(nfixed_copy >= 0 && nfixed2 >=0)>
   constexpr explicit ExactLatticePoint(MaybeFixed<nfixed2>) : ExactLatticePoint()
   {
-    static_assert(nfixed_copy==nfixed && nfixed == nfixed2);
+    static_assert(nfixed_copy==nfixed && nfixed == nfixed2,"");
   }
 
   FOR_FIXED_DIM

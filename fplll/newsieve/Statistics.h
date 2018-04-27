@@ -24,7 +24,7 @@ namespace GaussSieve
 
 template <class SieveTraits, bool MT> class Sieve;
 
-template <class SieveTraits, bool MT> struct GaussSieveStatistics;
+template <class SieveTraits, bool MT> class GaussSieveStatistics;
 
 template <class SieveTraits>
 class GaussSieveStatistics<SieveTraits, false>
