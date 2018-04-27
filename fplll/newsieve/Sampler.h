@@ -181,7 +181,12 @@ private:
   {
     DEBUG_SIEVE_TRACEINITIATLIZATIONS("No custom initialization for sampler requested.")
   }
-  // stream operators hand off to these functions after processing the RNG state
+
+  /**
+    stream operators hand off to these functions after processing the RNG state.
+    NOTE: read_from_stream is supposed to be followed by init. In particular,
+    read_from_stream should leave the sampler in an unassociated state.
+  */
   virtual std::ostream &dump_to_stream(std::ostream &os) { return os; }
   // dummy implementation of >> operator.
   virtual std::istream &read_from_stream(std::istream &is) { return is; }

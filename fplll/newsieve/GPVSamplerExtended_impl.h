@@ -29,7 +29,8 @@ void GPVSamplerExtended<SieveTraits, MT, Engine, Sseq>::custom_init(
   lattice_rank = input_basis.lattice_rank;
   mu_matrix    = input_basis.get_mu_matrix();
 
-  assert(start_babai < lattice_rank);  // use strictly less to prevent outputting 0-vector
+  assert(start_babai < lattice_rank);  // use strictly less to prevent always outputting 0-vector
+  assert(lattice_rank < dim);
 
   s2pi.resize(lattice_rank);
   maxdeviations.resize(lattice_rank);
@@ -141,6 +142,35 @@ GPVSamplerExtended<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
   ret = make_from_any_vector<typename SieveTraits::GaussSampler_ReturnType>(vec, dim);
   return ret;
 }
+
+template <class SieveTraits, bool MT, class Engine, class Sseq>
+inline std::ostream &GPVSamplerExtended<SieveTraits, MT, Engine, Sseq>::dump_to_stream(std::ostream &os)
+{
+  os << "cutoff" << cutoff <<'\n';
+  os << "StartBabai" << start_babai;
+  return os;
+}
+
+template <class SieveTraits, bool MT, class Engine, class Sseq>
+inline std::istream &GPVSamplerExtended<SieveTraits, MT, Engine, Sseq>::read_from_stream(std::istream &is)
+{
+  if(initialized)
+  {
+    initialized = false;
+    delete static_init_plainpoint;
+    static_init_plainpoint = nullptr;
+    delete static_init_rettype;
+    static_init_rettype = nullptr;
+  }
+  if (!string_consume(is, "cutoff")) throw bad_dumpread("Could not read GPVSamplerExtended");
+  is >> cutoff;
+  if (!string_consume(is, "StartBabai")) throw bad_dumpread("Could not read GPVSamplerExtended");
+  is >> start_babai;
+  sieveptr = nullptr;
+  return is;
+}
+
+
 }  // end namespace GaussSieve
 
 #endif

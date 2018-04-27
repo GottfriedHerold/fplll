@@ -44,12 +44,16 @@ void GPVSampler<SieveTraits, MT, Engine, Sseq>::custom_init(
 
   dim          = input_basis.ambient_dimension;
   lattice_rank = input_basis.lattice_rank;
+  assert(dim >= lattice_rank);
   mu_matrix    = input_basis.get_mu_matrix();
 
   // vectors of length lattice_rank
   s2pi.resize(lattice_rank);
+  s2pi.shrink_to_fit();
   maxdeviations.resize(lattice_rank);
+  maxdeviations.shrink_to_fit();
   basis.resize(lattice_rank);
+  basis.shrink_to_fit();
 
   auto const maxbistar2 = input_basis.get_maxbistar2();
 
@@ -76,7 +80,7 @@ void GPVSampler<SieveTraits, MT, Engine, Sseq>::custom_init(
 
   if (static_init_plainpoint != nullptr)
   {
-    assert(false);
+    assert(false);  // Deleting the old one is fine. It just never happens.
   }
   if (static_init_rettype != nullptr)
   {
@@ -85,10 +89,40 @@ void GPVSampler<SieveTraits, MT, Engine, Sseq>::custom_init(
 
   static_init_rettype    = new StaticInitializer<RetType>(MaybeFixed<SieveTraits::get_nfixed>{dim});
   static_init_plainpoint = new StaticInitializer<typename SieveTraits::PlainPoint>(
-      MaybeFixed<SieveTraits::get_nfixed>{dim});
+    MaybeFixed<SieveTraits::get_nfixed>{dim});
 
   initialized = true;
 }
+
+/**
+  NOTE: stream IO will only output that is NOT managed by init.
+  In particular, reading in will leave the Sampler in an uninitialized state.
+*/
+
+template <class SieveTraits, bool MT, class Engine, class Sseq>
+inline std::ostream &GPVSampler<SieveTraits, MT, Engine, Sseq>::dump_to_stream(std::ostream &os)
+{
+  os << "cutoff" << cutoff;
+  return os;
+}
+
+template <class SieveTraits, bool MT, class Engine, class Sseq>
+inline std::istream &GPVSampler<SieveTraits, MT, Engine, Sseq>::read_from_stream(std::istream &is)
+{
+  if(initialized)
+  {
+    initialized = false;
+    delete static_init_plainpoint;
+    static_init_plainpoint = nullptr;
+    delete static_init_rettype;
+    static_init_rettype = nullptr;
+  }
+  if (!string_consume(is, "cutoff")) throw bad_dumpread("Could not read GPVSampler");
+  is >> cutoff;
+  sieveptr = nullptr;
+  return is;
+}
+
 
 // TODO: Not using thread / Engine / MTPRNG correctly
 template <class SieveTraits, bool MT, class Engine, class Sseq>

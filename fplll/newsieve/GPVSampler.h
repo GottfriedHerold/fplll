@@ -52,7 +52,7 @@ public:
   }
   // clang-format on
 
-  virtual SamplerType sampler_type() const override { return SamplerType::GPV_sampler; };
+  virtual SamplerType sampler_type() const override { return SamplerType::GPV_sampler; }
   virtual ~GPVSampler()
   {
     if (initialized)
@@ -60,26 +60,40 @@ public:
       delete static_init_plainpoint;
       delete static_init_rettype;
     }
-  };
+  }
   virtual inline RetType sample(int const thread = 0) override;
 
+  explicit GPVSampler(std::istream &is)
+    : Sampler<SieveTraits, MT, Engine, Sseq>(is),
+      //cutoff(0.0), //overwritten anyway
+      initialized(false),
+      static_init_rettype(nullptr),
+      static_init_plainpoint(nullptr)
+  {
+      if (!read_from_stream(is)) throw bad_dumpread("Could not init GPV Sampler from stream");
+  }
 private:
   inline virtual void custom_init(SieveLatticeBasis<SieveTraits, MT> const &input_basis) override;
+  virtual inline std::ostream &dump_to_stream(std::ostream &os) override;
+  virtual inline std::istream &read_from_stream(std::istream &is) override;
 
   std::vector<std::vector<double>> mu_matrix;  // copied from basis.
-  std::vector<double> s2pi;
-  std::vector<double> maxdeviations;  // stores s*cutoff for each dimension.
-  DimensionType dim;                  // ambient dimension
-  uint_fast16_t lattice_rank;
+  std::vector<double> s2pi;  //s^2 * pi for each coo (size == rank)
+  std::vector<double> maxdeviations;  // stores s*cutoff per coo ( size == rank )
+  DimensionType dim;                  // ambient dimension ( >= rank )
+  uint_fast16_t lattice_rank;         // rank
 
   double cutoff;
-  bool initialized;
+  bool initialized;  // controls whether custom_init was already run.
+                     // If false, sieveptr (from base) is nullptr
+                     // and static_init_rettype and static_init_plainpoint are nullptr
+                     // If true, static_init_rettype and static_init_plainpoint are non-null and
+                     // owning, sieveptr is null/non-null depening on DEBUG_SIEVE_STANDALONE_SAMPLER
 
-protected:
   // bring into scope from parent
   using Sampler<SieveTraits, MT, Engine, Sseq>::sieveptr;
   using Sampler<SieveTraits, MT, Engine, Sseq>::engine;
-  std::vector<typename SieveTraits::PlainPoint> basis;
+  std::vector<typename SieveTraits::PlainPoint> basis;  // A copy of the lattice basis (size == rank)
 
   StaticInitializer<RetType> *static_init_rettype;
   StaticInitializer<typename SieveTraits::PlainPoint> *static_init_plainpoint;
