@@ -23,6 +23,8 @@
 //#define TEST_SIMHASHES
 #define TEST_GPV_SAMPLER
 
+#define TEST_GSO_LATTICE_POINT
+
 // clang-format off
 #ifdef TEST_ALL
   #define TEST_TRAIT_CLASSES
@@ -40,6 +42,7 @@
   #define TEST_BLOCKORTHOGONAL_SIM_HASH
   #define TEST_GPV_SAMPLER
   #define TEST_SIMHASHES
+  #define TEST_GSO_LATTICE_POINT
 #endif
 
 // very verbose...
@@ -112,6 +115,9 @@
   #include "Tests/TestBlockOrthogonalSimHash.h"
 #endif
 
+#ifdef TEST_GSO_LATTICE_POINT
+  #include "Tests/TestGSOLatticePoint.h"
+#endif
 /**
   Late includes:
 */
@@ -228,6 +234,13 @@ int main(int argc, char **argv)
   if (test_array_list())
   {
     std::cout << "Array list works as expected" << std::endl;
+  }
+#endif
+  
+#ifdef TEST_GSO_LATTICE_POINT
+  if (test_GSO_LP())
+  {
+    std::cout << "GSO Lattice point works as expected " << std::endl;
   }
 #endif
   return 0;  // indicating success.

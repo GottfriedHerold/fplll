@@ -1,4 +1,4 @@
-#error UNUSED FILE
+#warning UNUSED FILE
 
 #ifndef GSO_LATTICE_POINT_H
 #define GSO_LATTICE_POINT_H
@@ -10,6 +10,8 @@
 namespace GaussSieve
 {
 
+template <class AbsoluteEntries, class RelativeCoos, class Basis, int nfixed> class GSOLatticePoint;
+  
 template <class AbsoluteEntries, class RelativeCoos, class Basis, int nfixed>
 struct LatticePointTraits<GSOLatticePoint<AbsoluteEntries, RelativeCoos, Basis, nfixed>>
 {
@@ -42,8 +44,7 @@ public:
 
 
 template <class AbsoluteEntries, class RelativeCoos, class Basis, int nfixed>
-    final : public GeneralLatticePoint<GSOLatticePoint< AbsoluteEntries, RelativeCoos, Basis, nfixed>>
-class GSOLatticePoint
+class GSOLatticePoint final : public GeneralLatticePoint<GSOLatticePoint< AbsoluteEntries, RelativeCoos, Basis, nfixed>>
 {
   // constructors are defaulted.
   // Note that copy constructor is automatically deleted, because the parent's is.
@@ -131,9 +132,6 @@ public:
     norm2 = new_norm2;
   }
 
-  ET get_norm2() const { return norm2; }
-
-
 private:
   AbsoluteContainer onb_coos;  // coordinates wrt to an orthonormal basis
   CoefficientContainer relative_coos;  // coordinates relative to the basis indicated by the static
@@ -153,7 +151,7 @@ MaybeFixed<nfixed> GSOLatticePoint<AbsoluteEntries, RelativeCoos, Basis, nfixed>
   Run-time initalization, via RAII wrapper:
 */
 
-template <class ET, int nfixed>
+template <class AbsoluteEntries, class RelativeCoos, class Basis, int nfixed>
 class StaticInitializer<GSOLatticePoint<AbsoluteEntries, RelativeCoos, Basis, nfixed>> final
     : public DefaultStaticInitializer<GSOLatticePoint<AbsoluteEntries, RelativeCoos, Basis, nfixed>>
 {
@@ -165,17 +163,17 @@ public:
   {
   }
 
-  StaticInitializer(MaybeFixed<nfixed> const new_dim, )
+  StaticInitializer(MaybeFixed<nfixed> const new_dim)
   {
     assert(Parent::user_count > 0);
     if (Parent::user_count > 1)
     {
-      assert((new_dim == ExactLatticePoint<ET, nfixed>::dim));
+      assert((new_dim == GSOLatticePoint<AbsoluteEntries, RelativeCoos, Basis, nfixed>::dim));
       // TODO: Throw exception!
     }
     else
     {
-      ExactLatticePoint<ET, nfixed>::dim = new_dim;
+      GSOLatticePoint<AbsoluteEntries, RelativeCoos, Basis, nfixed>::dim = new_dim;
     }
     DEBUG_SIEVE_TRACEINITIATLIZATIONS("Initializing GSOLatticePoint with nfixed = "
                                       << nfixed << " REALDIM = " << new_dim << " Counter is"
@@ -198,5 +196,4 @@ public:
 
 #endif  // include guard
 
-}  // end of namespace
 

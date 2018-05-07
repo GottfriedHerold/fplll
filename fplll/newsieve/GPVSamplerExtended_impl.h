@@ -30,7 +30,7 @@ void GPVSamplerExtended<SieveTraits, MT, Engine, Sseq>::custom_init(
   mu_matrix    = input_basis.get_mu_matrix();
 
   assert(start_babai < lattice_rank);  // use strictly less to prevent always outputting 0-vector
-  assert(lattice_rank < dim);
+  assert(lattice_rank <= dim); // Elena: changed from '<' to '<='
 
   s2pi.resize(lattice_rank);
   maxdeviations.resize(lattice_rank);
