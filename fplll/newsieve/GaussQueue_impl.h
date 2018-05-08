@@ -7,6 +7,7 @@
 #include "GaussQueue.h"
 #include "Sampler.h"
 #include "UniformSampler.h"
+#include "GPVSamplerCVP.h"
 
 namespace GaussSieve
 {

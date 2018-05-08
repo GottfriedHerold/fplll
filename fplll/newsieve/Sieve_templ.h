@@ -188,6 +188,7 @@ using SieveMT = Sieve<DefaultSieveTraits,CoefficientType, true, -1>, true>;
   #include "Sampler_impl.h"
   #include "UniformSampler_impl.h"
   #include "GPVSamplerExtended_impl.h"
+  #include "GPVSamplerCVP_impl.h"
 
 #endif // of block that is conditional on caller!=Sieve.h
 

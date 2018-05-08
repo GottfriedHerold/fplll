@@ -61,7 +61,8 @@ enum class SamplerType
   elliptic_sampler    = 1,  // not implemented
   GPV_sampler         = 2,  // GPVSampler.h
   uniform_sampler     = 3,  // UniformSampler.h
-  GPVExtended_sampler = 4   // GPVSamplerExtended.h
+  GPVExtended_sampler = 4,   // GPVSamplerExtended.h
+  GPVCVP_sampler      = 5
 };
 
 /**

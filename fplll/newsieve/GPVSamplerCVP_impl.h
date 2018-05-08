@@ -1,10 +1,10 @@
 // clang-format status: OK
 
-#ifndef GPV_SAMPLER_EXTENDED_IMPL_H
-#define GPV_SAMPLER_EXTENDED_IMPL_H
+#ifndef GPV_SAMPLER_CVP_IMPL_H
+#define GPV_SAMPLER_CVP_IMPL_H
 
 #include "DefaultIncludes.h"
-#include "GPVSamplerExtended.h"
+#include "GPVSamplerCVP.h"
 #include "LatticeBases.h"
 #include "Sampler.h"
 #include "fplll/defs.h"
@@ -18,7 +18,7 @@
 namespace GaussSieve
 {
 template <class SieveTraits, bool MT, class Engine, class Sseq>
-void GPVSamplerExtended<SieveTraits, MT, Engine, Sseq>::custom_init(
+void GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::custom_init(
     SieveLatticeBasis<SieveTraits, MT> const &input_basis)
 {
   assert(!initialized);
@@ -76,7 +76,7 @@ void GPVSamplerExtended<SieveTraits, MT, Engine, Sseq>::custom_init(
 // TODO: Not using thread / Engine / MTPRNG correctly
 template <class SieveTraits, bool MT, class Engine, class Sseq>
 typename SieveTraits::GaussSampler_ReturnType
-GPVSamplerExtended<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
+GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
 {
   assert(initialized);
 #ifdef DEBUG_SIEVE_STANDALONE_SAMPLER
@@ -115,10 +115,13 @@ GPVSamplerExtended<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
         shifts[i] -= coos[j] * (mu_matrix[j][i]);
       }
        */
+       
+      
+      // TODO: SAMPLE GAUSSIAN OVER \R
 
       long const newcoeff = sample_z_gaussian_VMD<long, Engine>(
           s2pi[i], shifts[i], engine.rnd(thread), maxdeviations[i]);  // coefficient of b_j in vec.
-
+      
       vec += basis[i] * newcoeff;
 
       for (uint_fast16_t j = 0; j < i; ++j)  // adjust shifts
@@ -126,6 +129,18 @@ GPVSamplerExtended<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
         shifts[j] -= newcoeff * (mu_matrix[i][j]);
       }
     }
+
+    std::vector<fplll::Z_NR<mpz_t>> target_vec;
+    target_vec.resize(vec.get_dim());
+    for (i=0; i<target_vec.size(); ++i)
+    {
+        target_vec[i] = vec[i];
+    }
+    std::vector<fplll::Z_NR<mpz_t>> sol_coord; 
+    sol_coord.resize(vec.get_dim());
+    
+    
+    
     // run Babai
     while (i > 0)
     {
@@ -154,8 +169,9 @@ GPVSamplerExtended<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
   return ret;
 }
 
+/*
 template <class SieveTraits, bool MT, class Engine, class Sseq>
-inline std::ostream &GPVSamplerExtended<SieveTraits, MT, Engine, Sseq>::dump_to_stream(std::ostream &os) const
+inline std::ostream &GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::dump_to_stream(std::ostream &os) const
 {
   os << "cutoff" << cutoff <<'\n';
   os << "StartBabai" << start_babai;
@@ -163,7 +179,7 @@ inline std::ostream &GPVSamplerExtended<SieveTraits, MT, Engine, Sseq>::dump_to_
 }
 
 template <class SieveTraits, bool MT, class Engine, class Sseq>
-inline std::istream &GPVSamplerExtended<SieveTraits, MT, Engine, Sseq>::read_from_stream(std::istream &is)
+inline std::istream &GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::read_from_stream(std::istream &is)
 {
   if(initialized)
   {
@@ -180,7 +196,7 @@ inline std::istream &GPVSamplerExtended<SieveTraits, MT, Engine, Sseq>::read_fro
   sieveptr = nullptr;
   return is;
 }
-
+*/
 
 }  // end namespace GaussSieve
 

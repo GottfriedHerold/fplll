@@ -10,13 +10,17 @@
 #include "gmpxx.h"
 #include <iostream>
 #include "TestLatticePoint.h"
+#include "../LatticeBases.h"
 
 bool test_GSO_LP()
 {
   using GaussSieve::GSOLatticePoint;
   using GaussSieve::MaybeFixed;
+  using GSOType = fplll::MatGSO<fplll::Z_NR<long>, fplll::FP_NR<double>>;
+  
+  
 
-  //typedef GaussSieve::GSOLatticePoint<long, -1> LPvar;
+  //typedef GaussSieve::GSOLatticePoint<fplll::FP_NR<double>,fplll::FP_NR<double>, GSOType, -1> LPvar;
   
   //GaussSieve::StaticInitializer<LPvar> init1 (MaybeFixed<-1>{10});
   //GaussSieve::StaticInitializer<LPvar> init2 (MaybeFixed<-1>{10});
