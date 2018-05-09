@@ -5,9 +5,15 @@
 //#define DEBUG_SIEVE_SHOW_INITIALIZATIONS
 #define DEBUG_SIEVE_STANDALONE_MODULES_ALL
 
+/**
+  Gotti: test_foo() now has an bool argument, which defaults to true.
+  If it is set to false, the tests do not produce output (but are still run).
+  This way, you do not need to uncomment the TEST_FOO macro here if you want to get rid of
+  all the output.
+*/
+
 // indentation of nested ifdef's:
 // clang-format off
-
 //#define TEST_ALL
 //#define TEST_EMV
 //#define TEST_LAZY
@@ -15,7 +21,7 @@
 //#define TEST_PLAIN_LATTICE_POINT
 //#define TEST_LIST
 //#define TEST_ARRAY_LIST
-//#define TEST_QUEUE
+#define TEST_QUEUE
 
 #define TEST_MTPRNG
 #define TEST_BLOCKORTHOGONAL_SIM_HASH
@@ -181,7 +187,7 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef TEST_QUEUE
-  if (test_queue())
+  if (test_queue(false))
   {
     std::cout << "Queue works as expected." << std::endl;
   }
