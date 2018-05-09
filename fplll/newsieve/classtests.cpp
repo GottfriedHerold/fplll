@@ -28,6 +28,7 @@
 //#define TEST_EXACT_LATTICE_POINT
 #define TEST_SIMHASHES
 #define TEST_GPV_SAMPLER
+#define TEST_GPV_SAMPLER_EXTENDED
 
 #define TEST_GSO_LATTICE_POINT
 
@@ -46,6 +47,8 @@
   #define TEST_ARRAY_LIST
   #define TEST_BLOCKORTHOGONAL_SIM_HASH
   #define TEST_GPV_SAMPLER
+  #define TEST_GPV_SAMPLER_EXTENDED
+
   #define TEST_SIMHASHES
   #define TEST_GSO_LATTICE_POINT
 #endif
@@ -82,6 +85,10 @@
 
 #ifdef TEST_GPV_SAMPLER
   #include "Tests/TestGPVSampler.h"
+#endif
+
+#ifdef TEST_GPV_SAMPLER_EXTENDED
+  #include "Tests/TestGPVSamplerExtended.h"
 #endif
 
 #ifdef TEST_QUEUE
@@ -129,6 +136,11 @@
 
 #ifdef TEST_GPV_SAMPLER
   #include "GPVSampler_impl.h"
+  #include "Sampler_impl.h"
+#endif
+
+#ifdef TEST_GPV_SAMPLER_EXTENDED
+  #include "GPVSamplerExtended_impl.h"
   #include "Sampler_impl.h"
 #endif
 
@@ -185,6 +197,14 @@ int main(int argc, char **argv)
     std::cout << "GPV Sampler works as expected." << std::endl;
   }
 #endif
+
+#ifdef TEST_GPV_SAMPLER_EXTENDED
+  if (test_gpv_sampler_extended(false))
+  {
+    std::cout << "GPVSamplerExtended works as expected." << std::endl;
+  }
+#endif
+
 
 #ifdef TEST_QUEUE
   if (test_queue(false))

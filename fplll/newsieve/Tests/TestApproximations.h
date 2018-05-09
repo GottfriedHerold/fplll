@@ -1,3 +1,5 @@
+#error Unused, replaced by Simhashes
+
 #ifndef TEST_APPROXIMATIONS_H
 #define TEST_APPROXIMATIONS_H
 
