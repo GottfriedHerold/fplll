@@ -123,7 +123,12 @@ template <class ET> MaybeFixed<-1> PlainLatticePoint<ET, -1>::dim = MaybeFixed<-
  Static Initializers
 **************************/
 
-// Static Initializer:
+template<class ET, int nfixed>
+std::ostream& operator<<(std::ostream &, StaticInitializer<PlainLatticePoint<ET, nfixed>> const &);
+template<class ET, int nfixed>
+std::istream& operator>>(std::istream &, StaticInitializer<PlainLatticePoint<ET, nfixed>> const &);
+
+// Static Initializer (for nfixed != -1):
 template <class ET, int nfixed>
 class StaticInitializer<PlainLatticePoint<ET, nfixed>>
     : public DefaultStaticInitializer<PlainLatticePoint<ET, nfixed>>
@@ -137,7 +142,7 @@ public:
   {
   }
 
-  StaticInitializer(MaybeFixed<nfixed> const new_dim)
+  StaticInitializer(MaybeFixed<nfixed> const)
   {
     DEBUG_SIEVE_TRACEINITIATLIZATIONS("Initializing PlainLatticePoint class with nfixed = "
                                       << nfixed << "Counter is" << Parent::user_count)
@@ -147,6 +152,29 @@ public:
   {
     DEBUG_SIEVE_TRACEINITIATLIZATIONS("DeInitializing PlainLatticePoint class with nfixed = "
                                       << nfixed << "Counter is" << Parent::user_count)
+  }
+private:
+  static constexpr mystd::add_lvalue_reference_t<decltype(PlainLatticePoint<ET,nfixed>::dim)> access_dim()
+  {
+    return PlainLatticePoint<ET, nfixed>::dim;
+  }
+public:
+  friend std::ostream &operator<<(std::ostream &os, StaticInitializer<PlainLatticePoint<ET,nfixed>> const &)
+  {
+    os << "Static Data for PlainLatticePoint (fixed dim)";
+    os << access_dim();
+    return os;
+  }
+  friend std::istream &operator>>(std::istream &is, StaticInitializer<PlainLatticePoint<ET,nfixed>> const &)
+  {
+    if (!string_consume(is,"Static Data for PlainLatticePoint (fixed dim)")) throw bad_dumpread("StaticInitPlainLP");
+    // Note: stream IO of MaybeFixed<nfixed> will check that nfixed is the same number that we read in.
+    if (!(is>>access_dim())) throw bad_dumpread("StaticInitPlainLP");
+    return is;
+  }
+  explicit StaticInitializer(std::istream &is)
+  {
+    is >> *this;
   }
 };
 
@@ -184,6 +212,35 @@ public:
     DEBUG_SIEVE_TRACEINITIATLIZATIONS("DeInitializing PlainLatticePoint with nfixed = -1"
                                       << "Counter is" << Parent::user_count)
   }
+private:
+  static constexpr mystd::add_lvalue_reference_t<decltype(PlainLatticePoint<ET,-1>::dim)> access_dim()
+  {
+    return PlainLatticePoint<ET,-1>::dim;
+  }
+public:
+  friend std::ostream &operator<<(std::ostream &os, StaticInitializer<PlainLatticePoint<ET,-1>> const &)
+  {
+    os << "Static Data for PlainLatticePoint (variable dim)";
+    os << access_dim();
+    return os;
+  }
+  friend std::istream &operator>>(std::istream &is, StaticInitializer<PlainLatticePoint<ET,-1>> const &init_ob)
+  {
+    if (!string_consume(is, "Static Data for PlainLatticePoint (variable dim)")) throw bad_dumpread("StaticInitPlainLP");
+    mystd::decay_t<decltype(access_dim())> new_dim;
+    if (!(is >> new_dim)) throw bad_dumpread("Dumpread failure: PlainLatticePoint");
+    if(init_ob.get_user_count() > 1)
+    {
+      if(new_dim != access_dim()) throw bad_reinit_static("Trying to overwrite static data for PlainLatticePoint, but more than 1 user");
+    }
+    access_dim() = new_dim;
+    return is;
+  }
+  explicit StaticInitializer(std::istream &is)
+  {
+    is >> *this;
+  }
+
 };
 
 }  // end of namespace GaussSieve
