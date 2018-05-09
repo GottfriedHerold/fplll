@@ -7,7 +7,7 @@
 #include <random>
 #include <sstream>
 
-bool test_mtprng()
+bool test_mtprng(bool output = false)
 {
 
 std::seed_seq sseq1({1,2,3});

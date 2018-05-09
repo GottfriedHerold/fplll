@@ -13,7 +13,7 @@
 #include <sstream>
 //#include <math.h>
 
-bool test_sim_hashes()
+bool test_sim_hashes(bool output = true)
 {
   static constexpr std::size_t sim_hash_len1 = 24;
   static constexpr std::size_t sim_hash_num1 = 2;
@@ -34,9 +34,12 @@ bool test_sim_hashes()
   assert(sim_hash2[0].count() == 22);
   assert(sim_hash2[1].count() == 1);
   using GaussSieve::operator<<;
-  std::cout << "SimHash1:" << sim_hash1 << std::endl;
+  if (output)
+  {
+    std::cout << "SimHash1:" << sim_hash1 << std::endl;
 
-  std::cout << "Negated :" << sim_hash2 << std::endl;
+    std::cout << "Negated :" << sim_hash2 << std::endl;
+  }
   return true;
 }
 
@@ -50,7 +53,7 @@ namespace TestHelper
 } // end namespace TestHelper
 
 template<class CoordinateSelection>
-bool test_general_coo_selection()
+bool test_general_coo_selection(bool output = true)
 {
   // static checks:
 
@@ -86,21 +89,29 @@ bool test_general_coo_selection()
   GaussSieve::StaticInitializer<LP> init1 (MaybeFixed<-1>{dim});
   LP latp = GaussSieve::make_from_any_vector<LP>(arr,MaybeFixed<-1>{dim});
   LP latp2 = GaussSieve::make_from_any_vector<LP>(arr2,MaybeFixed<-1>{dim});
-  std::cout << "latp = " << latp << std::endl;
-  std::cout << "latp2 = " << latp2 << std::endl;
-
+  if (output)
+  {
+    std::cout << "latp = " << latp << std::endl;
+    std::cout << "latp2 = " << latp2 << std::endl;
+  }
   // initialize the hash function with some arbitrary random seed.
   GaussSieve::StaticInitializer<GaussSieve::GlobalBitApproxData<CoordinateSelection>> init_coo_selection(DimensionType{dim},5235);
 
   SimHashes sh1 = GaussSieve::GlobalBitApproxData<CoordinateSelection>::coo_selection.compute_all_bitapproximations(latp);
   SimHashes sh2 = GaussSieve::GlobalBitApproxData<CoordinateSelection>::coo_selection.compute_all_bitapproximations(latp2);
   using GaussSieve::operator<<;
-  std::cout << "SimHash for latp = " << sh1 << std::endl;
-  std::cout << "SimHash for latp2= " << sh2 << std::endl;
+  if (output)
+  {
+    std::cout << "SimHash for latp = " << sh1 << std::endl;
+    std::cout << "SimHash for latp2= " << sh2 << std::endl;
+  }
 
   using LPWithBitApprox = GaussSieve::AddBitApproximationToLP<LP, CoordinateSelection>;
   LPWithBitApprox latp_with_bitapprox2{std::move(latp2)};
-  std::cout << "Point2 with Bitapprox " << latp_with_bitapprox2 << std::endl;
+  if (output)
+  {
+    std::cout << "Point2 with Bitapprox " << latp_with_bitapprox2 << std::endl;
+  }
 
   std::stringstream channel;
   channel << GaussSieve::GlobalBitApproxData<CoordinateSelection>::coo_selection;

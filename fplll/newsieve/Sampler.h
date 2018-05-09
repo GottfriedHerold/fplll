@@ -40,6 +40,7 @@ template <class SieveTraits, bool MT> class Sieve;
 
 // Declared in this file, as specialization for each possible MT.
 // Default template arguments are just meaningful defaults. You may choose others.
+// Note that stream IO will probably not work if you choose other classes for Engine and Sseq
 template <class SieveTraits, bool MT, class Engine = std::mt19937_64, class Sseq = std::seed_seq>
 class Sampler;
 
@@ -98,6 +99,9 @@ public:
       std::ostream &os, Sampler<SieveTraits, MT, Engine, Sseq> const &sampler);
   friend std::istream &operator>> <SieveTraits, MT, Engine, Sseq>(
       std::istream &is, Sampler<SieveTraits, MT, Engine, Sseq> &sampler);
+  using GetEngine = Engine;
+  using GetSseq   = Sseq;
+  using GetTraits = SieveTraits;
 
   // constructor: this constructs and unaccociated Sampler. The pointer to an associated sieve is
   // set later.
@@ -110,7 +114,8 @@ protected:
   {
     DEBUG_SIEVE_TRACEINITIATLIZATIONS("Constructing Sampler (general).")
   }
-  // constructs parent subobject for derived type. derived_sampler_type is what we expect to read in the dump.
+  // constructs parent subobject for derived type.
+  // derived_sampler_type is what we expect to read in the dump.
   explicit Sampler(std::istream &is, SamplerType const &derived_sampler_type);
 
 public:
@@ -123,7 +128,6 @@ public:
     CPP17CONSTEXPRIF (MT==false) { assert(num_threads == 1); }
     engine.init(num_threads);
   }
-
 
   // init is called by the sieve when we we start. it associates the sampler with the calling sieve.
   // we then call custom_init with the input_basis provided by the seed.
@@ -186,8 +190,11 @@ private:
 
   /**
     stream operators hand off to these functions after processing the RNG state.
+
     NOTE: read_from_stream is supposed to be followed by init. In particular,
     read_from_stream should leave the sampler in an unassociated state.
+
+    NOTE: operator<< and operator>> manage the local data (such as RNG state) before the handoff.
   */
   virtual std::ostream &dump_to_stream(std::ostream &os) const { return os; }
   // dummy implementation of >> operator.

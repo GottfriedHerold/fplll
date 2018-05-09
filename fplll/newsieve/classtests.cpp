@@ -2,7 +2,7 @@
 #define USE_REGULAR_QUEUE  // priority queue is slower
 
 #define DEBUG_SIEVE_SILENT_ALL
-#define DEBUG_SIEVE_SHOW_INITIALIZATIONS
+//#define DEBUG_SIEVE_SHOW_INITIALIZATIONS
 #define DEBUG_SIEVE_STANDALONE_MODULES_ALL
 
 // indentation of nested ifdef's:
@@ -15,19 +15,18 @@
 //#define TEST_PLAIN_LATTICE_POINT
 //#define TEST_LIST
 //#define TEST_ARRAY_LIST
-#define TEST_QUEUE
+//#define TEST_QUEUE
 
 #define TEST_MTPRNG
-//#define TEST_BLOCKORTHOGONAL_SIM_HASH
+#define TEST_BLOCKORTHOGONAL_SIM_HASH
 //#define TEST_EXACT_LATTICE_POINT
-//#define TEST_SIMHASHES
+#define TEST_SIMHASHES
 #define TEST_GPV_SAMPLER
 
 #define TEST_GSO_LATTICE_POINT
 
 // clang-format off
 #ifdef TEST_ALL
-  #define TEST_TRAIT_CLASSES
   #define TEST_PLAIN_LATTICE_POINT
   #define TEST_MAYBE_FIXED_INT
   #define TEST_EXACT_LATTICE_POINT
@@ -51,9 +50,9 @@
 //#include "SieveGauss_main.h"
 #include <iostream>
 
-#ifdef TEST_TRAIT_CLASSES
-  #include "Tests/TestTraitClasses.h"
-#endif
+//#ifdef TEST_TRAIT_CLASSES
+//  #include "Tests/TestTraitClasses.h"
+//#endif
 
 #ifdef TEST_PLAIN_LATTICE_POINT
   #include "Tests/TestPlainLatticePoint.h"
@@ -137,12 +136,12 @@
 
 int main(int argc, char **argv)
 {
-#ifdef TEST_TRAIT_CLASSES
-  if (test_trait_classes())
-  {
-    std::cout << "Trait utility macros work as expected." << std::endl;
-  }
-#endif
+//#ifdef TEST_TRAIT_CLASSES
+//  if (test_trait_classes())
+//  {
+//    std::cout << "Trait utility macros work as expected." << std::endl;
+//  }
+//#endif
 #ifdef TEST_MAYBE_FIXED_INT
   if (test_maybe_fixed_int())
   {
@@ -175,7 +174,7 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef TEST_GPV_SAMPLER
-  if (test_gpv_sampler())
+  if (test_gpv_sampler(false))
   {
     std::cout << "GPV Sampler works as expected." << std::endl;
   }
@@ -217,14 +216,14 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef TEST_SIMHASHES
-  if (test_sim_hashes())
+  if (test_sim_hashes(false))
   {
     std::cout << "Bit Approximation works as expected" << std::endl;
   }
 #endif
 
 #ifdef TEST_BLOCKORTHOGONAL_SIM_HASH
-  if(test_block_orthogonal_sim_hash())
+  if(test_block_orthogonal_sim_hash(false))
   {
     std::cout << "Block orthogonal sim hashes work as expected" << std::endl;
   }
@@ -236,7 +235,7 @@ int main(int argc, char **argv)
     std::cout << "Array list works as expected" << std::endl;
   }
 #endif
-  
+
 #ifdef TEST_GSO_LATTICE_POINT
   if (test_GSO_LP())
   {

@@ -34,6 +34,7 @@ public:
   using DimensionType = typename SieveTraits::DimensionType;
   using LengthType    = typename SieveTraits::LengthType;
   using RetType       = typename SieveTraits::GaussSampler_ReturnType;
+  using Parent        = Sampler<SieveTraits, MT, Engine, Sseq>;
 
   // Note: Sampler::sieveptr is only initialized during Sampler::init.
   // Consequently, some member fields will only be set during custom_init.
