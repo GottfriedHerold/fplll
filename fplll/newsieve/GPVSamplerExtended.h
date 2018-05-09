@@ -38,9 +38,10 @@ public:
   using DimensionType = typename SieveTraits::DimensionType;
   using LengthType    = typename SieveTraits::LengthType;
   using RetType       = typename SieveTraits::GaussSampler_ReturnType;
+  using Parent        = Sampler<SieveTraits, MT, Engine, Sseq>;
 
   // clang-format off
-  explicit GPVSamplerExtended(Sseq &seq, uint_fast16_t babai, double const _cutoff = 2.0)
+  explicit GPVSamplerExtended(Sseq &seq, uint_fast16_t babai = 0, double const _cutoff = 2.0)
       : Sampler<SieveTraits,MT,Engine,Sseq>(seq),
         start_babai(babai),
         cutoff(_cutoff),
