@@ -1,14 +1,9 @@
 #ifndef TEST_GPV_SAMPLER_H
 #define TEST_GPV_SAMPLER_H
 
-#include <iostream>
-#include "fplll.h"
-#include "../Typedefs.h"
-#include "gmpxx.h"
+
 #include "../GPVSampler.h"
-#include <random>
-#include "../LatticeBases.h"
-#include <sstream>
+
 #include "TestSampler.h"
 
 bool test_gpv_sampler(bool output = true)

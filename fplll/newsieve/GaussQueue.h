@@ -9,6 +9,8 @@
 #include "Sampler.h"
 #include "SieveUtility.h"
 #include "Typedefs.h"
+#include "GPVSampler.h"
+#include "GPVSamplerExtended.h"
 
 /**
   This file defines a class for the queue that stores the yet-unprocessed points of the Sieve.
@@ -62,6 +64,11 @@ private:  // aliases to avoid typing long names
   using DataType                    = typename SieveTraits::GaussQueue_DataType;
   using RetType                     = typename SieveTraits::GaussQueue_ReturnType;
   using GlobalStaticDataInitializer = typename SieveTraits::GlobalStaticDataInitializer;
+
+  // types of the automagically created sampler. The standalone variant is used exclusively for
+  // testing (where we have no associated sieve and do not use progressive sampling at the moment)
+  using DefaultSamplerType          = GPVSamplerExtended<SieveTraits, false, std::mt19937_64, std::seed_seq>;
+  using DefaultSamplerTypeStandalone= GPVSampler<SieveTraits, false, std::mt19937_64, std::seed_seq>;
 #ifndef USE_REGULAR_QUEUE
   // If this symbol is not set, we use a priority queue to always process the smallest element from
   // the queue.
@@ -107,11 +114,16 @@ public:
   // user_sampler is a pointer to a user-provided samplers. If == nullptr, we create our own
   // seed_sampler is only used if we create our own sampler.
   // TODO: Consider storing a reference to the statistics class instead.
+  // Note: *user_sampler is derived from Sampler<SieveTraits, false, DEFAULT_ARGS>
   // clang-format off
   explicit inline GaussQueue(Sieve<SieveTraits, false> *const caller_sieve,
                              GlobalStaticDataInitializer const &static_data,
                              int new_seed_sampler,
-                             Sampler<SieveTraits, false, std::mt19937_64, std::seed_seq> *user_sampler = nullptr);
+                             Sampler<SieveTraits, false> *user_sampler = nullptr);
+
+  // restores GaussQueue from a serialized stream.
+  explicit inline GaussQueue(std::istream &is, Sieve<SieveTraits, false>* caller_sieve);
+
   // clang-format on
   inline ~GaussQueue();
 
@@ -150,9 +162,10 @@ public:
   friend std::ostream& operator<< <SieveTraits, false>(std::ostream& os, GaussQueue<SieveTraits,false> const &gauss_queue);
   inline bool serialize_gauss_queue(std::ostream &os) const;
   inline bool unserialize_gauss_queue(std::istream &is);
-  explicit inline GaussQueue(std::istream &is); // TODO: Implement, Change parameters
 
 private:
+  // internal helper function for unserialize_gauss_queue
+  inline bool unserialize_gauss_queue_main(std::istream &is);
 
   // clang-format off
   StaticInitializer<DataType> init_data_type;
@@ -172,7 +185,7 @@ public:
   // user-provided samplers (which we do not own). Note that the Sampler class has
   // virtual members and *sampler might be a type derived from it.
   SamplerPtr sampler;
-  bool sampler_auto_created;  // If we auto-create a sampler, the pointer above is owning, otherwise
+  bool sampler_pointer_owning;  // If we auto-create a sampler, the pointer above is owning, otherwise
                               // it is not.
 };
 
