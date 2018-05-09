@@ -89,6 +89,7 @@ GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
   vec.fill_with_zero();
 
   std::vector<double> shifts(lattice_rank, 0.0);
+  std::vector<double> target(lattice_rank, 0.0);
   // std::vector<long> coos(lattice_rank, 0);
 
   while (vec.is_zero())
@@ -119,14 +120,16 @@ GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
       
       // TODO: SAMPLE GAUSSIAN OVER \R
 
-      long const newcoeff = sample_z_gaussian_VMD<long, Engine>(
-          s2pi[i], shifts[i], engine.rnd(thread), maxdeviations[i]);  // coefficient of b_j in vec.
+      double const newc = sample_fp_gaussian<double, Engine>(s2pi[i], shifts[i], engine.rnd(thread));
       
-      vec += basis[i] * newcoeff;
+      //long const newcoeff = sample_z_gaussian_VMD<long, Engine>(
+      //    s2pi[i], shifts[i], engine.rnd(thread), maxdeviations[i]);  // coefficient of b_j in vec.
+      
+      target += basis[i] * newc; //TODO: convert basis[i] to vector<double>
 
       for (uint_fast16_t j = 0; j < i; ++j)  // adjust shifts
       {
-        shifts[j] -= newcoeff * (mu_matrix[i][j]);
+        shifts[j] -= newc * (mu_matrix[i][j]);
       }
     }
 

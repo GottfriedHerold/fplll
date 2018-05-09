@@ -242,6 +242,19 @@ inline unsigned int sample_uniform(unsigned int max_val, Engine &engine)
   return uniform_in_range(engine);
 }
 
+  
+// Samples non-integer Gaussians, no rejection sampling
+  
+template<class FP, class Engine>
+inline FP sample_fp_gaussian(double const s2pi, double const mean, Engine &engine)
+{
+  std::normal_distribution<FP> gaussian_distribution(mean, s2pi);
+  FP result = gaussian_distribution(engine);
+  
+  return result;
+  
+}
+
 
 
 } // end namespace GaussSieve
