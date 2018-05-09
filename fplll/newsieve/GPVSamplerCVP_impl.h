@@ -119,6 +119,8 @@ GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
       
       // TODO: SAMPLE GAUSSIAN OVER \R
 
+      double const newc = sample_fp_gaussian<double, Engine>(s2pi[i], shifts[i], engine.rnd(thread));
+      
       long const newcoeff = sample_z_gaussian_VMD<long, Engine>(
           s2pi[i], shifts[i], engine.rnd(thread), maxdeviations[i]);  // coefficient of b_j in vec.
       
