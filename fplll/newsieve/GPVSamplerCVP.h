@@ -1,5 +1,3 @@
-// clang-format status: OK
-
 #ifndef GPV_SAMPLER_CVP_H
 #define GPV_SAMPLER_CVP_H
 
@@ -29,9 +27,10 @@ public:
   using DimensionType = typename SieveTraits::DimensionType;
   using LengthType    = typename SieveTraits::LengthType;
   using RetType       = typename SieveTraits::GaussSampler_ReturnType;
+  using Parent        = Sampler<SieveTraits, MT, Engine, Sseq>;
 
   // clang-format off
-  explicit GPVSamplerCVP(Sseq &seq, uint_fast16_t babai, double const _cutoff = 2.0)
+  explicit GPVSamplerCVP(Sseq &seq, uint_fast16_t babai = 0, double const _cutoff = 2.0)
       : Sampler<SieveTraits,MT,Engine,Sseq>(seq),
         start_babai(babai),
         cutoff(_cutoff),
@@ -56,8 +55,6 @@ public:
 
   explicit GPVSamplerCVP(std::istream &is)
     : Sampler<SieveTraits, MT, Engine, Sseq>(is, SamplerType::GPVCVP_sampler),
-      //start_babai  // overwritten anyway
-      //cutoff(0.0), // overwritten anyway
       initialized(false),
       static_init_rettype(nullptr),
       static_init_plainpoint(nullptr)
@@ -87,6 +84,7 @@ private:
   using Sampler<SieveTraits, MT, Engine, Sseq>::sieveptr;
   using Sampler<SieveTraits, MT, Engine, Sseq>::engine;
   std::vector<typename SieveTraits::PlainPoint> basis;
+  fplll::ZZ_mat<mpz_t> basis_for_cvp;
 
   StaticInitializer<RetType> *static_init_rettype;
   StaticInitializer<typename SieveTraits::PlainPoint> *static_init_plainpoint;

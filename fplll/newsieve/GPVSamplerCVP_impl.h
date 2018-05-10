@@ -1,5 +1,3 @@
-// clang-format status: OK
-
 #ifndef GPV_SAMPLER_CVP_IMPL_H
 #define GPV_SAMPLER_CVP_IMPL_H
 
@@ -11,9 +9,11 @@
 #include "fplll/gso.h"
 #include "fplll/nr/matrix.h"
 #include <vector>
-//#include "fplll/nr/nr.h"
+#include "fplll/nr/nr.h"
 #include "fplll/nr/nr_Z.inl"
 #include "fplll/svpcvp.h"
+
+#include "gmp.h"
 
 namespace GaussSieve
 {
@@ -33,11 +33,12 @@ void GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::custom_init(
   mu_matrix    = input_basis.get_mu_matrix();
 
   assert(start_babai < lattice_rank);  // use strictly less to prevent always outputting 0-vector
-  assert(lattice_rank <= dim); // Elena: changed from '<' to '<='
+  assert(lattice_rank <= dim); 
 
   s2pi.resize(lattice_rank);
   maxdeviations.resize(lattice_rank);
   basis.resize(lattice_rank);
+  basis_for_cvp.resize(lattice_rank, dim);
 
   auto const maxbistar2 = input_basis.get_maxbistar2();
 
@@ -53,6 +54,13 @@ void GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::custom_init(
     maxdeviations[i] = sqrt(maxdev_nonsc) * cutoff;
 
     basis[i] = input_basis.get_basis_vector(i).make_copy();
+    
+    //basis_for_cvp[i] = basis[i];
+    for (uint_fast16_t j = 0; j < dim; ++j)
+    {
+      //basis_for_cvp[i][j] = input_basis.get_basis_vector(i)[j]; THIS FAILS
+    }
+    
   }
 
   using RetType = typename SieveTraits::GaussSampler_ReturnType;
@@ -89,7 +97,7 @@ GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
   vec.fill_with_zero();
 
   std::vector<double> shifts(lattice_rank, 0.0);
-  std::vector<double> target(lattice_rank, 0.0);
+  //std::vector<double> target(lattice_rank, 0.0);
   // std::vector<long> coos(lattice_rank, 0);
 
   while (vec.is_zero())
@@ -117,15 +125,13 @@ GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
       }
        */
        
-      
-      // TODO: SAMPLE GAUSSIAN OVER \R
 
       double const newc = sample_fp_gaussian<double, Engine>(s2pi[i], shifts[i], engine.rnd(thread));
       
       //long const newcoeff = sample_z_gaussian_VMD<long, Engine>(
       //    s2pi[i], shifts[i], engine.rnd(thread), maxdeviations[i]);  // coefficient of b_j in vec.
       
-      target += basis[i] * newc; //TODO: convert basis[i] to vector<double>
+      //target += basis[i] * newc; //TODO: convert basis[i] to vector<double>
 
       for (uint_fast16_t j = 0; j < i; ++j)  // adjust shifts
       {
@@ -135,10 +141,11 @@ GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
 
     std::vector<fplll::Z_NR<mpz_t>> target_vec;
     target_vec.resize(vec.get_dim());
-    for (i=0; i<target_vec.size(); ++i)
-    {
-        target_vec[i] = vec[i];
-    }
+    
+    //for (i=0; i<target_vec.size(); ++i)
+    //{
+    //    target_vec[i] = static_cast<fplll::Z_NR<mpz_t>>(vec[i]);
+    //}
     std::vector<fplll::Z_NR<mpz_t>> sol_coord; 
     sol_coord.resize(vec.get_dim());
     
@@ -158,8 +165,8 @@ GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
     
     
     // alternative to Babai: calling cvp-solver from fplll
-    // int closest_vector(ZZ_mat<mpz_t> &b, const vector<Z_NR<mpz_t>> &int_target,
-    //               vector<Z_NR<mpz_t>> &sol_coord, int method = CVPM_FAST, int flags = CVP_DEFAULT);
+    //int cvp_stat = fplll::closest_vector(fplll::ZZ_mat<mpz_t> &b, const vector<fplll::Z_NR<mpz_t>> &int_target, 
+    //          vector<fplll::Z_NR<mpz_t>> &sol_coord, int method = fplll::CVPM_FAST, int flags = fplll::CVP_DEFAULT);
     
     
     

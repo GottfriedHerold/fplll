@@ -138,14 +138,6 @@ GPVSamplerExtended<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
       }
     }
 
-
-    // alternative to Babai: calling cvp-solver from fplll
-    // int closest_vector(ZZ_mat<mpz_t> &b, const vector<Z_NR<mpz_t>> &int_target,
-    //               vector<Z_NR<mpz_t>> &sol_coord, int method = CVPM_FAST, int flags = CVP_DEFAULT);
-
-
-
-    //int status_cvp = closest_vector()
   }
 
   // TODO : Fix conversion here.

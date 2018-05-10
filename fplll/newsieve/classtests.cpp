@@ -29,7 +29,7 @@
 #define TEST_SIMHASHES
 #define TEST_GPV_SAMPLER
 #define TEST_GPV_SAMPLER_EXTENDED
-
+#define TEST_GPV_SAMPLER_CVP
 #define TEST_GSO_LATTICE_POINT
 
 // clang-format off
@@ -91,6 +91,10 @@
   #include "Tests/TestGPVSamplerExtended.h"
 #endif
 
+#ifdef TEST_GPV_SAMPLER_CVP
+  #include "Tests/TestGPVSamplerCVP.h"
+#endif
+
 #ifdef TEST_QUEUE
   #include "Tests/TestQueue.h"
 #endif
@@ -141,6 +145,11 @@
 
 #ifdef TEST_GPV_SAMPLER_EXTENDED
   #include "GPVSamplerExtended_impl.h"
+  #include "Sampler_impl.h"
+#endif
+
+#ifdef TEST_GPV_SAMPLER_EXTENDED
+  #include "GPVSamplerCVP_impl.h"
   #include "Sampler_impl.h"
 #endif
 
@@ -202,6 +211,13 @@ int main(int argc, char **argv)
   if (test_gpv_sampler_extended(false))
   {
     std::cout << "GPVSamplerExtended works as expected." << std::endl;
+  }
+#endif
+
+#ifdef TEST_GPV_SAMPLER_CVP
+  if (test_gpv_sampler_cvp(false))
+  {
+    std::cout << "GPVSamplerCVP works as expected." << std::endl;
   }
 #endif
 

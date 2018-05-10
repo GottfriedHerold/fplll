@@ -255,11 +255,10 @@ public:
 
   InputET_NOZNRFixed get_minkowski_bound() const { return mink_bound; }
 
-//private:
-//  InputBasisType original_basis; //moved to public to enable access for GPVSamplerExtended
+private:
+  InputBasisType original_basis; 
 
 public:
-  InputBasisType original_basis;
   DimensionType const ambient_dimension;
   StaticInitializer<BasisVectorType> const init_basis_vector_type;
   uint_fast16_t const lattice_rank;  // Technically, just number of vectors.
