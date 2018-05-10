@@ -58,7 +58,11 @@ void GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::custom_init(
     //basis_for_cvp[i] = basis[i];
     for (uint_fast16_t j = 0; j < dim; ++j)
     {
-      //basis_for_cvp[i][j] = input_basis.get_basis_vector(i)[j]; THIS FAILS
+      //basis_for_cvp[i][j] = static_cast<mpz_t>(basis[i][j]); //THIS FAILS
+      //basis_for_cvp[i][j] = mpz_import()
+      mpz_t tmp;
+      mpz_import(tmp, 1, -1, sizeof basis[i][j], 0, 0, &basis[i][j]); // TO BE TESTED
+      basis_for_cvp[i][j] = tmp;
     }
     
   }
@@ -100,6 +104,7 @@ GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
   //std::vector<double> target(lattice_rank, 0.0);
   // std::vector<long> coos(lattice_rank, 0);
 
+
   while (vec.is_zero())
   {
 #ifdef PROGRESSIVE
@@ -126,21 +131,33 @@ GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
        */
        
 
-      double const newc = sample_fp_gaussian<double, Engine>(s2pi[i], shifts[i], engine.rnd(thread));
+      //double const newc = sample_fp_gaussian<double, Engine>(s2pi[i], shifts[i], engine.rnd(thread));
       
-      //long const newcoeff = sample_z_gaussian_VMD<long, Engine>(
-      //    s2pi[i], shifts[i], engine.rnd(thread), maxdeviations[i]);  // coefficient of b_j in vec.
+      long const newcoeff = sample_z_gaussian_VMD<long, Engine>(
+          s2pi[i], shifts[i], engine.rnd(thread), maxdeviations[i]);  // coefficient of b_j in vec.
       
-      //target += basis[i] * newc; //TODO: convert basis[i] to vector<double>
+      vec += basis[i] * newcoeff; 
 
       for (uint_fast16_t j = 0; j < i; ++j)  // adjust shifts
       {
-        shifts[j] -= newc * (mu_matrix[i][j]);
+        shifts[j] -= newcoeff * (mu_matrix[i][j]);
       }
     }
-
+    
     std::vector<fplll::Z_NR<mpz_t>> target_vec;
     target_vec.resize(vec.get_dim());
+    
+    // generate random shift to move vec from the lattice
+    // convert vec to target_vec with Z_NR<mpz_t>-entries suirable for the fplll cvp-oracle
+    for (uint_fast16_t j = 0; j < dim; ++j)
+    {
+        vec[i]+=sample_uniform<Engine>(100,engine.rnd(thread));
+        mpz_t tmp;
+        mpz_import(tmp, 1, -1, sizeof vec[i], 0, 0, &vec[i]);
+        target_vec[i] = tmp;
+    }
+
+    
     
     //for (i=0; i<target_vec.size(); ++i)
     //{
@@ -150,27 +167,12 @@ GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
     sol_coord.resize(vec.get_dim());
     
     
-    
-    // run Babai
-    while (i > 0)
-    {
-      --i;
-      long babai_coeff = std::round(shifts[i]);
-      vec += basis[i] * babai_coeff;
-      for (uint_fast16_t j = 0; j < i; ++j)
-      {
-        shifts[j] -= babai_coeff * (mu_matrix[i][j]);
-      }
-    }
-    
-    
     // alternative to Babai: calling cvp-solver from fplll
-    //int cvp_stat = fplll::closest_vector(fplll::ZZ_mat<mpz_t> &b, const vector<fplll::Z_NR<mpz_t>> &int_target, 
+    //int cvp_stat = fplll::closest_vector(fplll::ZZ_mat<mpz_t> &basis_for_cvp, const vector<fplll::Z_NR<mpz_t>> &int_target, 
     //          vector<fplll::Z_NR<mpz_t>> &sol_coord, int method = fplll::CVPM_FAST, int flags = fplll::CVP_DEFAULT);
     
-    
-    
-    //int status_cvp = closest_vector()
+    int cvp_stat = fplll::closest_vector(basis_for_cvp,target_vec,sol_coord);
+
   }
 
   // TODO : Fix conversion here.
