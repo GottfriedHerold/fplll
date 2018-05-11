@@ -26,6 +26,8 @@
 		<Unit filename="ExactLatticePoint.h" />
 		<Unit filename="FilteredPoint.h" />
 		<Unit filename="GPVSampler.h" />
+		<Unit filename="GPVSamplerCVP.h" />
+		<Unit filename="GPVSamplerCVP_impl.h" />
 		<Unit filename="GPVSamplerExtended.h" />
 		<Unit filename="GPVSamplerExtended_impl.h" />
 		<Unit filename="GPVSampler_impl.h" />
@@ -65,6 +67,8 @@
 		<Unit filename="Tests/TestEMV.h" />
 		<Unit filename="Tests/TestExactLatticePoint.h" />
 		<Unit filename="Tests/TestGPVSampler.h" />
+		<Unit filename="Tests/TestGPVSamplerExtended.h" />
+		<Unit filename="Tests/TestGSOLatticePoint.h" />
 		<Unit filename="Tests/TestLatticePoint.h" />
 		<Unit filename="Tests/TestLazy.h" />
 		<Unit filename="Tests/TestList.h" />

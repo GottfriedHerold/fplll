@@ -146,7 +146,7 @@ template<class T>
 class DefaultStaticInitializer
 // clang-format on
 {
-  friend StaticInitializer<T>;
+  friend StaticInitializer<T>; // private constructor, so only friends can use it.
 
 public:
 // TODO: Fix debug symbol usage here. -> only 1 symbol for all such initializations
@@ -168,7 +168,7 @@ public:
 private:
   static unsigned int user_count;
   explicit DefaultStaticInitializer() noexcept { ++user_count; }
-  // pointless, but anyway...
+  // pointless, but anyway (The default copy constructors would be wrong)
   // clang-format off
   explicit DefaultStaticInitializer(DefaultStaticInitializer const &) noexcept { ++user_count; }
   explicit DefaultStaticInitializer(DefaultStaticInitializer &&)      noexcept { ++user_count; }
@@ -212,6 +212,10 @@ std::ostream &operator<<(std::ostream &, StaticInitializer<T> const &);
 template<class T>
 std::istream &operator>>(std::istream &, StaticInitializer<T> const &);
 
+
+/*
+  This template is supposed to be (possibly partially) specialized for most use cases.
+*/
 
 template <class T>
 class StaticInitializer : public DefaultStaticInitializer<T>

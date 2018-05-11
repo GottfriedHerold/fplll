@@ -130,6 +130,7 @@ public:
         approx_norm2(convert_to_double(point_ptr->get_norm2())),
         ptr_to_exact(std::move(point_ptr))
   {
+    point_ptr = nullptr; // for safety reasons.
   }
 
   ~STNode() noexcept { delete ptr_to_exact; }
@@ -219,10 +220,13 @@ public:
   // Inserts the lattice point pointed to by a pointer. The list takes ownership of the pointee.
   // TODO: Consider using unique_ptr
   // Untested
+
+  /*
   Iterator insert_before(Iterator const &pos, StoredPoint *&&point_ptr)
   {
     return actual_list.emplace(pos.it, std::move(point_ptr));
   }
+  */
 
   // removes the element at position pos from the list and returns (and converts) it.
   // "increments" the iterator passed as argument: it now point to the next element.
@@ -286,7 +290,7 @@ private:
   using SimHashBlock            = typename CoordinateSelectionUsed::SimHashBlock;
   using SimHashes               = typename CoordinateSelectionUsed::SimHashes;
 
-  // (UnderlyingIterator is only used internally (by the Iterator class in conversions)
+  // (UnderlyingIterator is only used internally (by the Iterator class in conversions))
   using UnderlyingIterator      = typename ListType::UnderlyingContainer::iterator;
   using CUnderlyingIterator     = typename ListType::UnderlyingContainer::const_iterator;
   // clang-format on
