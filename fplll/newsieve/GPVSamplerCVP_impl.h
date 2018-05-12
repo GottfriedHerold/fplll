@@ -14,6 +14,8 @@
 #include "fplll/svpcvp.h"
 
 #include "gmp.h"
+#include <string>
+#include <sstream>
 
 namespace GaussSieve
 {
@@ -32,7 +34,7 @@ void GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::custom_init(
   lattice_rank = input_basis.lattice_rank;
   mu_matrix    = input_basis.get_mu_matrix();
 
-  assert(start_babai < lattice_rank);  // use strictly less to prevent always outputting 0-vector
+  //assert(start_babai < lattice_rank);  // use strictly less to prevent always outputting 0-vector
   assert(lattice_rank <= dim); 
 
   s2pi.resize(lattice_rank);
@@ -42,7 +44,7 @@ void GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::custom_init(
 
   auto const maxbistar2 = input_basis.get_maxbistar2();
 
-  double const st_dev = maxbistar2 * 1.2;  // square of the st.dev guaranteed by GPV
+  double const st_dev = maxbistar2 * 25.2;  // square of the st.dev guaranteed by GPV
 
   for (uint_fast16_t i = 0; i < lattice_rank; ++i)
   {
@@ -55,15 +57,23 @@ void GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::custom_init(
 
     basis[i] = input_basis.get_basis_vector(i).make_copy();
     
-    //basis_for_cvp[i] = basis[i];
+    //std::cout << basis[i] << std::endl;
+    
+    //TODO: make mpz_import work
     for (uint_fast16_t j = 0; j < dim; ++j)
     {
-      //basis_for_cvp[i][j] = static_cast<mpz_t>(basis[i][j]); //THIS FAILS
-      //basis_for_cvp[i][j] = mpz_import()
+      //std::cout << basis[i][j] << " ";
       mpz_t tmp;
-      mpz_import(tmp, 1, -1, sizeof basis[i][j], 0, 0, &basis[i][j]); // TO BE TESTED
+      mpz_init(tmp);
+      std::stringstream ss;
+      ss<<basis[i][j];
+      //std::cout<< ss.str() << " ";
+      mpz_init_set_str(tmp, ss.str().c_str(),10);
+      //mpz_import(tmp, 1, -1, sizeof(basis[i][j]), 0, 0, &(basis[i][j])); // TO BE TESTED
+      //gmp_printf ("tmp is ", tmp);
       basis_for_cvp[i][j] = tmp;
     }
+    //std::cout <<"basis_for_cvp[i]: " << basis_for_cvp[i] << std::endl;
     
   }
 
@@ -83,6 +93,7 @@ void GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::custom_init(
       MaybeFixed<SieveTraits::get_nfixed>{dim});
 
   initialized = true;
+  std::cout <<"initialization of GPVSamplerCVP is finshed" << std::endl;
 }
 
 // TODO: Not using thread / Engine / MTPRNG correctly
@@ -96,14 +107,12 @@ GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
 #else
   assert(sieveptr != nullptr);
 #endif
-
   typename SieveTraits::PlainPoint vec;
   vec.fill_with_zero();
 
   std::vector<double> shifts(lattice_rank, 0.0);
-  //std::vector<double> target(lattice_rank, 0.0);
-  // std::vector<long> coos(lattice_rank, 0);
-
+  std::vector<fplll::Z_NR<mpz_t>> cvp_sol;
+  cvp_sol.resize(dim);
 
   while (vec.is_zero())
   {
@@ -113,6 +122,8 @@ GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
     uint_fast16_t i = lattice_rank;
 #endif
     // run GPV sampling
+    
+    //start_babai = 0; // TODO: make it work for any start_babai
     while (i > start_babai)
     {
       --i;
@@ -145,26 +156,34 @@ GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
     }
     
     std::vector<fplll::Z_NR<mpz_t>> target_vec;
-    target_vec.resize(vec.get_dim());
+    target_vec.resize(dim);
+    
+    //std::cout<<"vec before integer shift: " << vec << std::endl;
     
     // generate random shift to move vec from the lattice
     // convert vec to target_vec with Z_NR<mpz_t>-entries suirable for the fplll cvp-oracle
+    
+    //TODO: make mpz_import work
     for (uint_fast16_t j = 0; j < dim; ++j)
     {
-        vec[i]+=sample_uniform<Engine>(100,engine.rnd(thread));
+        int coo_shift = sample_uniform2<Engine>(-600, 600,engine.rnd(thread));
+        vec[j]+= coo_shift;
+        //mpz_t tmp;
+        //mpz_import(tmp, 1, -1, sizeof vec[i], 0, 0, &vec[i]);
+        //target_vec[i] = tmp;
         mpz_t tmp;
-        mpz_import(tmp, 1, -1, sizeof vec[i], 0, 0, &vec[i]);
-        target_vec[i] = tmp;
+        mpz_init(tmp);
+        std::stringstream ss;
+        ss<<vec[j];
+        //std::cout<< ss.str() << " ";
+        mpz_init_set_str(tmp, ss.str().c_str(),10);    
+        target_vec[j] = tmp; 
     }
-
+    //std::cout<<"vec after integer shift: " << vec << std::endl;
+    //std::cout << "target_vec: " << target_vec << std::endl;
     
-    
-    //for (i=0; i<target_vec.size(); ++i)
-    //{
-    //    target_vec[i] = static_cast<fplll::Z_NR<mpz_t>>(vec[i]);
-    //}
     std::vector<fplll::Z_NR<mpz_t>> sol_coord; 
-    sol_coord.resize(vec.get_dim());
+    sol_coord.resize(lattice_rank);
     
     
     // alternative to Babai: calling cvp-solver from fplll
@@ -172,16 +191,32 @@ GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
     //          vector<fplll::Z_NR<mpz_t>> &sol_coord, int method = fplll::CVPM_FAST, int flags = fplll::CVP_DEFAULT);
     
     int cvp_stat = fplll::closest_vector(basis_for_cvp,target_vec,sol_coord);
+    
+    //std::cout  << "cvp_stat = " << cvp_stat <<std::endl;
+    //std::cout << "cvp returns: " << sol_coord << std::endl;
+    
+    assert(cvp_stat==0 && "error in cvp!");
+    
+    for (uint_fast16_t i = 0; i < dim; ++i)
+    {
+      cvp_sol[i] = 0;
+      for (uint_fast16_t j = 0; j < lattice_rank; ++j) 
+      {
+        cvp_sol[i].addmul(sol_coord[j],basis_for_cvp[j][i]);
+      }
 
+    }
+    
+    //std::cout << "cvp_sol = " << cvp_sol << std::endl;
   }
 
   // TODO : Fix conversion here.
   typename SieveTraits::GaussSampler_ReturnType ret;
-  ret = make_from_any_vector<typename SieveTraits::GaussSampler_ReturnType>(vec, dim);
+  ret = make_from_znr_vector<typename SieveTraits::GaussSampler_ReturnType>(cvp_sol, dim);
   return ret;
 }
 
-/*
+
 template <class SieveTraits, bool MT, class Engine, class Sseq>
 inline std::ostream &GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::dump_to_stream(std::ostream &os) const
 {
@@ -201,14 +236,14 @@ inline std::istream &GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::read_from_str
     delete static_init_rettype;
     static_init_rettype = nullptr;
   }
-  if (!string_consume(is, "cutoff")) throw bad_dumpread("Could not read GPVSamplerExtended");
+  if (!string_consume(is, "cutoff")) throw bad_dumpread("Could not read GPVSamplerCVP");
   is >> cutoff;
-  if (!string_consume(is, "StartBabai")) throw bad_dumpread("Could not read GPVSamplerExtended");
+  if (!string_consume(is, "StartBabai")) throw bad_dumpread("Could not read GPVSamplerCVP");
   is >> start_babai;
   sieveptr = nullptr;
   return is;
 }
-*/
+
 
 }  // end namespace GaussSieve
 

@@ -29,7 +29,7 @@
 #define TEST_SIMHASHES
 #define TEST_GPV_SAMPLER
 #define TEST_GPV_SAMPLER_EXTENDED
-//#define TEST_GPV_SAMPLER_CVP  // does not work atm.
+#define TEST_GPV_SAMPLER_CVP  // does not work atm.
 #define TEST_GSO_LATTICE_POINT
 
 // clang-format off

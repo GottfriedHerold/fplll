@@ -52,7 +52,7 @@ bool test_general_sampler(bool output = true)
 
   SamplerClass sampler(sseq);
   sampler.init(nullptr, sieve_basis);
-  for(int i=0; i<100 ; ++i)
+  for(int i=0; i<1 ; ++i)
   {
     auto res = sampler.sample();
     if(output)

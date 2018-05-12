@@ -59,14 +59,14 @@ public:
       static_init_rettype(nullptr),
       static_init_plainpoint(nullptr)
   {
-      //if (!read_from_stream(is)) throw bad_dumpread("Could not init GPVExtended Sampler from stream");
+      if (!read_from_stream(is)) throw bad_dumpread("Could not init GPVExtended Sampler from stream");
   }
 
 
 private:
   inline virtual void custom_init(SieveLatticeBasis<SieveTraits, MT> const &input_basis) override;
- // inline virtual std::ostream &dump_to_stream(std::ostream &os) const override;
- // inline virtual std::istream &read_from_stream(std::istream &is) override;
+  inline virtual std::ostream &dump_to_stream(std::ostream &os) const override;
+  inline virtual std::istream &read_from_stream(std::istream &is) override;
 
   // mu_i,j = r_i,j / ||b*_j||^2.. lower triangular matrix
   std::vector<std::vector<double>> mu_matrix;

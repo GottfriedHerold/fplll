@@ -242,6 +242,16 @@ inline unsigned int sample_uniform(unsigned int max_val, Engine &engine)
   return uniform_in_range(engine);
 }
 
+// Samples uniformly at random from the interval [min_val, max_val]
+// clang-format off
+template <class Engine>
+inline unsigned int sample_uniform2(int min_val, unsigned int max_val, Engine &engine)
+// clang-format on
+{
+  std::uniform_int_distribution<int> uniform_in_range(min_val, max_val);
+  return uniform_in_range(engine);
+}
+
 
 // Samples non-integer Gaussians, no rejection sampling
 
