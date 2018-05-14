@@ -23,9 +23,13 @@ namespace GaussSieve
 {
 
 /**
-  LatticeBasisType is the type used to represent lattice bases.
+  SieveLatticeBasis is the type used to represent lattice bases.
   A basis of this type is stored inside the sieve.
   We support converting to an array of PlainLatticePoints and extracting GSO information.
+
+  Notably SieveLatticeBasis(InputBasisType const &input_basis, [...] ) takes
+  an input_basis (possibly of Z_NR - type) and converts it into the internal types that we use.
+  The allowed InputBasisTypes supported are controlled by SieveTraits.
 */
 
 // NOTE: The last template parameter Enabled is a dummy parameter and is always void.
@@ -89,10 +93,13 @@ private:
 
   // Note : InputET_NOZNR is not Z_NR - wrapped (because of the way ZZMat works...)
   using InputET_NOZNR      = typename IsZZMatClass<InputBasisType>::GetET;
+  // InputET is the Z_NR - type compatible with the ZZMat-type of the input basis.
   using InputET            = fplll::Z_NR<InputET_NOZNR>;
 
   // Same as ET_NOZNR, but ET_NOZNRFixed may be mpz_class instead of mpz_t
   using InputET_NOZNRFixed = PossiblyMpztToMpzClass<InputET_NOZNR>;
+
+  // TODO: This makes little sense... LengthType has a different meaning.
   using OutputET           = typename SieveTraits::LengthType;
   // clang-format on
 
@@ -116,10 +123,12 @@ public:
         lattice_rank(input_basis.get_rows()),
         // u,u_inv intentionally uninitialized
         // will be initialized in call to
-        // GSO(original_basis, u,u_inv, fplll::MatGSOInterfaceFlags::GSO_INT_GRAM),
+        // GSO(original_basis, u, u_inv, fplll::MatGSOInterfaceFlags::GSO_INT_GRAM),
+
+        // mu_matrix and g_matrix get initialized as empty rank x rank matrices
         mu_matrix(lattice_rank, std::vector<double>(lattice_rank)),
         g_matrix(lattice_rank, std::vector<InputET_NOZNRFixed>(lattice_rank)),
-        basis_vectors(nullptr)
+        basis_vectors()
 
   // clang-format on
   {
@@ -131,11 +140,12 @@ public:
     compute_g_matrix(GSO);
 
     // extract and convert the actual lattice vectors.
-
-    basis_vectors = new BasisVectorType[lattice_rank];
+    basis_vectors.reserve(lattice_rank);
+//    basis_vectors = new BasisVectorType[lattice_rank];
     for (uint_fast16_t i = 0; i < lattice_rank; ++i)
     {
-      basis_vectors[i] = make_from_znr_vector<BasisVectorType>(input_basis[i], ambient_dimension);
+      // make_from_znr_vector copies and push_back uses move semantics.
+      basis_vectors.push_back( make_from_znr_vector<BasisVectorType>(input_basis[i], ambient_dimension) );
     }
     maxbistar2 = GSO.get_max_bstar().get_d();
 
@@ -154,10 +164,10 @@ public:
   SieveLatticeBasis &operator=(SieveLatticeBasis &&)      = default;
   // clang-format on
 
-  ~SieveLatticeBasis() { delete[] basis_vectors; }
+  ~SieveLatticeBasis() = default; // { delete[] basis_vectors; }
 
   // Note: Const-correctness is strange wrt. the fplll::GSO classes.
-  // We "patch" this up by marking GSO mutable.
+  // Consider "patching" this up by marking GSO mutable.
   // TODO: Patch the MatGSO class upstream instead (use mutable for lazy evaluation...)
 
   // IMPORTANT: get_mu_matrix()[i][j] is only meaningful for j>i!
@@ -256,7 +266,7 @@ public:
   InputET_NOZNRFixed get_minkowski_bound() const { return mink_bound; }
 
 private:
-  InputBasisType original_basis; 
+  InputBasisType original_basis;
 
 public:
   DimensionType const ambient_dimension;
@@ -278,13 +288,7 @@ private:
   // clang-format on
   InputET_NOZNRFixed mink_bound;
 
-  // Note: We use a dynamically allocated array here rather than std::vector.
-  // The reason is that PlainLatticePoint<...> might contain static data that needs to be set
-  // before we (even default-) construct any PlainLatticePoint.
-  // This includes constructing PlainLatticePoints from the initializer list of SieveLatticeBasis.
-
-  // TODO: This argument should no longer apply with our RAII style initializers.
-  BasisVectorType *basis_vectors;
+  std::vector<BasisVectorType> basis_vectors;
   double maxbistar2;
 };  // end of class
 
