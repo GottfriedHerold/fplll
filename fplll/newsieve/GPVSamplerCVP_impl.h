@@ -44,7 +44,7 @@ void GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::custom_init(
 
   auto const maxbistar2 = input_basis.get_maxbistar2();
 
-  double const st_dev = maxbistar2 * 25.2;  // square of the st.dev guaranteed by GPV
+  double const st_dev = maxbistar2 * 15.2;
 
   for (uint_fast16_t i = 0; i < lattice_rank; ++i)
   {
@@ -164,13 +164,16 @@ GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
     // convert vec to target_vec with Z_NR<mpz_t>-entries suirable for the fplll cvp-oracle
     
     //TODO: make mpz_import work
-    for (uint_fast16_t j = 0; j < dim; ++j)
+    for (uint_fast16_t j = dim-15; j < dim; ++j)
     {
-        int coo_shift = sample_uniform2<Engine>(-600, 600,engine.rnd(thread));
+        int coo_shift = sample_uniform2<Engine>(-200, 200,engine.rnd(thread));
         vec[j]+= coo_shift;
         //mpz_t tmp;
         //mpz_import(tmp, 1, -1, sizeof vec[i], 0, 0, &vec[i]);
         //target_vec[i] = tmp;
+    }
+    for (uint_fast16_t j = 0; j < dim; ++j)
+    {
         mpz_t tmp;
         mpz_init(tmp);
         std::stringstream ss;
@@ -190,10 +193,10 @@ GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
     //int cvp_stat = fplll::closest_vector(fplll::ZZ_mat<mpz_t> &basis_for_cvp, const vector<fplll::Z_NR<mpz_t>> &int_target, 
     //          vector<fplll::Z_NR<mpz_t>> &sol_coord, int method = fplll::CVPM_FAST, int flags = fplll::CVP_DEFAULT);
     
-    int cvp_stat = fplll::closest_vector(basis_for_cvp,target_vec,sol_coord);
+    int cvp_stat = fplll::closest_vector(basis_for_cvp,target_vec,sol_coord,fplll::CVPM_FAST,fplll::CVP_DEFAULT);
     
     //std::cout  << "cvp_stat = " << cvp_stat <<std::endl;
-    //std::cout << "cvp returns: " << sol_coord << std::endl;
+    std::cout << "cvp returns: " << sol_coord << std::endl;
     
     assert(cvp_stat==0 && "error in cvp!");
     
@@ -213,6 +216,7 @@ GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
   // TODO : Fix conversion here.
   typename SieveTraits::GaussSampler_ReturnType ret;
   ret = make_from_znr_vector<typename SieveTraits::GaussSampler_ReturnType>(cvp_sol, dim);
+  //std::cout <<"ret = " << ret << std::endl;
   return ret;
 }
 

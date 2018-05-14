@@ -173,8 +173,8 @@ int main(int argc, char **argv)
   // reduced B>
   // here we assume that the entries of reduced B fit in long or int32_t
 
-  using Traits = GaussSieve::DefaultSieveTraits<int32_t, false, -1, fplll::ZZ_mat<mpz_t>>;
-  // using Traits = GaussSieve::DefaultSieveTraits<long, multithreaded, -1, fplll::ZZ_mat< mpz_t >>;
+  //using Traits = GaussSieve::DefaultSieveTraits<int32_t, false, -1, fplll::ZZ_mat<mpz_t>>;
+   using Traits = GaussSieve::DefaultSieveTraits<long, multithreaded, -1, fplll::ZZ_mat< mpz_t >>;
 
   // instantiate the Sieve class with the basis, termination conditions(0), k-number of tuples, and
   // verbosity

@@ -11,6 +11,7 @@
 #include "Typedefs.h"
 #include "GPVSampler.h"
 #include "GPVSamplerExtended.h"
+#include "GPVSamplerCVP.h"
 
 /**
   This file defines a class for the queue that stores the yet-unprocessed points of the Sieve.
