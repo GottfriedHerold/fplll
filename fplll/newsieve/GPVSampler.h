@@ -75,6 +75,11 @@ public:
   }
 private:
   inline virtual void custom_init(SieveLatticeBasis<SieveTraits, MT> const &input_basis) override;
+
+  /**
+    NOTE: Stream IO only concerns data that is NOT managed by init.
+    Reading in from stream puts the Sampler in an uninitialized state, so you have to call init.
+  */
   virtual inline std::ostream &dump_to_stream(std::ostream &os) const override;
   virtual inline std::istream &read_from_stream(std::istream &is) override;
 

@@ -32,7 +32,7 @@
       Ensures that operations on leveled objects do not lose levels.
       ( E.g. assume the result on X+Y if a lazy evaluation object that first computes the result
         approximately (e.g. if X+Y is used in a comparison), then exactly.
-        Then some operation (X+Y)*Z might not be able to produce another lattice evaluation object,
+        Then some operation (X+Y)*Z might not be able to produce another lazy evaluation object,
         because (X+Y)*Z is not well-defined for the approximations to X/Y/Z, but is well-defined
         for the exact X/Y/Z. Without this debug symbol, the approximations are silently dropped.
         With it set, we give an error. )
@@ -40,7 +40,7 @@
 
   DEBUG_SIEVE_ARRAY_LIST
       Turns on some internal validity and usage checks for array lists. Note that since such
-      checks appear performance-critical loops where the per-loop processing time is very small,
+      checks appear in performance-critical loops where the per-loop processing time is very small,
       this should have a visible performance impact.
 
   DEBUG_SIEVE_STANDALONE_MODULES_ALL
@@ -57,7 +57,7 @@
       Activates other (very verbose) debug symbols for lazy evaluations
       Lazy evaluation is currently unused and these are subject to change
       Only use if you are developing the lazy evaluations module
-  DEBUG_SIEVE_LAZY_TRACE_CONSTRUCTIONS  [Lazy evaluations only, unused
+  DEBUG_SIEVE_LAZY_TRACE_CONSTRUCTIONS  [Lazy evaluations only, unused]
       Logs constructions of lazy objects to stdout.
   DEBUG_SIEVE_LAZY_TRACE_EVALS
       Logs evaluations of lazy objects to stdout.

@@ -10,7 +10,6 @@
 #include "fplll/defs.h"
 #include "fplll/gso.h"
 #include "fplll/nr/matrix.h"
-#include <vector>
 //#include "fplll/nr/nr.h"
 #include "fplll/nr/nr_Z.inl"
 #include "fplll/svpcvp.h"
@@ -127,7 +126,7 @@ GPVSamplerExtended<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
         shifts[j] -= newcoeff * (mu_matrix[i][j]);
       }
     }
-    
+
     // run Babai
     while (i > 0)
     {

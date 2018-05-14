@@ -3,6 +3,7 @@
 */
 
 // clang-format adjustments finished -- Gotti
+// Tests and Stream IO finished and working
 
 #ifndef GAUSS_SIEVE_BLOCK_ORTHOGONAL_SIM_HASH_IMPL_H
 #define GAUSS_SIEVE_BLOCK_ORTHOGONAL_SIM_HASH_IMPL_H

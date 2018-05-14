@@ -2,6 +2,7 @@
 #define GAUSS_SIEVE_BLOCK_ORTHOGONAL_SIM_HASH_H
 
 // clang-format adjustments finished -- Gotti
+// Tests and Stream IO finished and working -- Gotti
 
 #include "DefaultIncludes.h"
 #include "GlobalStaticData.h"

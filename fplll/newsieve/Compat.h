@@ -27,7 +27,7 @@
   CPP17CONSTEXPRIF is used to support C++17 if constexpr. If unsupported, falls back to a normal if.
   Note that the main point of if constexpr(expr){ foo() } is that expr might depend on a template
   argument and if expr is false, foo does not need to even compile (with some caveats).
-  This feature would indeed be extremely useful and simplify a lot of code.
+  This feature would indeed be extremely useful and simplify *a lot* of code.
   (The workaround is to define a class template X, templated by a bool b. Specialize X for b==true
   with static member function f that implements foo and specialize X for b==false with a member
   function that does nothing. Then we can call X<epxr>::f(arg), passing required arguments arg.

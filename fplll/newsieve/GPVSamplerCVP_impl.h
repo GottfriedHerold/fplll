@@ -8,14 +8,13 @@
 #include "fplll/defs.h"
 #include "fplll/gso.h"
 #include "fplll/nr/matrix.h"
-#include <vector>
 #include "fplll/nr/nr.h"
 #include "fplll/nr/nr_Z.inl"
 #include "fplll/svpcvp.h"
 
 #include "gmp.h"
-#include <string>
-#include <sstream>
+//#include <string> // in DefaultIncludes.h
+//#include <sstream>
 
 namespace GaussSieve
 {
@@ -35,7 +34,7 @@ void GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::custom_init(
   mu_matrix    = input_basis.get_mu_matrix();
 
   //assert(start_babai < lattice_rank);  // use strictly less to prevent always outputting 0-vector
-  assert(lattice_rank <= dim); 
+  assert(lattice_rank <= dim);
 
   s2pi.resize(lattice_rank);
   maxdeviations.resize(lattice_rank);
@@ -56,9 +55,9 @@ void GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::custom_init(
     maxdeviations[i] = sqrt(maxdev_nonsc) * cutoff;
 
     basis[i] = input_basis.get_basis_vector(i).make_copy();
-    
+
     //std::cout << basis[i] << std::endl;
-    
+
     //TODO: make mpz_import work
     for (uint_fast16_t j = 0; j < dim; ++j)
     {
@@ -74,7 +73,7 @@ void GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::custom_init(
       basis_for_cvp[i][j] = tmp;
     }
     //std::cout <<"basis_for_cvp[i]: " << basis_for_cvp[i] << std::endl;
-    
+
   }
 
   using RetType = typename SieveTraits::GaussSampler_ReturnType;
@@ -122,7 +121,7 @@ GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
     uint_fast16_t i = lattice_rank;
 #endif
     // run GPV sampling
-    
+
     //start_babai = 0; // TODO: make it work for any start_babai
     while (i > start_babai)
     {
@@ -140,29 +139,29 @@ GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
         shifts[i] -= coos[j] * (mu_matrix[j][i]);
       }
        */
-       
+
 
       //double const newc = sample_fp_gaussian<double, Engine>(s2pi[i], shifts[i], engine.rnd(thread));
-      
+
       long const newcoeff = sample_z_gaussian_VMD<long, Engine>(
           s2pi[i], shifts[i], engine.rnd(thread), maxdeviations[i]);  // coefficient of b_j in vec.
-      
-      vec += basis[i] * newcoeff; 
+
+      vec += basis[i] * newcoeff;
 
       for (uint_fast16_t j = 0; j < i; ++j)  // adjust shifts
       {
         shifts[j] -= newcoeff * (mu_matrix[i][j]);
       }
     }
-    
+
     std::vector<fplll::Z_NR<mpz_t>> target_vec;
     target_vec.resize(dim);
-    
+
     //std::cout<<"vec before integer shift: " << vec << std::endl;
-    
+
     // generate random shift to move vec from the lattice
     // convert vec to target_vec with Z_NR<mpz_t>-entries suirable for the fplll cvp-oracle
-    
+
     //TODO: make mpz_import work
     for (uint_fast16_t j = dim-15; j < dim; ++j)
     {
@@ -179,37 +178,37 @@ GPVSamplerCVP<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
         std::stringstream ss;
         ss<<vec[j];
         //std::cout<< ss.str() << " ";
-        mpz_init_set_str(tmp, ss.str().c_str(),10);    
-        target_vec[j] = tmp; 
+        mpz_init_set_str(tmp, ss.str().c_str(),10);
+        target_vec[j] = tmp;
     }
     //std::cout<<"vec after integer shift: " << vec << std::endl;
     //std::cout << "target_vec: " << target_vec << std::endl;
-    
-    std::vector<fplll::Z_NR<mpz_t>> sol_coord; 
+
+    std::vector<fplll::Z_NR<mpz_t>> sol_coord;
     sol_coord.resize(lattice_rank);
-    
-    
+
+
     // alternative to Babai: calling cvp-solver from fplll
-    //int cvp_stat = fplll::closest_vector(fplll::ZZ_mat<mpz_t> &basis_for_cvp, const vector<fplll::Z_NR<mpz_t>> &int_target, 
+    //int cvp_stat = fplll::closest_vector(fplll::ZZ_mat<mpz_t> &basis_for_cvp, const vector<fplll::Z_NR<mpz_t>> &int_target,
     //          vector<fplll::Z_NR<mpz_t>> &sol_coord, int method = fplll::CVPM_FAST, int flags = fplll::CVP_DEFAULT);
-    
+
     int cvp_stat = fplll::closest_vector(basis_for_cvp,target_vec,sol_coord,fplll::CVPM_FAST,fplll::CVP_DEFAULT);
-    
+
     //std::cout  << "cvp_stat = " << cvp_stat <<std::endl;
     std::cout << "cvp returns: " << sol_coord << std::endl;
-    
+
     assert(cvp_stat==0 && "error in cvp!");
-    
+
     for (uint_fast16_t i = 0; i < dim; ++i)
     {
       cvp_sol[i] = 0;
-      for (uint_fast16_t j = 0; j < lattice_rank; ++j) 
+      for (uint_fast16_t j = 0; j < lattice_rank; ++j)
       {
         cvp_sol[i].addmul(sol_coord[j],basis_for_cvp[j][i]);
       }
 
     }
-    
+
     //std::cout << "cvp_sol = " << cvp_sol << std::endl;
   }
 

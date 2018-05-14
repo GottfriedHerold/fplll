@@ -95,7 +95,7 @@ void GPVSampler<SieveTraits, MT, Engine, Sseq>::custom_init(
 }
 
 /**
-  NOTE: stream IO will only output that is NOT managed by init.
+  NOTE: stream IO will only output data that is NOT managed by init.
   In particular, reading in will leave the Sampler in an uninitialized state.
 */
 

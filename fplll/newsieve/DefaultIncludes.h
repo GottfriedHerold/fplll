@@ -30,6 +30,7 @@
 #include <mutex>
 #include <queue>
 #include <random>
+#include <sstream>
 #include <stack>
 #include <stdexcept>
 #include <string>
