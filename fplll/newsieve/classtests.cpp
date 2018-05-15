@@ -31,6 +31,7 @@
 #define TEST_GPV_SAMPLER_EXTENDED
 #define TEST_GPV_SAMPLER_CVP  // does not work atm.
 #define TEST_GSO_LATTICE_POINT
+#define TEST_LATTICE_BASIS
 
 // clang-format off
 #ifdef TEST_ALL
@@ -51,6 +52,7 @@
 
   #define TEST_SIMHASHES
   #define TEST_GSO_LATTICE_POINT
+  #define TEST_LATTICE_BASIS
 #endif
 
 // very verbose...
@@ -77,6 +79,10 @@
 
 #ifdef TEST_MTPRNG
   #include "Tests/TestMTPRNG.h"
+#endif
+
+#ifdef TEST_LATTICE_BASIS
+  #include "Tests/TestLatticeBasis.h"
 #endif
 
 #ifdef TEST_BASIS_UTILS
@@ -193,6 +199,14 @@ int main(int argc, char **argv)
     std::cout << "MTPRNG work as expected." << std::endl;
   }
 #endif
+
+#ifdef TEST_LATTICE_BASIS
+  if (test_lattice_basis())
+  {
+    std::cout << "Lattice basis container class works as expected." << std::endl;
+  }
+#endif
+
 #ifdef TEST_BASIS_UTILS
   if (test_basis_utils())
   {

@@ -19,8 +19,8 @@
 */
 
 /**
-  SieveGauss.h is the #include-file a user should use who want to compile the ktuplesieve for his
-  choice of template paramters (and, probably, *only* for this choice)
+  SieveGauss.h is the #include-file a user should use who want to compile the ktuplesieve for the
+  user's choice of template parameters (and, probably, *only* for this choice)
 
   Sieve.cpp contains explicit instantiations of the ktuplesieve for some specific (default) choices
   of SieveTraits template parameters. Compiling this will give a library that a user can use without

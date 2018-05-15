@@ -2,11 +2,8 @@
 #define TEST_SAMPLER_H
 
 #include "../DefaultIncludes.h"
-#include "../Compat.h"
-#include <random>
 #include "../LatticeBases.h"
 #include <sstream>
-#include <iostream>
 #include "fplll.h"
 #include "../Typedefs.h"
 #include "gmpxx.h"

@@ -526,6 +526,55 @@ inline bool string_consume(std::istream &is, std::string const &str, bool elim_w
   return true;
 }
 
+// reading in a value from stream
+template<class T>
+inline T read_out(std::istream &is)
+{
+  T t;
+  is >> t;
+  return t;
+}
+
+/*
+template<class Container, TEMPL_RESTRICT_DECL(IsStdArrayOrVector<typename T::value_type>::value == false)>
+bool print_container(std::ostream &os, Container const &container)
+{
+  if (!(os << "[")) return false;
+  for( auto it = container.cbegin(); it != container.cend(); ++it )
+  {
+    if (!(os << *it)) return false;
+    if (!(os << " ")) return false;
+  }
+  if (!(os << "]")) return false;
+  return true;
+}
+
+template<class Container, TEMPL_RESTRICT_DECL(IsStdArrayOrVector<typename T::value_type>::value == true)>
+bool print_container(std::ostream &os, Container const &container)
+{
+  if (!(os << "[")) return false;
+  for (auto it = container.cbegin(); it!= container.cend(); ++it)
+  {
+    if (!print_container(os,*it)) return false;
+    if (!(os << '\n')) return false;
+  }
+  if (!(os << "]")) return false;
+  return true;
+}
+
+template<class Container>
+bool read_container(std::istream &is, Container const &);
+
+namespace GaussSieveHelpers
+{
+
+}
+
+template<class Container>
+bool read_container(std::istream &is, Container const &);
+
+*/
+
 // exception thrown when reading data fails
 class bad_dumpread : public std::runtime_error
 {

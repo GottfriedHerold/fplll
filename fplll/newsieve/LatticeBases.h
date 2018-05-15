@@ -43,13 +43,16 @@ class LatticeBasis
 {
   static_assert(DimFixed >= -1, "Invalid DimFixed");
   static_assert(RankFixed>= -1, "Invalid RankFixed");
+  static_assert( (DimFixed ==-1) || (DimFixed >= RankFixed),"Dimension must be at least rank.");
+  static_assert(std::numeric_limits<uint_fast16_t>::is_specialized, "");
+  static_assert(std::numeric_limits<uint_fast16_t>::max() >= DimFixed, "");
 
-  private:
-  MaybeFixed<DimFixed>  const ambient_dimension;
+private:
+  MaybeFixed<DimFixed,uint_fast16_t>  const ambient_dimension;
 
   // Technically, just number of vectors. We do not check for linear independence
   // (although the functions that construct lattice bases will probably detect this)
-  MaybeFixed<RankFixed> const lattice_rank;
+  MaybeFixed<RankFixed,uint_fast16_t> const lattice_rank;
 
   // currently unused:
   // To ensure that they are >= 0
@@ -69,13 +72,13 @@ class LatticeBasis
   using BasisType = ArrayOrVector< BasisVector, RankFixed>;
   BasisType basis;
 public:
-  MaybeFixed<RankFixed> get_lattice_rank() const { return lattice_rank; }
-  MaybeFixed<DimFixed>  get_ambient_dimension() const { return ambient_dimension; }
+  MaybeFixed<RankFixed,uint_fast16_t> get_lattice_rank() const { return lattice_rank; }
+  MaybeFixed<DimFixed,uint_fast16_t> get_ambient_dimension() const { return ambient_dimension; }
   constexpr MuMatrixType const &get_mu_matrix() const { return mu_matrix; }
   constexpr GramMatrixType const &get_g_matrix() const { return gram_matrix; }
   constexpr BasisType const &get_basis() const { return basis; }
-  constexpr BasisVector const &get_basis_vector(uint_fast16_t i) { return basis[i]; }
-  constexpr Entries const &get_basis_entry(uint_fast16_t which_vec, uint_fast16_t coo)
+  constexpr BasisVector const &get_basis_vector(uint_fast16_t i) const { return basis[i]; }
+  constexpr Entries const &get_basis_entry(uint_fast16_t which_vec, uint_fast16_t coo) const
   {
     return basis[which_vec][coo];
   }
@@ -95,14 +98,82 @@ public:
 
 //  constructor:
   template <class BasisContainer, class MuContainer, class GramContainer>
-  LatticeBasis(int const ambient_dim, int const new_lattice_rank, BasisContainer &&bc, MuContainer &&muc, GramContainer &&gc)
+  LatticeBasis(uint_fast16_t const ambient_dim, uint_fast16_t const new_lattice_rank, BasisContainer &&bc, MuContainer &&muc, GramContainer &&gc)
     : ambient_dimension(ambient_dim),
       lattice_rank(new_lattice_rank),
-      mu_matrix(make_array_or_vector(muc, lattice_rank, lattice_rank)),
-      gram_matrix(make_array_or_vector(gc, lattice_rank, lattice_rank)),
-      basis(make_array_or_vector(bc, lattice_rank, ambient_dimension))
+      mu_matrix(make_array_or_vector<MuMatrixType>(muc, lattice_rank, lattice_rank)),
+      gram_matrix(make_array_or_vector<GramMatrixType>(gc, lattice_rank, lattice_rank)),
+      basis(make_array_or_vector<BasisType>(bc, lattice_rank, ambient_dimension))
   {
+    assert(ambient_dim >= new_lattice_rank);
   }
+
+  bool operator==(LatticeBasis const &other) const
+  {
+    return  (ambient_dimension == other.ambient_dimension) &&
+            (lattice_rank == other.lattice_rank) &&
+            (mu_matrix == other.mu_matrix) &&
+            (gram_matrix == other.gram_matrix) &&
+            (basis == other.basis);
+  }
+  bool operator!=(LatticeBasis const &other) const { return !(*this == other); }
+
+  private:
+  FORCE_INLINE void print_dim(std::ostream &os) const { os << "Dim: " << ambient_dimension; }
+  inline static MaybeFixed<DimFixed,uint_fast16_t> read_dim(std::istream &is)
+  {
+    if (!string_consume(is,"Dim:")) throw bad_dumpread("Could not read LatticeBasis, dim");
+    return read_out<MaybeFixed<DimFixed,uint_fast16_t>>(is);
+  }
+  FORCE_INLINE void print_rank(std::ostream &os) const { os << "Rank: " << lattice_rank; }
+  inline static MaybeFixed<RankFixed,uint_fast16_t> read_rank(std::istream &is)
+  {
+    if (!string_consume(is,"Rank:")) throw bad_dumpread("Could not read LatticeBasis, rank");
+    return read_out<MaybeFixed<RankFixed,uint_fast16_t>>(is);
+  }
+  inline void print_basis(std::ostream &os) const
+  {
+    os << "Basis:[";
+    for (uint_fast16_t i = 0; i < lattice_rank; ++i)
+    {
+      if(i != 0) os << "       ";
+      os << "[";
+      for (uint_fast16_t j = 0; j < ambient_dimension; ++j)
+      {
+        os << get_basis_entry(i,j) << " ";
+      }
+      os << "]" << '\n';
+    }
+    os << "]";
+  }
+  inline static std::vector<std::vector<Entries>> read_basis(std::istream &is, uint_fast16_t const dim, uint_fast16_t const lattice_rank)
+  {
+    if(!string_consume(is,"Basis:[")) throw bad_dumpread("Could not read LatticeBasis, basis");
+    std::vector<std::vector<Entries>> res; res.reserve(lattice_rank);
+    for (uint_fast16_t i = 0; i < lattice_rank; ++i)
+    {
+      if (!string_consume(is,"[")) throw bad_dumpread("Could not read LatticeBasis, basis");
+      std::vector<Entries> vec; vec.reserve(dim);
+      // read dim values
+      for (uint_fast16_t j = 0; j < dim; ++j) vec.push_back(read_out<Entries>(is));
+      if (!string_consume(is,"]")) throw bad_dumpread("Could not read LatticeBasis, basis");
+      res.push_back(vec);
+    }
+    if (!string_consume(is,"]")) throw bad_dumpread("Could not read LatticeBasis, basis");
+    if (!is) throw bad_dumpread("Could not read LatticeBasis, basis");
+    return res;
+  }
+
+  friend std::ostream &operator<<(std::ostream &os, LatticeBasis<Entries, gEntries, DimFixed, RankFixed> const &basis)
+  {
+    basis.print_dim(os); os << '\n';
+    basis.print_rank(os); os << '\n';
+    basis.print_basis(os); os << '\n';
+    return os;
+  }
+
+
+
 };
 
 /**
