@@ -93,9 +93,16 @@ public:
     return gram_matrix[i][j];
   }
 
-  // constructor:
-//  LatticeBasis(int const ambient_dim, int const lattice_rank)
-
+//  constructor:
+  template <class BasisContainer, class MuContainer, class GramContainer>
+  LatticeBasis(int const ambient_dim, int const new_lattice_rank, BasisContainer &&bc, MuContainer &&muc, GramContainer &&gc)
+    : ambient_dimension(ambient_dim),
+      lattice_rank(new_lattice_rank),
+      mu_matrix(make_array_or_vector(muc, lattice_rank, lattice_rank)),
+      gram_matrix(make_array_or_vector(gc, lattice_rank, lattice_rank)),
+      basis(make_array_or_vector(bc, lattice_rank, ambient_dimension))
+  {
+  }
 };
 
 /**
@@ -272,9 +279,9 @@ public:
       for (uint_fast16_t j = 0; j < lattice_rank; ++j)
       {
         g_matrix[i][j] = static_cast<InputET_NOZNRFixed>(gmatrix_GSO(i, j).get_data());
-        std::cout << g_matrix[i][j] << " ";
+//        std::cout << g_matrix[i][j] << " ";
       }
-      std::cout << std::endl;
+//      std::cout << std::endl;
     }
   }
 
