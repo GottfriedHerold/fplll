@@ -88,12 +88,7 @@ public:
 
 private:
   // Container type used to store the actual point
-  using Container =
-      mystd::conditional_t<(nfixed >= 0),                               // depends on nfixed:
-                           std::array<ET, (nfixed >= 0 ? nfixed : 0)>,  // if nfixed >= 0
-                           std::vector<ET>>;                            // if nfixed <0
-  // Note : The nfixed >=0 ? nfixed : 0 is always nfixed, of course.
-  // The ?: expression is only needed to silence compiler errors/warnings.
+  using Container = ArrayOrVector<ET, nfixed>; // std::array or std::vector, depending on nfixed.
 
 public:
   // get dimension

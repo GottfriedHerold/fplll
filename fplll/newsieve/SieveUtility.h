@@ -191,6 +191,106 @@ std::istream &operator>>(std::istream &is, MaybeFixed<nfixed,UIntClass> &data)
   return is;
 }
 
+template <class T>
+class IsStdVector : public std::false_type {};
+
+template <class T, class Allocator>
+class IsStdVector<std::vector<T,Allocator>> : public std::true_type {};
+
+template <class T>
+class IsStdArray : public std::false_type {};
+
+template <class T, std::size_t N>
+class IsStdArray<std::array<T,N>> : public std::true_type {};
+
+template <class T> using IsStdArrayOrVector = mystd::disjunction<IsStdArray<T>, IsStdVector<T>>;
+
+template <class Entries, int nfixed>
+using ArrayOrVector = mystd::conditional_t< (nfixed > 0),
+                        std::array<Entries, (nfixed > 0 ? nfixed : 0)>,
+                        std::vector<Entries> >;
+
+
+template<class Result, class Container, class... SizeArgs>
+inline Result make_array_or_vector(Container &&, SizeArgs &&...);
+
+namespace GaussSieveDetails
+{
+  template<class Result>
+  struct MakeArrayOrVectorImpl
+  {
+//    static_assert( IsStdArrayOrVector<Result>::value == false, "Should use specialization")
+    template<class Input>
+    static Result make_from(Input &&input)
+    {
+      return static_cast<Result>(std::forward<Input>(input));
+    }
+  };
+
+  template<class VecEntries, class Allocator>
+  struct MakeArrayOrVectorImpl<std::vector<VecEntries,Allocator>>
+  {
+    using Result = std::vector<VecEntries, Allocator>;
+    static_assert(IsStdVector<Result>::value,"");
+    static Result make_from(Result &&input) { return std::move(input); }
+    template<class Container, class... Args, TEMPL_RESTRICT_DECL(
+      std::is_same<mystd::decay_t<Container>, mystd::decay_t<Result> >::value == false )>
+    static Result make_from(Container &&container, unsigned int num, Args &&... args)
+    {
+      Result res;
+      res.reserve(num);
+      for(unsigned int i = 0; i < num ; ++i)
+      {
+        res.push_back(make_array_or_vector<VecEntries>( std::forward<Container>(container)[i], std::forward<Args>(args)... ));
+      }
+      return res;
+    }
+  };
+
+  template<class ArrEntries, std::size_t N>
+  struct MakeArrayOrVectorImpl<std::array<ArrEntries, N>>
+  {
+    using Result = std::array<ArrEntries, N>;
+    static_assert(IsStdArray<Result>::value, "");
+    static Result make_from(Result &&input) { return std::move(input); }
+    template<class Container, class... Args, TEMPL_RESTRICT_DECL(
+      std::is_same<mystd::decay_t<Container>, mystd::decay_t<Result> >::value == false)>
+    static Result make_from(Container &&container, unsigned int num, Args &&... args)
+    {
+      assert(N == num);
+      Result res;
+      for (unsigned int i = 0; i < N; ++i)
+      {
+        res[i] = make_array_or_vector<ArrEntries>( std::forward<Container>(container)[i], std::forward<Args>(args)... );
+      }
+      return res;
+    }
+  };
+} // end namespace GaussSieveDetails
+
+template<class Result, class Container, class... SizeArgs>
+inline Result make_array_or_vector(Container &&container, SizeArgs &&...args)
+{
+  return GaussSieveDetails::MakeArrayOrVectorImpl<Result>::make_from(std::forward<Container>(container), std::forward<SizeArgs>(args)... );
+}
+
+//template <class Result, class Input, bool Recursive = false, TEMPL_RESTRICT_DECL2(mystd::negation<IsStdArrayOrVector >)>
+//FORCE_INLINE constexpr Result const &make_array_or_vector(Input &&input)
+//{
+//  static_assert( Recursive, "Return Value must be std::array or std::vector");
+//  return static_cast<Result>(std::forward<Input>(input));
+//}
+//
+//template <class VecEntries, class Allocator, bool>
+//std::vector<VecEntries, Allocator> make_array_or_vector(std::vector<VecEntries, Allocator> &&input)
+//{
+//  return std::move(input);
+//}
+//
+//template <class VecEntries, class Allocator, bool, TEMPL_RESTRI
+
+
+
 // Type normalization:
 // We turn any Trait class T with T::value==false into a standard std::false_type
 // and T::value==true into a standard std::true_type

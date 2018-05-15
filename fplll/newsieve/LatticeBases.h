@@ -23,6 +23,82 @@ namespace GaussSieve
 {
 
 /**
+  LatticeBasis is the type we use internally to store lattice bases,
+  along with precomputed Gram Matrix and mu matrix
+  Entries:  Entries of the lattice points wrt some fixed orthonormal basis (Z^n, usually)
+  gEntries: Entries of the Gram Matrix
+  DimFixed: Compile-time fixed dimension (-1, if determined at runtime)
+  RankFixed:Compile-time fixed rank (-1, if deteremined at runtime)
+
+  Note: We do not support a pure Gram-matrix version at the moment:
+  For any Gram matrix, it is always possible to come up with some vectors that actually have
+  such a gram matrix and give those to the sieve.
+  Computationally, we would do that anyway, because this reduces the cost of scalar products to
+  O(n) rather than O(n^2)...
+  Maybe we will add such a thing for GSOLatticePoints
+*/
+
+template<class Entries, class gEntries = Entries, int DimFixed = -1, int RankFixed = -1>
+class LatticeBasis
+{
+  static_assert(DimFixed >= -1, "Invalid DimFixed");
+  static_assert(RankFixed>= -1, "Invalid RankFixed");
+
+  private:
+  MaybeFixed<DimFixed>  const ambient_dimension;
+
+  // Technically, just number of vectors. We do not check for linear independence
+  // (although the functions that construct lattice bases will probably detect this)
+  MaybeFixed<RankFixed> const lattice_rank;
+
+  // currently unused:
+  // To ensure that they are >= 0
+  // (in some contexts, we have the syntactic requirement are the argument is >=0, even though
+  // we are guaranteed that the type / expression is never used for argument < 0 )
+  // static unsigned int constexpr DimFixed_pos  = (DimFixed >= 0) ? DimFixed  : 0;
+  // static unsigned int constexpr RankFixed_pos = (RankFixed>= 0) ? RankFixed : 0;
+
+  // Triangular rank x rank Matrix (with 0 on diag)
+  using MuMatrixType = ArrayOrVector< ArrayOrVector<double, RankFixed>, RankFixed>;
+  MuMatrixType mu_matrix;
+  // Matrix of pairwise scalar products of basis vectors
+  using GramMatrixType = ArrayOrVector< ArrayOrVector<gEntries, RankFixed>, RankFixed>;
+  GramMatrixType gram_matrix;
+  // Basis of lattice (as a pure container object without any arithmetic defined on it)
+  using BasisVector = ArrayOrVector<Entries, DimFixed>;
+  using BasisType = ArrayOrVector< BasisVector, RankFixed>;
+  BasisType basis;
+public:
+  MaybeFixed<RankFixed> get_lattice_rank() const { return lattice_rank; }
+  MaybeFixed<DimFixed>  get_ambient_dimension() const { return ambient_dimension; }
+  constexpr MuMatrixType const &get_mu_matrix() const { return mu_matrix; }
+  constexpr GramMatrixType const &get_g_matrix() const { return gram_matrix; }
+  constexpr BasisType const &get_basis() const { return basis; }
+  constexpr BasisVector const &get_basis_vector(uint_fast16_t i) { return basis[i]; }
+  constexpr Entries const &get_basis_entry(uint_fast16_t which_vec, uint_fast16_t coo)
+  {
+    return basis[which_vec][coo];
+  }
+
+  double get_mu_entry(uint_fast16_t i, uint_fast16_t j) const
+  {
+#ifdef DEBUG_SIEVE_LOWERTRIANGULAR_MUG
+    assert(j > i);
+#endif
+    return mu_matrix[i][j];
+  }
+
+  constexpr gEntries const &get_g_entry(uint_fast16_t i, uint_fast16_t j) const
+  {
+    return gram_matrix[i][j];
+  }
+
+  // constructor:
+//  LatticeBasis(int const ambient_dim, int const lattice_rank)
+
+};
+
+/**
   SieveLatticeBasis is the type used to represent lattice bases.
   A basis of this type is stored inside the sieve.
   We support converting to an array of PlainLatticePoints and extracting GSO information.
@@ -196,7 +272,9 @@ public:
       for (uint_fast16_t j = 0; j < lattice_rank; ++j)
       {
         g_matrix[i][j] = static_cast<InputET_NOZNRFixed>(gmatrix_GSO(i, j).get_data());
+        std::cout << g_matrix[i][j] << " ";
       }
+      std::cout << std::endl;
     }
   }
 
@@ -256,7 +334,7 @@ public:
     for (unsigned int i = 0; i<lattice_rank; ++i)
     {
       // when progressive_rank == i+1;
-      // GSO.ger_root_det (supposedly) returns the determinant of (i+1)-dim. sublattice
+      // GSO.get_root_det (supposedly) returns the determinant of (i+1)-dim. sublattice
       progressive_bounds[i] =0.0664 * (i+1) * convert_to_double(  GSO.get_root_det(0, i+1).get_d() );
       //std::cout << "progressive_bounds[i] = " << progressive_bounds[i] << std::endl;
     }

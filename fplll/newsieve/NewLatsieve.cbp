@@ -13,7 +13,6 @@
 				<Option compiler="null" />
 			</Target>
 		</Build>
-		<Unit filename="../nr/numvect.h" />
 		<Unit filename="ArrayList.h" />
 		<Unit filename="ArrayList_impl.h" />
 		<Unit filename="BlockOrthogonalSimHash.h" />

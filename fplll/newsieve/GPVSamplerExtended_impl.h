@@ -98,7 +98,7 @@ GPVSamplerExtended<SieveTraits, MT, Engine, Sseq>::sample(int const thread)
     uint_fast16_t i = lattice_rank;
 #endif
     // run GPV sampling
-    std::cout << "start_babai = " << start_babai << std::endl;
+//    std::cout << "start_babai = " << start_babai << std::endl;
     while (i > start_babai)
     {
       --i;
