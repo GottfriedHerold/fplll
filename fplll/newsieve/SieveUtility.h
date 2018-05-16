@@ -219,7 +219,6 @@ namespace GaussSieveDetails
   template<class Result>
   struct MakeArrayOrVectorImpl
   {
-//    static_assert( IsStdArrayOrVector<Result>::value == false, "Should use specialization")
     template<class Input>
     static Result make_from(Input &&input)
     {
@@ -233,9 +232,8 @@ namespace GaussSieveDetails
     using Result = std::vector<VecEntries, Allocator>;
     static_assert(IsStdVector<Result>::value,"");
     static Result make_from(Result &&input) { return std::move(input); }
-    template<class Container, class... Args, TEMPL_RESTRICT_DECL(
-      std::is_same<mystd::decay_t<Container>, mystd::decay_t<Result> >::value == false )>
-    static Result make_from(Container &&container, unsigned int num, Args &&... args)
+    template<class Container, class Integer, class... Args>
+    static Result make_from(Container &&container, Integer num, Args &&... args)
     {
       Result res;
       res.reserve(num);
@@ -253,9 +251,8 @@ namespace GaussSieveDetails
     using Result = std::array<ArrEntries, N>;
     static_assert(IsStdArray<Result>::value, "");
     static Result make_from(Result &&input) { return std::move(input); }
-    template<class Container, class... Args, TEMPL_RESTRICT_DECL(
-      std::is_same<mystd::decay_t<Container>, mystd::decay_t<Result> >::value == false)>
-    static Result make_from(Container &&container, unsigned int num, Args &&... args)
+    template<class Container, class Integer, class... Args>
+    static Result make_from(Container &&container, Integer num, Args &&... args)
     {
       assert(N == num);
       Result res;
@@ -529,6 +526,10 @@ inline T read_out(std::istream &is)
   recursively.
 
   read_container allows to read back in.
+  NOTE: read_container will
+  a) recursively call read_container if the containee is a std::array or std::vector
+  b) NOT use operator>> on floating point types, but rather use strtold directly
+  In particular, read_container can correctly read back in hexfloats.
 */
 
 // Helper for detected_d used to select the correct variant.
@@ -567,28 +568,45 @@ bool print_container(std::ostream &os, Container const &container)
 template<class T, std::size_t N>
 bool read_container(std::istream &is, std::array<T, N> &arr);
 
+template<class T, class Allocator>
+bool read_container(std::istream &is, std::vector<T, Allocator> &vec);
+
 // lack-of-constexpr-if workaround.
 namespace GaussSieveHelpers
 {
   template <bool Recurse> // default: false
-  class HelperReadContainer
+  struct HelperReadContainer
   {
     HelperReadContainer(...) = delete;
-    template<class T>
+    template<class T, TEMPL_RESTRICT_DECL(std::is_floating_point<mystd::decay_t<T>>::value ==false)>
     FORCE_INLINE static bool read(std::istream &is, T &&data)
     {
-      return is >> std::forward<T>(data);
+      return static_cast<bool>(is >> std::forward<T>(data));
+    }
+    // workaround to the fact that c++ stream input cannot parse hexfloats.
+    // (Some c++ implementations might actually do it. This is a problem with the c++ standard.
+    // cf. issue LWG2381 )
+    template<class T, TEMPL_RESTRICT_DECL(std::is_floating_point<mystd::decay_t<T>>::value ==true)>
+    static bool read(std::istream &is, T &&data)
+    {
+      is >> std::ws;
+      char *buf = new char[128];
+      is.getline(buf, 128, ' ');
+      if (is.gcount()==0) { delete[] buf; return false; }
+      std::forward<T>(data) = std::strtold(buf, nullptr);
+      delete[] buf;
+      return static_cast<bool>(is);
     }
   };
 
   template<>
-  class HelperReadContainer<true>
+  struct HelperReadContainer<true>
   {
     HelperReadContainer(...) = delete;
     template<class T>
     FORCE_INLINE static bool read(std::istream &is, T &&data)
     {
-      static_assert(IsStdArrayOrVector<T>::value,"");
+      static_assert(IsStdArrayOrVector<mystd::decay_t<T>>::value,"");
       return read_container(is, std::forward<T>(data));
     }
   };
@@ -606,7 +624,7 @@ bool read_container(std::istream &is, std::array<T, N> &arr)
   for (ST i = 0; i < N; ++i)
   {
     // constexpr if would simplify this
-    if (! (GaussSieveHelpers::HelperReadContainer<IsStdArrayOrVector<T>::value>::read_container(is, arr[i])))
+    if (! (GaussSieveHelpers::HelperReadContainer<IsStdArrayOrVector<T>::value>::read(is, arr[i])))
     {
       return false;
     }
@@ -628,7 +646,7 @@ bool read_container(std::istream &is, std::vector<T, Allocator> &vec)
   for (ST i = 0; i < num; ++i)
   {
     T t;
-    if (GaussSieveHelpers::HelperReadContainer<IsStdArrayOrVector<T>::value>::read_container(is, t)==false) return false;
+    if (GaussSieveHelpers::HelperReadContainer<IsStdArrayOrVector<T>::value>::read(is, t)==false) return false;
     vec.push_back(std::move(t));
   }
   if (!string_consume(is,"]")) return false;

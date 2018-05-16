@@ -48,11 +48,11 @@ class LatticeBasis
   static_assert(std::numeric_limits<uint_fast16_t>::max() >= DimFixed, "");
 
 private:
-  MaybeFixed<DimFixed,uint_fast16_t>  const ambient_dimension;
+  MaybeFixed<DimFixed,uint_fast16_t> ambient_dimension;
 
   // Technically, just number of vectors. We do not check for linear independence
   // (although the functions that construct lattice bases will probably detect this)
-  MaybeFixed<RankFixed,uint_fast16_t> const lattice_rank;
+  MaybeFixed<RankFixed,uint_fast16_t> lattice_rank;
 
   // currently unused:
   // To ensure that they are >= 0
@@ -107,6 +107,10 @@ public:
   {
     assert(ambient_dim >= new_lattice_rank);
   }
+  LatticeBasis(std::istream &is)
+  {
+    is >> *this;
+  }
 
   bool operator==(LatticeBasis const &other) const
   {
@@ -118,62 +122,39 @@ public:
   }
   bool operator!=(LatticeBasis const &other) const { return !(*this == other); }
 
-  private:
-  FORCE_INLINE void print_dim(std::ostream &os) const { os << "Dim: " << ambient_dimension; }
-  inline static MaybeFixed<DimFixed,uint_fast16_t> read_dim(std::istream &is)
-  {
-    if (!string_consume(is,"Dim:")) throw bad_dumpread("Could not read LatticeBasis, dim");
-    return read_out<MaybeFixed<DimFixed,uint_fast16_t>>(is);
-  }
-  FORCE_INLINE void print_rank(std::ostream &os) const { os << "Rank: " << lattice_rank; }
-  inline static MaybeFixed<RankFixed,uint_fast16_t> read_rank(std::istream &is)
-  {
-    if (!string_consume(is,"Rank:")) throw bad_dumpread("Could not read LatticeBasis, rank");
-    return read_out<MaybeFixed<RankFixed,uint_fast16_t>>(is);
-  }
-  inline void print_basis(std::ostream &os) const
-  {
-    os << "Basis:[";
-    for (uint_fast16_t i = 0; i < lattice_rank; ++i)
-    {
-      if(i != 0) os << "       ";
-      os << "[";
-      for (uint_fast16_t j = 0; j < ambient_dimension; ++j)
-      {
-        os << get_basis_entry(i,j) << " ";
-      }
-      os << "]" << '\n';
-    }
-    os << "]";
-  }
-  inline static std::vector<std::vector<Entries>> read_basis(std::istream &is, uint_fast16_t const dim, uint_fast16_t const lattice_rank)
-  {
-    if(!string_consume(is,"Basis:[")) throw bad_dumpread("Could not read LatticeBasis, basis");
-    std::vector<std::vector<Entries>> res; res.reserve(lattice_rank);
-    for (uint_fast16_t i = 0; i < lattice_rank; ++i)
-    {
-      if (!string_consume(is,"[")) throw bad_dumpread("Could not read LatticeBasis, basis");
-      std::vector<Entries> vec; vec.reserve(dim);
-      // read dim values
-      for (uint_fast16_t j = 0; j < dim; ++j) vec.push_back(read_out<Entries>(is));
-      if (!string_consume(is,"]")) throw bad_dumpread("Could not read LatticeBasis, basis");
-      res.push_back(vec);
-    }
-    if (!string_consume(is,"]")) throw bad_dumpread("Could not read LatticeBasis, basis");
-    if (!is) throw bad_dumpread("Could not read LatticeBasis, basis");
-    return res;
-  }
-
   friend std::ostream &operator<<(std::ostream &os, LatticeBasis<Entries, gEntries, DimFixed, RankFixed> const &basis)
   {
-    basis.print_dim(os); os << '\n';
-    basis.print_rank(os); os << '\n';
-    basis.print_basis(os); os << '\n';
+    os << "Dim: " << basis.ambient_dimension << '\n';
+    os << "Rank: " << basis.lattice_rank << '\n';
+    std::ios_base::fmtflags saved_flags = os.setf(std::ios_base::fixed | std::ios_base::scientific, std::ios_base::floatfield);
+    os << "Basis: ";
+    print_container(os,basis.basis);
+    os << '\n';
+    os << "Gram: ";
+    print_container(os,basis.gram_matrix);
+    os << '\n';
+    os << "Mu: ";
+    print_container(os,basis.mu_matrix);
+    os << '\n';
+    os.flags(saved_flags);
     return os;
   }
 
-
-
+  friend std::istream &operator>>(std::istream &is, LatticeBasis<Entries, gEntries, DimFixed, RankFixed> &basis)
+  {
+    if (!string_consume(is,"Dim:")) throw bad_dumpread("LatticeBasis: Dim");
+    if (!(is >> basis.ambient_dimension)) throw bad_dumpread("LatticeBasis: DimVal");
+    if (!string_consume(is,"Rank:")) throw bad_dumpread("LatticeBasis: Rank");
+    if (!(is >> basis.lattice_rank)) throw bad_dumpread("LatticeBasis: RankVal");
+    if (!string_consume(is,"Basis:")) throw bad_dumpread("LatticeBasis: Basis");
+    if (!read_container(is,basis.basis)) throw bad_dumpread("LatticeBasis: BasisVal");
+    if (!string_consume(is,"Gram:")) throw bad_dumpread("LatticeBasis: Gram");
+    if (!read_container(is,basis.gram_matrix)) throw bad_dumpread("LatticeBasis: GramVal");
+    if (!string_consume(is,"Mu:")) throw bad_dumpread("LatticeBasis: Mu");
+    if (!read_container(is,basis.mu_matrix)) bad_dumpread("LatticeBasis:MuVal");
+    return is;
+//  if basis.read_dim(is) == false throw bad_dumread
+  }
 };
 
 /**

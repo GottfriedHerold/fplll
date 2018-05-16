@@ -48,7 +48,17 @@ bool test_lattice_basis(bool output = true)
     }
   }
   LB latb1{DIM, RANK, basis_vecs, mu_vecs, gram_vecs};
-  std::cout << latb1 << std::endl;
+  LB2 latb2{DIM, RANK, basis_vecs, mu_vecs, gram_vecs};
+  std::stringstream channel;
+  channel.clear();
+  channel << latb1;
+  LB latb1copy(channel);
+  assert(latb1 == latb1copy);
+  channel.clear();
+  channel << latb2;
+  LB2 latb2copy(channel);
+  assert(latb2 == latb2copy);
+
 
   return true;
 }
