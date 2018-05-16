@@ -68,6 +68,7 @@
 		<Unit filename="Tests/TestGPVSampler.h" />
 		<Unit filename="Tests/TestGPVSamplerExtended.h" />
 		<Unit filename="Tests/TestGSOLatticePoint.h" />
+		<Unit filename="Tests/TestLatticeBasis.h" />
 		<Unit filename="Tests/TestLatticePoint.h" />
 		<Unit filename="Tests/TestLazy.h" />
 		<Unit filename="Tests/TestList.h" />

@@ -274,26 +274,9 @@ inline Result make_array_or_vector(Container &&container, SizeArgs &&...args)
   return GaussSieveDetails::MakeArrayOrVectorImpl<Result>::make_from(std::forward<Container>(container), std::forward<SizeArgs>(args)... );
 }
 
-//template <class Result, class Input, bool Recursive = false, TEMPL_RESTRICT_DECL2(mystd::negation<IsStdArrayOrVector >)>
-//FORCE_INLINE constexpr Result const &make_array_or_vector(Input &&input)
-//{
-//  static_assert( Recursive, "Return Value must be std::array or std::vector");
-//  return static_cast<Result>(std::forward<Input>(input));
-//}
-//
-//template <class VecEntries, class Allocator, bool>
-//std::vector<VecEntries, Allocator> make_array_or_vector(std::vector<VecEntries, Allocator> &&input)
-//{
-//  return std::move(input);
-//}
-//
-//template <class VecEntries, class Allocator, bool, TEMPL_RESTRI
-
-
-
 // Type normalization:
 // We turn any Trait class T with T::value==false into a standard std::false_type
-// and T::value==true into a standard std::true_type
+// with and T::value==true into a standard std::true_type
 // Note that such non-standard classes T encapsulating a bool constexpr may appear due to
 // processing such types, depending on post-processing of types.
 // Note: Currently used, but not really needed due to changes to trait getters.
@@ -535,12 +518,29 @@ inline T read_out(std::istream &is)
   return t;
 }
 
-/*
-template<class Container, TEMPL_RESTRICT_DECL(IsStdArrayOrVector<typename T::value_type>::value == false)>
+/**
+  print_container(os, container) uses operator<< to print the container size and
+  every element of the container to stream.
+  Returns true on success and false on failure. In case of failure, we have no guarantees what
+  was actually output.
+  container is supposed to be either a std::vector or a std::array.
+  (though custom types may work if they have a similar interface)
+  If Container::value_type (exists and) is a std::array or std::vector, print_container is used
+  recursively.
+
+  read_container allows to read back in.
+*/
+
+// Helper for detected_d used to select the correct variant.
+template<class T> using GetValueType = typename T::value_type;
+
+template<class Container, TEMPL_RESTRICT_DECL(IsStdArrayOrVector< mystd::detected_t<GetValueType,Container> >::value == false)>
 bool print_container(std::ostream &os, Container const &container)
 {
   if (!(os << "[")) return false;
-  for( auto it = container.cbegin(); it != container.cend(); ++it )
+  if (!(os << container.size())) return false;
+  if (!(os << ": ")) return false;
+  for (auto it = container.cbegin(); it != container.cend(); ++it)
   {
     if (!(os << *it)) return false;
     if (!(os << " ")) return false;
@@ -549,10 +549,12 @@ bool print_container(std::ostream &os, Container const &container)
   return true;
 }
 
-template<class Container, TEMPL_RESTRICT_DECL(IsStdArrayOrVector<typename T::value_type>::value == true)>
+template<class Container, TEMPL_RESTRICT_DECL(IsStdArrayOrVector< mystd::detected_t<GetValueType, Container> >::value == true)>
 bool print_container(std::ostream &os, Container const &container)
 {
   if (!(os << "[")) return false;
+  if (!(os << container.size())) return false;
+  if (!(os << ": ")) return false;
   for (auto it = container.cbegin(); it!= container.cend(); ++it)
   {
     if (!print_container(os,*it)) return false;
@@ -562,18 +564,77 @@ bool print_container(std::ostream &os, Container const &container)
   return true;
 }
 
-template<class Container>
-bool read_container(std::istream &is, Container const &);
+template<class T, std::size_t N>
+bool read_container(std::istream &is, std::array<T, N> &arr);
 
+// lack-of-constexpr-if workaround.
 namespace GaussSieveHelpers
 {
+  template <bool Recurse> // default: false
+  class HelperReadContainer
+  {
+    HelperReadContainer(...) = delete;
+    template<class T>
+    FORCE_INLINE static bool read(std::istream &is, T &&data)
+    {
+      return is >> std::forward<T>(data);
+    }
+  };
 
+  template<>
+  class HelperReadContainer<true>
+  {
+    HelperReadContainer(...) = delete;
+    template<class T>
+    FORCE_INLINE static bool read(std::istream &is, T &&data)
+    {
+      static_assert(IsStdArrayOrVector<T>::value,"");
+      return read_container(is, std::forward<T>(data));
+    }
+  };
 }
 
-template<class Container>
-bool read_container(std::istream &is, Container const &);
+template<class T, std::size_t N>
+bool read_container(std::istream &is, std::array<T, N> &arr)
+{
+  using ST = typename std::array<T,N>::size_type;
+  if (!string_consume(is,"[")) return false;
+  auto num = read_out<ST>(is);
+  if (!is) return false;
+  if (num != N) return false;
+  if (!string_consume(is,":")) return false;
+  for (ST i = 0; i < N; ++i)
+  {
+    // constexpr if would simplify this
+    if (! (GaussSieveHelpers::HelperReadContainer<IsStdArrayOrVector<T>::value>::read_container(is, arr[i])))
+    {
+      return false;
+    }
+  }
+  if (!string_consume(is,"]")) return false;
+  return true;
+}
 
-*/
+template<class T, class Allocator>
+bool read_container(std::istream &is, std::vector<T, Allocator> &vec)
+{
+  using ST = typename std::vector<T,Allocator>::size_type;
+  if (!string_consume(is,"[")) return false;
+  auto num = read_out<ST>(is);
+  if (!is) return false;
+  if (!string_consume(is,":")) return false;
+  vec.clear();
+  vec.reserve(num);
+  for (ST i = 0; i < num; ++i)
+  {
+    T t;
+    if (GaussSieveHelpers::HelperReadContainer<IsStdArrayOrVector<T>::value>::read_container(is, t)==false) return false;
+    vec.push_back(std::move(t));
+  }
+  if (!string_consume(is,"]")) return false;
+  return true;
+}
+
 
 // exception thrown when reading data fails
 class bad_dumpread : public std::runtime_error
