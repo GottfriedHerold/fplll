@@ -23,6 +23,11 @@
 #define FOR_VARIABLE_DIM template<int nfixed_copy = nfixed, TEMPL_RESTRICT_DECL(nfixed_copy == -1)>
 // clang-format on
 
+// local defines, undef at the end of file. Template arguments and "Full name"
+#define EXACTLATTICEPOINT_PARAMS class ET, int nfixed
+#define EXACTLATTICEPOINT_FULLNAME ExactLatticePoint<ET, nfixed>
+
+
 // to make some functions C++14-constexpr (if supported)
 // depends on DEBUG_SYMBOL
 // TODO: remove this macro and write it out everywhere, disambiguate
@@ -39,12 +44,12 @@ namespace GaussSieve
 {
 
 // forward declaration
-template <class ET, int nfixed> class ExactLatticePoint;
+template<EXACTLATTICEPOINT_PARAMS> class ExactLatticePoint;
 
 /**
   lattice point traits for ExactLatticePoint:
 */
-template <class ET, int nfixed> struct LatticePointTraits<ExactLatticePoint<ET, nfixed>>
+template<EXACTLATTICEPOINT_PARAMS> struct LatticePointTraits<EXACTLATTICEPOINT_FULLNAME>
 {
 public:
   // set appropriate traits:
@@ -78,10 +83,10 @@ public:
   GeneralLatticePoint<ET,nfixed> (cf. LatticePointGeneric.h)
 */
 
-template <class ET, int nfixed>
-class ExactLatticePoint final : public GeneralLatticePoint<ExactLatticePoint<ET, nfixed>>
+template<EXACTLATTICEPOINT_PARAMS>
+class ExactLatticePoint final : public GeneralLatticePoint<EXACTLATTICEPOINT_FULLNAME>
 {
-  friend StaticInitializer<ExactLatticePoint<ET, nfixed>>;
+  friend StaticInitializer<EXACTLATTICEPOINT_FULLNAME>;
 
 public:
   using LatticePointTag = std::true_type;
@@ -122,7 +127,7 @@ public:
     // For some reason, clang-format messes up the indentations of its own clang-format commands...
     // clang-format off
     // double (( )) because assert is a macro and it mis-parses the ","
-    assert((StaticInitializer< ExactLatticePoint<ET,nfixed> >::is_initialized));
+    assert((StaticInitializer< EXACTLATTICEPOINT_FULLNAME >::is_initialized));
 // clang-format on
 #endif
   }
@@ -260,24 +265,24 @@ private:
 };
 
 // define (and compile-time initialize) static data of template classes:
-template <class ET, int nfixed>
-MaybeFixed<nfixed> ExactLatticePoint<ET, nfixed>::dim = MaybeFixed<nfixed>(nfixed < 0 ? 0 : nfixed);
+template <EXACTLATTICEPOINT_PARAMS>
+MaybeFixed<nfixed> EXACTLATTICEPOINT_FULLNAME::dim = MaybeFixed<nfixed>(nfixed < 0 ? 0 : nfixed);
 
 /************************************************************
     Static Initializer: This class sets the dimension of the point
 ************************************************************/
 
-template<class ET, int nfixed>
-std::ostream &operator<<(std::ostream &, StaticInitializer<ExactLatticePoint<ET, nfixed>> const &);
-template<class ET, int nfixed>
-std::ostream &operator<<(std::istream &, StaticInitializer<ExactLatticePoint<ET, nfixed>> const &);
+template<EXACTLATTICEPOINT_PARAMS>
+std::ostream &operator<<(std::ostream &, StaticInitializer<EXACTLATTICEPOINT_FULLNAME> const &);
+template<EXACTLATTICEPOINT_PARAMS>
+std::ostream &operator<<(std::istream &, StaticInitializer<EXACTLATTICEPOINT_FULLNAME> const &);
 
 // clang-format off
-template <class ET, int nfixed>
-class StaticInitializer< ExactLatticePoint<ET,nfixed> > final
-    : public DefaultStaticInitializer<ExactLatticePoint<ET, nfixed>>
+template <EXACTLATTICEPOINT_PARAMS>
+class StaticInitializer< EXACTLATTICEPOINT_FULLNAME > final
+    : public DefaultStaticInitializer<EXACTLATTICEPOINT_FULLNAME>
 {
-  using Parent = DefaultStaticInitializer< ExactLatticePoint<ET,nfixed> >;
+  using Parent = DefaultStaticInitializer< EXACTLATTICEPOINT_FULLNAME >;
 
   // clang-format on
 public:
@@ -291,14 +296,14 @@ public:
     assert(Parent::user_count > 0);
     if (Parent::user_count > 1)
     {
-      if (!(new_dim == ExactLatticePoint<ET, nfixed>::dim))
+      if (!(new_dim == EXACTLATTICEPOINT_FULLNAME::dim))
       {
         throw bad_reinit_static("Trying to reinit static dimension of ExactLattice Point");
       }
     }
     else
     {
-      ExactLatticePoint<ET, nfixed>::dim = new_dim;
+      EXACTLATTICEPOINT_FULLNAME::dim = new_dim;
     }
     DEBUG_SIEVE_TRACEINITIATLIZATIONS("Initializing ExactLatticePoint with nfixed = "
                                       << nfixed << " REALDIM = " << new_dim << " Counter is"
@@ -310,14 +315,14 @@ public:
                                       << nfixed << " Counter is " << Parent::user_count)
   }
 
-  friend std::ostream &operator<<(std::ostream &os, StaticInitializer<ExactLatticePoint<ET,nfixed>> const &)
+  friend std::ostream &operator<<(std::ostream &os, StaticInitializer<EXACTLATTICEPOINT_FULLNAME> const &)
   {
     os << "Static Data for ExactLatticePoint ";
     os << ((nfixed < 0) ? "(fixed dim): " : "(variable dim): ");
     os << access_dim();
     return os;
   }
-  friend std::istream &operator>>(std::istream &is, StaticInitializer<ExactLatticePoint<ET,nfixed>> const &init_ob)
+  friend std::istream &operator>>(std::istream &is, StaticInitializer<EXACTLATTICEPOINT_FULLNAME> const &init_ob)
   {
     if (!string_consume(is,"Static Data for ExactLatticePoint")) throw bad_dumpread("Dumpread failure: ExactLatticePoint");
     if (!string_consume(is, (nfixed < 0) ? "(fixed dim):" : "(variable dim):")) throw bad_dumpread("Dumpread failure: ExactLatticePoint");
@@ -338,9 +343,9 @@ public:
   // this allows friends of StaticInitializer to access ExactLatticePoint<ET,nfixed>
   // (since friend is not transitive in C++)
   private:
-  static constexpr mystd::add_lvalue_reference_t<decltype(ExactLatticePoint<ET,nfixed>::dim)> access_dim()
+  static constexpr mystd::add_lvalue_reference_t<decltype(EXACTLATTICEPOINT_FULLNAME::dim)> access_dim()
   {
-    return ExactLatticePoint<ET,nfixed>::dim;
+    return EXACTLATTICEPOINT_FULLNAME::dim;
   }
 
 };  // end of static initializer
@@ -350,5 +355,7 @@ public:
 #undef FOR_FIXED_DIM
 #undef FOR_VARIABLE_DIM
 #undef CONSTEXPR_IN_NON_DEBUG_LP_INIT
+#undef EXACTLATTICEPOINT_PARAMS
+#undef EXACTLATTICEPOINT_FULLNAME
 
 #endif  // include guard

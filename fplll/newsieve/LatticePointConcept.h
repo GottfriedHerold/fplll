@@ -57,6 +57,7 @@ public:
   using Trait_CheapNorm2                    = std::false_type;
   using Trait_CheapNegate                   = std::false_type;
   using Trait_BitApprox                     = std::false_type;
+//  using Trait_CompatibilityCheck            = std::false_type;
 
   using Trait_ApproxLevel = std::integral_constant<unsigned int, 0>;
   using Trait_Leveled                       = std::false_type;
@@ -141,6 +142,7 @@ public:
               (The reason is that recomputation is too slow)
               NOTE: This may be subject to change.
 
+
   CheapNegate: Set to true_type to indicate that negation needs no sanitize().
 
   // Currently unused:
@@ -161,6 +163,10 @@ public:
                       exact & approximated scalar product, etc.
                       Use ApproxLevelOf<Some_Class>::value to obtain Some_Class::ApproxLevel
                       (with a default of 0 if Some_Class::ApproxLevel does not exist)
+
+  CompatibilityCheck :  Set to true_type to indicate that arithmetic operations require a
+                        compatibility check with the second argument. Default: false
+
 
   NOTE: Leveled and ApproxLevel do NOT relate to Bitapproximation.
 */
@@ -229,6 +235,7 @@ GAUSS_SIEVE_BINARY_TRAIT_PREDICATE_GET(CheapNegate);
 GAUSS_SIEVE_BINARY_TRAIT_PREDICATE_GET(Leveled);
 GAUSS_SIEVE_BINARY_TRAIT_PREDICATE_GET(AccessNorm2);
 GAUSS_SIEVE_BINARY_TRAIT_PREDICATE_GET(BitApprox);
+//GAUSS_SIEVE_BINARY_TRAIT_PREDICATE_GET(CompatibilityCheck)
 
 // "Invalid" is set to true_type in the default instantiation of LatticePointTraits. This is used to
 // detect whether we use a specialization.
@@ -246,7 +253,7 @@ GAUSS_SIEVE_OBTAIN_TRAIT_EXPRESSION(RepCooType);
 #undef GAUSS_SIEVE_BINARY_TRAIT_PREDICATE_GET
 #undef GAUSS_SIEVE_BINARY_TRAIT_PREDICATE
 #undef GAUSS_SIEVE_OBTAIN_TRAIT_PREDICATE
-}
+}  // end namespace TraitHelpers
 // clang-format off
 template<class T> using IsALatticePoint                  = mystd::is_detected<TraitHelpers::LatticePointPredicate, T>;
 template<class T> using DeclaresScalarProductStorageType = mystd::is_detected<TraitHelpers::Obtain_ScalarProductStorageType, T>;
@@ -323,14 +330,16 @@ template<class T> using Has_CheapNorm2  = TraitHelpers::T_CheapNorm2<T>;
 template<class T> using Has_CheapNegate = TraitHelpers::T_CheapNegate<T>;
 template<class T> using Has_Leveled     = TraitHelpers::T_Leveled<T>;
 template<class T> using Has_BitApprox   = TraitHelpers::T_BitApprox<T>;
+//template<class T> using Has_CompatibilityCheck = TraitHelpers::T_CompatibilityCheck<T>;
 
-// Deprecated. Note it is and AND of things above, not an OR.
+// Deprecated. Note it is an AND of things above, not an OR.
 template<class LatP> using IsRepLinear_RW =
     mystd::conjunction< Has_InternalRepLinear<LatP>, Has_InternalRep_RW<LatP> >;
 // clang-format on
 
 // For approximations.
 // TODO: Move this somewhere else. It's not really a lattice point trait.
+// UNUSED:
 
 // clang-format off
 template<class T> using Obtain_ApproxLevel = std::integral_constant<unsigned int, T::ApproxLevel>;
@@ -338,7 +347,7 @@ template<class T> using ApproxLevelOf      = mystd::detected_or_t<std::integral_
 								  Obtain_ApproxLevel, T>;
 // clang-format on
 
-// have template<class Impl = Latp> in the declarations below. This is to ensure
+// We have template<class Impl = Latp> in the declarations below. This is to ensure
 // only the default is ever used. See below for an explanation.
 // clang-format off
 #define IMPL_IS_LATP                                                                               \

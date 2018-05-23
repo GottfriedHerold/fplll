@@ -35,8 +35,10 @@
 		<Unit filename="GaussListBitapprox_impl.h" />
 		<Unit filename="GaussQueue.h" />
 		<Unit filename="GaussQueue_impl.h" />
+		<Unit filename="GaussVectorBitApprox.h" />
 		<Unit filename="GlobalStaticData.h" />
 		<Unit filename="LatticeBases.h" />
+		<Unit filename="LatticeBasisConvert.h" />
 		<Unit filename="LatticePointConcept.h" />
 		<Unit filename="LatticePointGeneric.h" />
 		<Unit filename="MTPRNG.h" />

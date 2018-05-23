@@ -73,6 +73,9 @@
       various level of template-overloading-redirection for lattice points.
       -> Determines whether DEBUG_TRACEGENERIC(output string) is a no-op
 
+  DEBUG_SIEVE_CHECKSAMEGSOBASIS
+      Operations on GSOLatticePoints check whether both operands use the same basis.
+
 TODO: Some of these need revision / usage clarification.
 Their use is not very consistent.
 */
@@ -90,6 +93,7 @@ Their use is not very consistent.
   #define DEBUG_OTHER_STATIC_INIT
 //  #define DEBUG_SIEVE_ALL_APPROX_AT_SAME_LEVEL
   #define DEBUG_SIEVE_ARRAYLIST
+  #define DEBUG_SIEVE_CHECKSAMEGSOBASIS
 #endif  // DEBUG_SIEVE_SILENT_ALL
 
 #ifdef DEBUG_SIEVE_STANDALONE_MODULES_ALL
