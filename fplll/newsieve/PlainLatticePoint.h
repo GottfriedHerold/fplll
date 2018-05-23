@@ -53,7 +53,8 @@ public:
 #endif
 
   // Creates a lattice point with the stated dimension
-  explicit PlainLatticePoint(MaybeFixed<nfixed>) : PlainLatticePoint(){};
+  template<class UInt>
+  explicit PlainLatticePoint(MaybeFixed<nfixed, UInt>) : PlainLatticePoint(){};
 
   PlainLatticePoint(PlainLatticePoint const &old) = delete;
   PlainLatticePoint(PlainLatticePoint &&old)      = default;
@@ -93,7 +94,8 @@ public:
     assert((StaticInitializer<PlainLatticePoint<ET, -1>>::is_initialized()));
   };
 
-  explicit PlainLatticePoint(MaybeFixed<-1> const dim) : data(static_cast<unsigned int>(get_dim()))
+  template<class UInt>
+  explicit PlainLatticePoint(MaybeFixed<-1, UInt> const dim) : data(static_cast<unsigned int>(get_dim()))
   {
     assert((StaticInitializer<PlainLatticePoint<ET, -1>>::is_initialized()));
 #ifdef DEBUG_SIEVE_LP_MATCHDIM

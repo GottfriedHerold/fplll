@@ -34,6 +34,7 @@ void Sampler<SieveTraits, MT, Engine, Sseq>::init(
 #else
   assert(sieveptr == nullptr);
 #endif
+  basis_ptr = input_basis.get_basis_ptr();
 
 #ifdef DEBUG_SIEVE_STANDALONE_SAMPLER
   engine.init(1);
@@ -75,6 +76,7 @@ Sampler<SieveTraits, MT, Engine, Sseq>::Sampler(std::istream &is, SamplerType co
 #endif
 }
 
+// Note that the basis is NOT touched by stream operations. This is intentional.
 
 template <class SieveTraits, bool MT, class Engine, class Sseq>
 inline std::ostream &operator<<(std::ostream &os,

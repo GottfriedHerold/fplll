@@ -13,6 +13,7 @@
 #include "GlobalStaticData.h"
 #include "PlainLatticePoint.h"
 #include "PointWithBitapprox.h"
+#include "LatticeBases.h"
 #include "SieveUtility.h"
 #include "SimHash.h"
 #include "fplll/defs.h"
@@ -77,6 +78,7 @@ public:
   using SimHashBlock            = typename CoordinateSelectionUsed::SimHashBlock;
   using SimHashes               = typename CoordinateSelectionUsed::SimHashes;
 
+  using BasisEntries            = ET;
   using LengthType              = ET;  // TODO : Rename Norm2Type.
 
   using GlobalStaticDataInitializer = StaticInitializerArg<DimensionType>;
@@ -93,6 +95,7 @@ public:
   using TermCond_QueryType      = ExactLatticePoint<ET,nfixed>;
   using InputBasisType          = InputBT;
   using PlainPoint              = PlainLatticePoint<ET,nfixed>;
+  using BasisType               = LatticeBasis<BasisEntries, LengthType>;
 
   // TODO: Remove and forward DimensionType throughout...
   static int constexpr get_nfixed = nfixed;

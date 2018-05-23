@@ -736,7 +736,7 @@ LP make_from_any_vector(SomeContainer const &container, DimType dim)
   "This lattice point's coordinates meaning is unclear. Do not use this function");
   using ET = Get_CoordinateType<LP>;
   DEBUG_TRACEGENERIC("generically converting vector to LP for" << LP::class_name())
-  LP result(dim);
+  LP result{dim};
   //  auto dim = result.get_dim();
   for (uint_fast16_t i = 0; i < dim; ++i)
   {
@@ -757,7 +757,7 @@ LP make_from_znr_vector(SomeZNRContainer const &container, DimType dim)
   "This lattice point's coordinates meaning is unclear. Do not use this function");
   using ET = Get_CoordinateType<LP>;
   DEBUG_TRACEGENERIC("generically converting vector to LP and un-ZNRing for" << LP::class_name())
-  LP result(dim);
+  LP result{dim};
   for (uint_fast16_t i = 0; i < dim; ++i)
   {
     result[i] = convert_to_inttype<ET>(container[i].get_data());

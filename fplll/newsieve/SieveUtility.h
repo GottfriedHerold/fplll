@@ -387,8 +387,12 @@ double inline convert_to_double(mpz_class const &source) { return source.get_d()
 
 namespace ConversionHelpers  // namespace for implementation details
 {
+
+template<class Integer, class Enabled = void> struct ConvertMaybeMPZ {};
+
 // Integer is the convertion TARGET. There is specialization for mpz_class below
-template <class Integer> struct ConvertMaybeMPZ
+template <class Integer>
+struct ConvertMaybeMPZ<Integer, mystd::enable_if_t<std::is_integral<Integer>::value>>
 {
   static_assert(!std::is_same<mystd::decay_t<Integer>, mpz_class>::value, "");
   static_assert(std::is_integral<Integer>::value, "Use only for integral classes.");
@@ -433,7 +437,7 @@ template <class Integer> struct ConvertMaybeMPZ
 };
 
 // specialization when the target type is mpz_class:
-template <> struct ConvertMaybeMPZ<mpz_class>
+template <> struct ConvertMaybeMPZ<mpz_class, void>
 {
   template <class Source> static mpz_class do_convert(Source const &source)
   {
@@ -442,11 +446,38 @@ template <> struct ConvertMaybeMPZ<mpz_class>
   static mpz_class do_convert(mpz_class const &source) { return source; }
   static mpz_class do_convert(mpz_t const &source) { return static_cast<mpz_class>(source); }
 };
+
+// specialization when target type is floating point type:
+
+template<class Float>
+struct ConvertMaybeMPZ<Float, mystd::enable_if_t<std::is_floating_point<Float>::value>>
+{
+  template <class Source,
+  TEMPL_RESTRICT_DECL2(mystd::negation<std::is_same<mystd::decay_t<Source>,mpz_t>>,
+                       mystd::negation<std::is_same<mystd::decay_t<Source>,mpz_class>>)>
+  static Float do_convert(Source &&source)
+  {
+    return static_cast<Float>(std::forward<Source>(source));
+  }
+
+  static Float do_convert(mpz_class const &source)
+  {
+    return static_cast<Float>(source.get_d());
+  }
+
+  static Float do_convert(mpz_t const &source)
+  {
+    return static_cast<Float>(mpz_get_d(source));
+  }
+};
+
+
+
 }  // end namespace ConversionHelpers
 
 template <class Target, class Source> Target convert_to_inttype(Source &&source)
 {
-  return ConversionHelpers::ConvertMaybeMPZ<Target>::do_convert(std::forward<Source>(source));
+  return ConversionHelpers::ConvertMaybeMPZ<Target,void>::do_convert(std::forward<Source>(source));
 }
 
 /**

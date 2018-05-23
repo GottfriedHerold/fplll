@@ -28,6 +28,7 @@
 
 #include "DefaultIncludes.h"
 #include "LatticeBases.h"
+#include "LatticeBasisConvert.h"
 #include "MTPRNG.h"
 #include "SieveUtility.h"
 #include "Typedefs.h"
@@ -193,6 +194,7 @@ private:
 
     NOTE: read_from_stream is supposed to be followed by init. In particular,
     read_from_stream should leave the sampler in an unassociated state.
+    basis_ptr is not touched.
 
     NOTE: operator<< and operator>> manage the local data (such as RNG state) before the handoff.
   */
@@ -203,6 +205,10 @@ private:
 protected:
   MTPRNG<Engine, MT, Sseq> engine;   // independent engines for each thread
   Sieve<SieveTraits, MT> *sieveptr;  // pointer to parent sieve. Set in init();
+  using BasisType = typename SieveTraits::BasisType;
+  std::shared_ptr<BasisType> basis_ptr;   // holds a (pointer to) the basis object, if accociated.
+                                          // This is mostly for lifetime management.
+                                          // Note that input_basis contains more information.
 
 #ifdef PROGRESSIVE
   uint_fast16_t progressive_rank;  // In case we sample from a sublattice.

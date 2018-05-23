@@ -27,6 +27,7 @@
 #include <limits>
 #include <list>
 #include <math.h>  //for log2, sqrt
+#include <memory>
 #include <mutex>
 #include <queue>
 #include <random>

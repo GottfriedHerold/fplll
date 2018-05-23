@@ -29,7 +29,8 @@ void GPVSamplerExtended<SieveTraits, MT, Engine, Sseq>::custom_init(
 
   dim          = input_basis.ambient_dimension;
   lattice_rank = input_basis.lattice_rank;
-  mu_matrix    = input_basis.get_mu_matrix();
+//  mu_matrix    = input_basis.get_mu_matrix();
+  mu_matrix    = make_array_or_vector<mystd::decay_t<decltype(mu_matrix) >>(Parent::basis_ptr->get_mu_matrix(),lattice_rank, lattice_rank);
 
   assert(start_babai < lattice_rank);  // use strictly less to prevent always outputting 0-vector
   assert(lattice_rank <= dim); // Elena: changed from '<' to '<='

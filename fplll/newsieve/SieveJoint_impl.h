@@ -269,10 +269,10 @@ bool Sieve<SieveTraits,GAUSS_SIEVE_COMPILE_FOR_MULTI_THREADED>::check_if_enough_
 
 
   // for k=2 we expect saturation at (4/3)^{progressive_rank / 2}
-  unsigned long int const expected_list_size = std::pow(this->get_target_list_size(), static_cast<double>( this->get_progressive_rank() / 2 ) );
+  unsigned long int const expected_list_size = std::pow(get_target_list_size(), static_cast<double>( get_progressive_rank() / 2 ) );
 
   // we want to have at least expected_list_size-many vectors of norm (squared) 4/3 * expected_list_size[i]
-  double norm_bound = 1.333 * lattice_basis.progressive_bounds[this->get_progressive_rank()]; //TODO: adjust to 3-sieve
+  double norm_bound = 1.333 * lattice_basis.get_progressive_bound(get_progressive_rank()); //TODO: adjust to 3-sieve
 
   //std::cout << "norm_bound " << norm_bound << std::endl;
   unsigned long int N = 0;
