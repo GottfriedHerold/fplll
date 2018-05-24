@@ -47,8 +47,8 @@ bool test_lattice_basis(bool output = true)
       basis_vecs[i][j] = 1000 * (i+1) + j;
     }
   }
-  LB latb1{DIM, RANK, basis_vecs, mu_vecs, gram_vecs};
-  LB2 latb2{DIM, RANK, basis_vecs, mu_vecs, gram_vecs};
+  LB latb1{DIM, RANK, basis_vecs, mu_vecs, mu_vecs, gram_vecs};
+  LB2 latb2{DIM, RANK, basis_vecs, mu_vecs, mu_vecs, gram_vecs};
   std::stringstream channel;
   channel.clear();
   channel << latb1;

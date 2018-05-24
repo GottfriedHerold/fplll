@@ -169,11 +169,22 @@ public:
     GSO.update_gso();  // todo: raise exception in case of error
     // create empty rank x rank matrices:
     std::vector<std::vector<double>> mu_matrix ( lattice_rank, std::vector<double>(lattice_rank));
+    std::vector<std::vector<double>> r_matrix ( lattice_rank, std::vector<double>(lattice_rank));
     std::vector<std::vector<LengthType>> g_matrix ( lattice_rank, std::vector<LengthType>(lattice_rank));
     std::vector<std::vector<OutputET>> basis_entries ( lattice_rank, std::vector<OutputET>(ambient_dimension));
     // We compute these at creation to simplify thread-safety issues.
+    std::cout << "XXX" << '\n';
     compute_mu_matrix(GSO, mu_matrix, lattice_rank);
+    print_container(std::cout, mu_matrix);
+
+    std::cout << "XXX" << '\n';
+    compute_r_matrix(GSO, r_matrix, lattice_rank);
+    print_container(std::cout, r_matrix);
+
+    std::cout << "XXX" << '\n';
     compute_g_matrix(GSO, g_matrix, lattice_rank);
+    print_container(std::cout, g_matrix);
+    std::cout << "XXX" << '\n';
 
     // extract and convert the actual lattice vectors.
 //    basis_vectors.reserve(lattice_rank);
@@ -188,7 +199,7 @@ public:
 //      // make_from_znr_vector copies and push_back uses move semantics.
       copy_basis_vectors.push_back( make_from_znr_vector<BasisVectorType>(input_basis[i], ambient_dimension) );
     }
-    ptr_basis = std::make_shared<OutputBasis>(ambient_dimension, lattice_rank, basis_entries, mu_matrix, g_matrix);
+    ptr_basis = std::make_shared<OutputBasis>(ambient_dimension, lattice_rank, basis_entries, mu_matrix, r_matrix, g_matrix);
     maxbistar2 = GSO.get_max_bstar().get_d();
 
     compute_minkowski_bound(GSO);
@@ -226,13 +237,34 @@ private:
     {
       for (uint_fast16_t j = 0; j < lattice_rank; ++j)
       {
-        if (j > i)
+        if (j < i)
         {
           mu_matrix[i][j] = ZNR_mu[i][j].get_d();
         }
         else
         {
           mu_matrix[i][j] = 0;
+        }
+      }
+    }
+    return;
+  }
+
+  template<class Container>
+  static void compute_r_matrix(GSOType &GSO, Container &r_matrix, uint_fast16_t const lattice_rank)
+  {
+    fplll::Matrix<fplll::FP_NR<double>> ZNR_r = GSO.get_r_matrix();
+    for (uint_fast16_t i = 0; i < lattice_rank; ++i)
+    {
+      for (uint_fast16_t j = 0; j < lattice_rank; ++j)
+      {
+        if (j < i)
+        {
+          r_matrix[i][j] = ZNR_r[i][j].get_d();
+        }
+        else
+        {
+          r_matrix[i][j] = 0;
         }
       }
     }
@@ -258,7 +290,7 @@ private:
     {
       for (uint_fast16_t j = 0; j < lattice_rank; ++j)
       {
-        if(j < i)
+        if(i < j)
         {
           g_matrix[i][j] = g_matrix[j][i];
         }

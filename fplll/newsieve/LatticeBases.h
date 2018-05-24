@@ -68,6 +68,10 @@ private:
   // Triangular rank x rank Matrix (with 0 on diag)
   using MuMatrixType = ArrayOrVector< ArrayOrVector<double, RankFixed>, RankFixed>;
   MuMatrixType mu_matrix;
+
+  using RMatrixType = ArrayOrVector<ArrayOrVector<double, RankFixed>, RankFixed>;
+  RMatrixType r_matrix;
+
   // Matrix of pairwise scalar products of basis vectors
   using GramMatrixType = ArrayOrVector< ArrayOrVector<gEntries, RankFixed>, RankFixed>;
   GramMatrixType gram_matrix;
@@ -80,42 +84,47 @@ public:
   MaybeFixed<DimFixed,uint_fast16_t> get_ambient_dimension() const { return ambient_dimension; }
   constexpr MuMatrixType const &get_mu_matrix() const { return mu_matrix; }
   constexpr GramMatrixType const &get_g_matrix() const { return gram_matrix; }
+  constexpr RMatrixType const &get_r_matrix() const { return r_matrix; }
   constexpr BasisType const &get_basis() const { return basis; }
-  constexpr BasisVector const &get_basis_vector(uint_fast16_t i) const { return basis[i]; }
+  constexpr BasisVector const &get_basis_vector(uint_fast16_t const i) const { return basis[i]; }
 
-  constexpr Entries const &get_basis_entry(uint_fast16_t which_vec, uint_fast16_t coo) const
+  constexpr Entries const &get_basis_entry(uint_fast16_t const which_vec, uint_fast16_t const coo) const
   {
     return basis[which_vec][coo];
   }
 
-  constexpr PlainLatticePoint<Entries,DimFixed> get_basis_plainpoint(uint_fast16_t i) const
+  constexpr PlainLatticePoint<Entries,DimFixed> get_basis_plainpoint(uint_fast16_t const i) const
   {
     return make_from_any_vector<PlainLatticePoint<Entries,DimFixed>>(basis[i], ambient_dimension);
   }
 
-  double get_mu_entry(uint_fast16_t i, uint_fast16_t j) const
+  double get_mu_entry(uint_fast16_t const i, uint_fast16_t const j) const
   {
-#ifdef DEBUG_SIEVE_LOWERTRIANGULAR_MUG
-    assert(j > i);
-#endif
     return mu_matrix[i][j];
   }
 
-  constexpr gEntries const &get_g_entry(uint_fast16_t i, uint_fast16_t j) const
+  double get_r_entry(uint_fast16_t const i, uint_fast16_t const j) const
+  {
+    return r_matrix[i][j];
+  }
+
+  constexpr gEntries const &get_g_entry(uint_fast16_t const i, uint_fast16_t const j) const
   {
     return gram_matrix[i][j];
   }
 
 //  constructor:
-  template <class BasisContainer, class MuContainer, class GramContainer>
-  LatticeBasis(uint_fast16_t const ambient_dim, uint_fast16_t const new_lattice_rank, BasisContainer &&bc, MuContainer &&muc, GramContainer &&gc)
+  template <class BasisContainer, class MuContainer, class RContainer, class GramContainer>
+  LatticeBasis(uint_fast16_t const ambient_dim, uint_fast16_t const new_lattice_rank, BasisContainer &&bc, MuContainer &&muc, RContainer &&rc, GramContainer &&gc)
     : ambient_dimension(ambient_dim),
       lattice_rank(new_lattice_rank),
       mu_matrix(make_array_or_vector<MuMatrixType>(muc, lattice_rank, lattice_rank)),
+      r_matrix(make_array_or_vector<RMatrixType>(rc, lattice_rank, lattice_rank)),
       gram_matrix(make_array_or_vector<GramMatrixType>(gc, lattice_rank, lattice_rank)),
       basis(make_array_or_vector<BasisType>(bc, lattice_rank, ambient_dimension))
   {
     assert(ambient_dim >= new_lattice_rank);
+    std::cout << *this << '\n';
   }
   LatticeBasis(std::istream &is)
   {
@@ -127,6 +136,7 @@ public:
     return  (ambient_dimension == other.ambient_dimension) &&
             (lattice_rank == other.lattice_rank) &&
             (mu_matrix == other.mu_matrix) &&
+            (r_matrix == other.r_matrix) &&
             (gram_matrix == other.gram_matrix) &&
             (basis == other.basis);
   }
@@ -146,6 +156,9 @@ public:
     os << "Mu: ";
     print_container(os,basis.mu_matrix);
     os << '\n';
+    os << "RMatrix: ";
+    print_container(os,basis.r_matrix);
+    os << '\n';
     os.flags(saved_flags);
     return os;
   }
@@ -162,6 +175,8 @@ public:
     if (!read_container(is,basis.gram_matrix))  throw bad_dumpread("LatticeBasis: GramVal");
     if (!string_consume(is,"Mu:"))              throw bad_dumpread("LatticeBasis: Mu");
     if (!read_container(is,basis.mu_matrix))    throw bad_dumpread("LatticeBasis: MuVal");
+    if (!string_consume(is,"RMatrix:"))         throw bad_dumpread("LatticeBasis: RMatrix");
+    if (!read_container(is,basis.r_matrix))     throw bad_dumpread("LatticeBasis: RVal");
     return is;
   }
 };
