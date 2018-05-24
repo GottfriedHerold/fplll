@@ -23,7 +23,7 @@ namespace GaussSieve
 
 // We consistently break after the :: for overlong declarations within this file
 // clang-format off
-template <std::size_t sim_hash_len, std::size_t sim_hash_num, bool MT, class DimensionType_arg>
+template <GS_BLOCKORTHOGONALSIMHASH_PARAMS>
 BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType_arg>::
     BlockOrthogonalSimHash(DimensionType const dim, unsigned int random_seed)
 // clang-format on
@@ -71,7 +71,7 @@ BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType_arg>::
 
 // Note: input is passed by-value. We modify the local copy.
 // clang-format off
-template <std::size_t sim_hash_len, std::size_t sim_hash_num, bool MT, class DimensionType_arg>
+template <GS_BLOCKORTHOGONALSIMHASH_PARAMS>
 template <class T>
 [[deprecated]]
 inline auto BlockOrthogonalSimHash<sim_hash_len,sim_hash_num,MT,DimensionType_arg>::
@@ -125,7 +125,7 @@ inline auto BlockOrthogonalSimHash<sim_hash_len,sim_hash_num,MT,DimensionType_ar
   This version is much faster than the above one.
 */
 
-template <std::size_t sim_hash_len, std::size_t sim_hash_num, bool MT, class DimensionType_arg>
+template <GS_BLOCKORTHOGONALSIMHASH_PARAMS>
 template <class T>
 void inline BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType_arg>::
     faster_almost_partial_walsh_hadamard_inplace(std::vector<T> &input) const
@@ -241,7 +241,7 @@ void inline BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType
 */
 
 // clang-format off
-template <std::size_t sim_hash_len, std::size_t sim_hash_num, bool MT, class DimensionType_arg>
+template <GS_BLOCKORTHOGONALSIMHASH_PARAMS>
 template <class LatP, TEMPL_RESTRICT_IMPL2(IsALatticePoint<LatP>)>
 inline auto BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType_arg>::
     compute_all_bitapproximations(LatP const &point) const -> SimHashes
@@ -300,14 +300,14 @@ inline auto BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType
   I/O
 */
 template <std::size_t sim_hash_len, std::size_t sim_hash_num, bool MT, class DimensionType>
-inline std::ostream &operator<<(std::ostream &os, BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType> const &bo_sim_hash)
+inline std::ostream &operator<<(std::ostream &os, GS_BLOCKORTHOGONALSIMHASH_FULLNAME const &bo_sim_hash)
 {
   os << "Number of orthogonal blocks:" << bo_sim_hash.number_of_orthogonal_blocks << std::endl;
   os << "Fast WH len:" << bo_sim_hash.fast_walsh_hadamard_len << std::endl;
   os << "Log2 thereof:" << bo_sim_hash.fast_walsh_hadamard_loglen << std::endl;
   assert(bo_sim_hash.pmatrices.size() == bo_sim_hash.number_of_orthogonal_blocks);
   assert(bo_sim_hash.dmatrices.size() == bo_sim_hash.number_of_orthogonal_blocks);
-  static unsigned int constexpr num_of_transforms = BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType>::num_of_transforms;
+  static unsigned int constexpr num_of_transforms = GS_BLOCKORTHOGONALSIMHASH_FULLNAME::num_of_transforms;
   os << "PMatrices: [";
   for(std::size_t i=0; i < bo_sim_hash.number_of_orthogonal_blocks; ++i)
   {
@@ -334,7 +334,7 @@ inline std::ostream &operator<<(std::ostream &os, BlockOrthogonalSimHash<sim_has
 }
 
 template <std::size_t sim_hash_len, std::size_t sim_hash_num, bool MT, class DimensionType>
-inline std::istream &operator>>(std::istream &is, BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType> &bo_sim_hash)
+inline std::istream &operator>>(std::istream &is, GS_BLOCKORTHOGONALSIMHASH_FULLNAME &bo_sim_hash)
 {
   // local class for errors
   class bad_dumpread_BlockOrthogonalSimHash : public bad_dumpread
@@ -355,7 +355,7 @@ inline std::istream &operator>>(std::istream &is, BlockOrthogonalSimHash<sim_has
 
   bo_sim_hash.pmatrices.clear();
   bo_sim_hash.dmatrices.clear();
-  static unsigned int constexpr num_of_transforms = BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType>::num_of_transforms;
+  static unsigned int constexpr num_of_transforms = GS_BLOCKORTHOGONALSIMHASH_FULLNAME::num_of_transforms;
   using PMatrixBlock = std::array<PMatrix, num_of_transforms>;
   using DMatrixBlock = std::array<DMatrix, num_of_transforms>;
   PMatrixBlock pmatrixblock;
@@ -389,7 +389,7 @@ inline std::istream &operator>>(std::istream &is, BlockOrthogonalSimHash<sim_has
   return is;
 }
 
-template <std::size_t sim_hash_len, std::size_t sim_hash_num, bool MT, class DimensionType_arg>
+template <GS_BLOCKORTHOGONALSIMHASH_PARAMS>
 inline bool BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType_arg>::operator==(BlockOrthogonalSimHash const &other) const
 {
   // I want C++20 operator<=>(Foo const &) = default.

@@ -532,7 +532,7 @@ public:
     In the case of human-readable printing, we want to OPTIONALLY print additional data.
     (This makes reading back in again difficult).
 
-    So we choose the following: operator>> is a shorthand for
+    So we choose the following: operator<< is a shorthand for
     print_lattice_point(...) with some default options.
 
     Reading back in via operator>> is not generally supported.
@@ -549,8 +549,10 @@ public:
     guarantees.
 
     Note: For serialization purposes, the first character output should not be a whitespace.
-    (Otherwise, using operator>> for other elements in the same stream will not work)
-    Prepend with some character if needed.
+    (unless unserialization ignores leading whitespace)
+    Otherwise, using operator>> for other elements in the same stream will not work, because these
+    other operations may remove the whitespace.
+    Prepend with some non-whitespace character if needed.
 
 
     TODO: serialization support is not yet finished. The hardest problem is working around GMP

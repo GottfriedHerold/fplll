@@ -103,7 +103,8 @@ namespace GaussSieve
 // forward declarations:
 template <class T> class StaticInitializer;
 template <class T> class DefaultStaticInitializer;
-template <class DimensionType> struct StaticInitializerArg;
+
+template <class DimensionType, class RankType = DimensionType> struct StaticInitializerArg;
 
 /**
   IsArgForStaticInitializer<T>    == std::true_type iff T sets the tag StaticInitializerArgTag.
@@ -262,14 +263,17 @@ class StaticInitializer : public DefaultStaticInitializer<T>
 */
 
 // clang-format off
-template <class DimensionType>
+template <class DimensionType, class RankType>
 struct StaticInitializerArg
 // clang-format on
 {
   using StaticInitializerArgTag = std::true_type;
   DimensionType const dim;
+  RankType const lattice_rank;
   //  unsigned int const dim_int;
-  constexpr StaticInitializerArg(DimensionType const &new_dim) noexcept : dim(new_dim) {}
+  constexpr StaticInitializerArg(DimensionType const &new_dim) noexcept : dim(new_dim), lattice_rank(new_dim) {}
+  constexpr StaticInitializerArg(DimensionType const &new_dim, RankType const &new_rank)
+  : dim(new_dim), lattice_rank(new_rank) {}
 };
 
 }  // namespace GaussSieve

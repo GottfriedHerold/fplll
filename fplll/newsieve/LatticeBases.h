@@ -1,8 +1,13 @@
 /**
-  The purpose of this file is to provide glue code for the lattice basis processing capabilities
-  of non-sieve fplll with the sieve part. This processing is mainly to compute GSOs.
+  The purpose of LatticeBases.h and LatticeBasis Convert.h is to provide glue code for the
+  lattice basis processing capabilities of non-sieve fplll with the sieve part.
+  This processing is mainly to compute GSOs.
   Some glue is needed because we do not neccessarily want to use Z_NR - types (exclusively)
   inside the sieving code, whereas the interface to compute GSOs is heavily intertwined with Z_NR.
+
+  LatticeBases.h defines a class that is used to STORE LatticeBases.
+  To avoid annoying dependency cycles and to maintain a more stable interface,
+  this class does not provide much more functionality than storage.
 */
 
 #ifndef GAUSS_SIEVE_LATTICE_BASES_H
@@ -33,6 +38,9 @@ namespace GaussSieve
   O(n) rather than O(n^2)...
   Maybe we will add such a thing for GSOLatticePoints
 */
+
+#define GS_LATTICEBASIS_PARAMS class Entries, class gEntries, int DimFixed, int RankFixed
+#define GS_LATTICEBASIS_FULLNAME LatticeBasis<Entries, gEntries, DimFixed, RankFixed>
 
 template<class Entries, class gEntries = Entries, int DimFixed = -1, int RankFixed = -1>
 class LatticeBasis
@@ -124,7 +132,7 @@ public:
   }
   bool operator!=(LatticeBasis const &other) const { return !(*this == other); }
 
-  friend std::ostream &operator<<(std::ostream &os, LatticeBasis<Entries, gEntries, DimFixed, RankFixed> const &basis)
+  friend std::ostream &operator<<(std::ostream &os, GS_LATTICEBASIS_FULLNAME const &basis)
   {
     os << "Dim: " << basis.ambient_dimension << '\n';
     os << "Rank: " << basis.lattice_rank << '\n';
@@ -142,7 +150,7 @@ public:
     return os;
   }
 
-  friend std::istream &operator>>(std::istream &is, LatticeBasis<Entries, gEntries, DimFixed, RankFixed> &basis)
+  friend std::istream &operator>>(std::istream &is, GS_LATTICEBASIS_FULLNAME &basis)
   {
     if (!string_consume(is,"Dim:"))             throw bad_dumpread("LatticeBasis: Dim");
     if (!(is >> basis.ambient_dimension))       throw bad_dumpread("LatticeBasis: DimVal");

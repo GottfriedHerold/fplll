@@ -65,15 +65,20 @@
 namespace GaussSieve
 {
 
+#define GS_BLOCKORTHOGONALSIMHASH_PARAMS \
+std::size_t sim_hash_len, std::size_t sim_hash_num, bool MT, class DimensionType_arg
+#define GS_BLOCKORTHOGONALSIMHASH_FULLNAME \
+BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType>
+
 // forward declarations:
-template <std::size_t sim_hash_len, std::size_t sim_hash_num, bool MT, class DimensionType_arg>
+template <GS_BLOCKORTHOGONALSIMHASH_PARAMS>
 class BlockOrthogonalSimHash;
 
 template <std::size_t sim_hash_len, std::size_t sim_hash_num, bool MT, class DimensionType>
-inline std::ostream &operator<<(std::ostream &, BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType> const &);
+inline std::ostream &operator<<(std::ostream &, GS_BLOCKORTHOGONALSIMHASH_FULLNAME const &);
 
 template <std::size_t sim_hash_len, std::size_t sim_hash_num, bool MT, class DimensionType>
-inline std::istream &operator>>(std::istream &, BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType> &);
+inline std::istream &operator>>(std::istream &, GS_BLOCKORTHOGONALSIMHASH_FULLNAME &);
 
 
 template <class CooSelection> class ObtainSimHashBlock;
@@ -158,7 +163,7 @@ public:
 // std::array expect.
 // (Otherwise, certain templates might not work)
 // Note: The _arg suffix is just used to be able to mirror the template argument in a local typedef.
-template <std::size_t sim_hash_len, std::size_t sim_hash_num, bool MT, class DimensionType_arg>
+template <GS_BLOCKORTHOGONALSIMHASH_PARAMS>
 class BlockOrthogonalSimHash
 {
 public:
@@ -191,9 +196,9 @@ public:
   inline bool operator==(BlockOrthogonalSimHash const &other) const;
   inline bool operator!=(BlockOrthogonalSimHash const &other) const { return !(*this == other); }
   friend std::ostream &operator<< <sim_hash_len, sim_hash_num, MT, DimensionType>(
-      std::ostream &os, BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType> const &bo_sim_hash);
+      std::ostream &os, GS_BLOCKORTHOGONALSIMHASH_FULLNAME const &bo_sim_hash);
   friend std::istream &operator>> <sim_hash_len, sim_hash_num, MT, DimensionType>(
-      std::istream &is, BlockOrthogonalSimHash<sim_hash_len, sim_hash_num, MT, DimensionType> &bo_sim_hash);
+      std::istream &is, GS_BLOCKORTHOGONALSIMHASH_FULLNAME &bo_sim_hash);
 
   // computes the SimHashes of a LatticePoint point
   template <class LatP, TEMPL_RESTRICT_DECL2(IsALatticePoint<LatP>)>
@@ -229,5 +234,8 @@ private:
 
 // implementation file
 #include "BlockOrthogonalSimHash_impl.h"
+
+//#undef GS_BLOCKORTHOGONALSIMHASH_FULLNAME
+//#undef GS_BLOCKORTHOGONALSIMHASH_PARAMS
 
 #endif  // include guards
