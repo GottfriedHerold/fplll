@@ -171,20 +171,21 @@ public:
     std::vector<std::vector<double>> mu_matrix ( lattice_rank, std::vector<double>(lattice_rank));
     std::vector<std::vector<double>> r_matrix ( lattice_rank, std::vector<double>(lattice_rank));
     std::vector<std::vector<LengthType>> g_matrix ( lattice_rank, std::vector<LengthType>(lattice_rank));
+    std::vector<std::vector<double>> trafo_matrix( lattice_rank, std::vector<double>(lattice_rank));
     std::vector<std::vector<OutputET>> basis_entries ( lattice_rank, std::vector<OutputET>(ambient_dimension));
     // We compute these at creation to simplify thread-safety issues.
-    std::cout << "XXX" << '\n';
+    std::cout << "MU" << '\n';
     compute_mu_matrix(GSO, mu_matrix, lattice_rank);
     print_container(std::cout, mu_matrix);
 
-    std::cout << "XXX" << '\n';
+    std::cout << "RMAT" << '\n';
     compute_r_matrix(GSO, r_matrix, lattice_rank);
     print_container(std::cout, r_matrix);
 
-    std::cout << "XXX" << '\n';
+    std::cout << "GMAT" << '\n';
     compute_g_matrix(GSO, g_matrix, lattice_rank);
     print_container(std::cout, g_matrix);
-    std::cout << "XXX" << '\n';
+
 
     // extract and convert the actual lattice vectors.
 //    basis_vectors.reserve(lattice_rank);
@@ -199,7 +200,32 @@ public:
 //      // make_from_znr_vector copies and push_back uses move semantics.
       copy_basis_vectors.push_back( make_from_znr_vector<BasisVectorType>(input_basis[i], ambient_dimension) );
     }
-    ptr_basis = std::make_shared<OutputBasis>(ambient_dimension, lattice_rank, basis_entries, mu_matrix, r_matrix, g_matrix);
+
+    for(uint_fast16_t i = 0; i < lattice_rank; ++i)
+    {
+      for (uint_fast16_t j = 0; j < lattice_rank; ++j)
+      {
+        double const abs_val = std::sqrt(convert_to_double(g_matrix[j][j]));
+        trafo_matrix[i][j] = r_matrix[i][j] / abs_val;
+      }
+    }
+
+    std::cout << "TMAT" << '\n';
+    print_container(std::cout, trafo_matrix);
+    std::cout << "CHECK" << '\n';
+
+        for (uint_fast16_t i=0; i < lattice_rank; ++i)
+    {
+      double s = 0.;
+      for (uint_fast16_t j = 0; j < lattice_rank; ++j)
+      {
+        s += trafo_matrix[i][j] * trafo_matrix[i][j];
+      }
+      std::cout << i << "  " << s << "  " << g_matrix[i][i] << '\n';
+    }
+
+
+    ptr_basis = std::make_shared<OutputBasis>(ambient_dimension, lattice_rank, basis_entries, mu_matrix, r_matrix, trafo_matrix, g_matrix);
     maxbistar2 = GSO.get_max_bstar().get_d();
 
     compute_minkowski_bound(GSO);
@@ -237,7 +263,7 @@ private:
     {
       for (uint_fast16_t j = 0; j < lattice_rank; ++j)
       {
-        if (j < i)
+        if (j <= i)
         {
           mu_matrix[i][j] = ZNR_mu[i][j].get_d();
         }
@@ -258,7 +284,7 @@ private:
     {
       for (uint_fast16_t j = 0; j < lattice_rank; ++j)
       {
-        if (j < i)
+        if (j <= i)
         {
           r_matrix[i][j] = ZNR_r[i][j].get_d();
         }
